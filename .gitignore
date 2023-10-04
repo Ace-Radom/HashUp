@@ -33,4 +33,5 @@
 
 # custom
 *.code-workspace
+test.*
 /build
