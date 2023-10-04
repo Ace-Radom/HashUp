@@ -14,5 +14,12 @@ if(NOT OPENSSL_FOUND)
 endif()
 include_directories(${OPENSSL_INCLUDE_DIR})
 
+if(UNIX)
+    set(CMAKE_FIND_LIBRARY_SUFFIXES .a)
+endif()
+if(WIN32)
+    set(CMAKE_FIND_LIBRARY_SUFFIXES .lib)
+endif()
+
 include_directories(${CMAKE_SOURCE_DIR}/include)
 add_subdirectory(src)
