@@ -1,4 +1,4 @@
-#include"hash.h"
+#include"hashup.h"
 
 std::string dump_CHAR_to_HEX( const unsigned char* hash , int len ){
     std::string out;
