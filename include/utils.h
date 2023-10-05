@@ -17,6 +17,18 @@
 
 namespace rena {
 
+    typedef enum {
+        MD5,
+        SHA1,
+        SHA256,
+        SHA512
+    } HASHMODE;
+
+    typedef enum {
+        CREATE,
+        CHECK
+    } HASHPURPOSE;
+
     template <typename _T>
     bool is_future_ready( const std::future<_T>& F );
 
