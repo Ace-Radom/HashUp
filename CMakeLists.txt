@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.10)
 project(HashUp)
 
-set(CXX_STANDARD_REQUIRED ON)
-set(CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # ============================================
 #                search OpenSSL
@@ -14,12 +14,9 @@ if(NOT OPENSSL_FOUND)
 endif()
 include_directories(${OPENSSL_INCLUDE_DIR})
 
-if(UNIX)
-    set(CMAKE_FIND_LIBRARY_SUFFIXES .a)
-endif()
-if(WIN32)
-    set(CMAKE_FIND_LIBRARY_SUFFIXES .lib)
-endif()
+# ============================================
+#                     main
+# ============================================
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
 add_subdirectory(src)
