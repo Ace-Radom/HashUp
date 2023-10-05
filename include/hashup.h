@@ -39,8 +39,8 @@ namespace rena {
             typedef enum {
                 OK,             // success
                 OPENFILEERR,    // open file error
-                DIRASFILE,      // directory gave in as file
-                FILENOTEXIST    // file doesn't exist (mainly when doing hash check)
+                FILENOTEXIST,   // file doesn't exist (mainly when doing hash check)
+                INTERRUPT       // function interrupted
             } HUFOSTATUS;
 
         public:
@@ -49,6 +49,7 @@ namespace rena {
             HUFOSTATUS open( const std::string& path , HASHPURPOSE p );
             void set_mode( HASHMODE mode );
             void set_purpose( HASHPURPOSE purpose );
+            HUFOSTATUS do_create( unsigned short threads );
 
         private:
             typedef struct {
@@ -58,11 +59,11 @@ namespace rena {
             typedef std::vector<HASHOBJ> HASHLIST;
 
         private:
-            std::string  _path;
-            std::fstream _rwF;
-            HASHMODE     _hmode;
-            HASHPURPOSE  _hpurpose;
-            HASHLIST     _hlist;
+            std::string  _dpath;        // parent dir path
+            std::fstream _rwF;          // read write file
+            HASHMODE     _hmode;        // hash mode
+            HASHPURPOSE  _hpurpose;     // hash purpose
+            HASHLIST     _hlist;        // hash list
 
     }; // class HUFO (HashUp File Object)
 

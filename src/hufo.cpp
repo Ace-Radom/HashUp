@@ -8,36 +8,43 @@ rena::HUFO::~HUFO(){
     return;
 }
 
-rena::HUFO::HUFOSTATUS rena::HUFO::open( const std::string& path , rena::HASHPURPOSE p  ){
-    this -> _path = path;
+rena::HUFO::HUFOSTATUS rena::HUFO::open( const std::string& path , rena::HASHPURPOSE p ){
     this -> _hpurpose = p;
-    if ( std::filesystem::exists( this -> _path ) && std::filesystem::is_regular_file( this -> _path ) )
+    if ( this -> _hpurpose == HASHPURPOSE::CHECK )
     {
-        this -> _rwF.open( this -> _path , std::ios::in | std::ios::out );
-        if ( !( this -> _rwF.is_open() ) )
-        {
-            return HUFOSTATUS::OPENFILEERR;
-        } // open failed
-    } // file exists, and also a regular file, open it without caring about purpose
-    else
-    {
-        if ( std::filesystem::is_directory( this -> _path ) )
-        {
-            return HUFOSTATUS::DIRASFILE;
-        } // a dir given
-        else if ( this -> _hpurpose == HASHPURPOSE::CHECK )
+        if ( !std::filesystem::exists( path ) )
         {
             return HUFOSTATUS::FILENOTEXIST;
-        } // doing hash check, but file doesn't exist
-        else
+        } // .hpf list doesn't exist
+        else if ( !std::filesystem::is_regular_file( path ) )
         {
-            this -> _rwF.open( this -> _path , std::ios::in | std::ios::out | std::ios::trunc );
-            if ( !( this -> _rwF.is_open() ) )
+            return HUFOSTATUS::OPENFILEERR;
+        }
+        this -> _dpath = std::filesystem::path( path ).parent_path().string();
+        this -> _rwF.open( path , std::ios::in | std::ios::out );
+        if ( !( this -> _rwF.is_open() ) )
+        {
+            this -> _dpath.clear();
+            return HUFOSTATUS::OPENFILEERR;
+        } // open failed
+    } // doing hash check
+    else if ( this -> _hpurpose == HASHPURPOSE::CREATE )
+    {
+        if ( std::filesystem::exists( path ) )
+        {
+            if ( !confirm_interrupt( "This file \"" + path + "\" already exist. Are you sure to overwrite it?" , 'y' , 'N' ) )
             {
-                return HUFOSTATUS::OPENFILEERR;
-            } // open failed
-        } // doing hash create, and file doesn't exist, create it
-    } // file doesn't exist
+                return HUFOSTATUS::INTERRUPT;
+            }
+        } // given file already exists
+        this -> _dpath = std::filesystem::path( path ).parent_path().string();
+        this -> _rwF.open( path , std::ios::in | std::ios::out | std::ios::trunc );
+        if ( !( this -> _rwF.is_open() ) )
+        {
+            this -> _dpath.clear();
+            return HUFOSTATUS::OPENFILEERR;
+        } // open failed
+    } // doing hash create
     return HUFOSTATUS::OK;
 }
 
