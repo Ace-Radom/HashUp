@@ -11,7 +11,7 @@
 #else
 #define DEBUG_MSG( msg )                    \
         do {                                \
-            std::cerr << msg << std::endl;  \
+            std::cout << msg << std::endl;  \
         } while ( 0 )
 #endif
 
@@ -28,9 +28,6 @@ namespace rena {
         CREATE,
         CHECK
     } HASHPURPOSE;
-
-    template <typename _T>
-    bool is_future_ready( const std::future<_T>& F );
 
     bool confirm_interrupt( const std::string& msg , char y , char n );
 
