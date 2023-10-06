@@ -59,6 +59,9 @@ namespace rena {
             typedef std::vector<HASHOBJ> HASHLIST;
 
         private:
+            void _traversal_dir_write_to_hlist( const std::string& dir );
+
+        private:
             std::string  _dpath;        // parent dir path
             std::fstream _rwF;          // read write file
             HASHMODE     _hmode;        // hash mode

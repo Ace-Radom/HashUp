@@ -57,3 +57,37 @@ void rena::HUFO::set_purpose( rena::HASHPURPOSE purpose ){
     this -> _hpurpose = purpose;
     return;
 }
+
+void rena::HUFO::_traversal_dir_write_to_hlist( const std::string& dir ){
+    for ( auto it : std::filesystem::directory_iterator( dir ) )
+    {
+        try {
+            auto fp = it.path(); // file path
+            if ( std::filesystem::is_directory( fp ) )
+            {
+                _traversal_dir_write_to_hlist( fp.string() );
+            } // dir found, traversal it
+            else
+            {
+                HASHOBJ temp;
+                temp.fp = std::filesystem::relative( fp , this -> _dpath ).string();
+                this -> _hlist.push_back( temp );
+            } // write relative path to _hlist
+        }
+        catch ( const std::exception& e )
+        {
+            std::cerr << "Error occured when traversaling directory \"" << dir << "\":" << std::endl;
+            std::cerr << e.what() << std::endl;
+            try {
+                std::string path = it.path().string();
+                std::cerr << "Error path: \"" << path << "\"." << std::endl;
+            }
+            catch ( ... )
+            {
+                std::cerr << "Error path output unavaliable." << std::endl;
+            }
+            std::cerr << "Skip the current " << ( it.is_directory() ? "directory." : "file." ) << std::endl;
+        } // error occurs (mainly because the change from utf8 -> other charsets), skip
+    }
+    return;
+}
