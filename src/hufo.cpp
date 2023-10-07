@@ -45,6 +45,7 @@ rena::HUFO::HUFOSTATUS rena::HUFO::open( const std::string& path , rena::HASHPUR
             return HUFOSTATUS::OPENFILEERR;
         } // open failed
     } // doing hash create
+    this -> _hufopath = path;
     return HUFOSTATUS::OK;
 }
 
@@ -65,7 +66,31 @@ void rena::HUFO::set_purpose( rena::HASHPURPOSE purpose ){
     return;
 }
 
-rena::HUFO::HUFOSTATUS rena::HUFO::do_hashcalc( unsigned short threads ){
+rena::HUFO::HUFOSTATUS rena::HUFO::do_create( unsigned short threads ){
+    if ( this -> _pdpath.empty() )
+    {
+        return HUFOSTATUS::NOWORKINGDIR;
+    } // create root dir (_pdpath) not set
+    if ( !( this -> _rwF.is_open() ) )
+    {
+        return HUFOSTATUS::HUFNOTOPEN;
+    } // _rwF isn't open
+    if ( _hf == nullptr )
+    {
+        this -> set_mode( HASHMODE::MD5 );
+    } // hash mode not set, use default (MD5)
+
+    this -> _traversal_dir_write_to_hlist( this -> _pdpath );
+    this -> _do_hashcalc( threads );
+
+    for ( auto it : this -> _hlist )
+    {
+        DEBUG_MSG( it.fp << " " << it.hash );
+    }
+    return HUFOSTATUS::OK;
+}
+
+rena::HUFO::HUFOSTATUS rena::HUFO::_do_hashcalc( unsigned short threads ){
     ThreadPool pool( threads );
 
     for ( auto it = this -> _hlist.begin() ; it != this -> _hlist.end() ; )
@@ -110,6 +135,10 @@ void rena::HUFO::_traversal_dir_write_to_hlist( const std::filesystem::path& dir
             } // dir found, traversal it
             else
             {
+                if ( fp == this -> _hufopath )
+                {
+                    continue;
+                } // ignore HUFO itself
                 HASHOBJ temp;
                 temp.fp = std::filesystem::relative( fp , this -> _pdpath );
                 this -> _hlist.push_back( temp );

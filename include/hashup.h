@@ -41,7 +41,9 @@ namespace rena {
                 OK,             // success
                 OPENFILEERR,    // open file error
                 FILENOTEXIST,   // file doesn't exist (mainly when doing hash check)
-                INTERRUPT       // function interrupted
+                INTERRUPT,      // function interrupted
+                NOWORKINGDIR,   // no parent dir path
+                HUFNOTOPEN      // HashUp File isn't opened and ready to read/write
             } HUFOSTATUS;
 
         public:
@@ -50,7 +52,8 @@ namespace rena {
             HUFOSTATUS open( const std::string& path , HASHPURPOSE p );
             void set_mode( HASHMODE mode );
             void set_purpose( HASHPURPOSE purpose );
-            HUFOSTATUS do_hashcalc( unsigned short threads );
+            HUFOSTATUS do_create( unsigned short threads );
+            void test();
 
         private:
             typedef struct {
@@ -64,9 +67,11 @@ namespace rena {
 
         private:
             void _traversal_dir_write_to_hlist( const std::filesystem::path& dir );
+            HUFOSTATUS _do_hashcalc( unsigned short threads );
 
         private:
             std::filesystem::path   _pdpath;        // parent dir path
+            std::filesystem::path   _hufopath;      // HUFO path
             std::fstream            _rwF;           // read write file
             HASHMODE                _hmode;         // hash mode
             HASHFUNCTIONHOOK        _hf = nullptr;  // hash function 
