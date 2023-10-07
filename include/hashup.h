@@ -8,6 +8,7 @@
 #include<fstream>
 #include<filesystem>
 #include<vector>
+#include<cerrno>
 
 #include"openssl/md5.h"
 #include"openssl/sha.h"

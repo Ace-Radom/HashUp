@@ -75,8 +75,10 @@ rena::HUFO::HUFOSTATUS rena::HUFO::do_hashcalc( unsigned short threads ){
         f = fopen( ap.string().c_str() , "rb" );
         if ( f == nullptr )
         {
-            std::cerr << "Opening file " << ap << " failed, skip.";
-            this -> _hlist.erase( it );
+            std::string errmsg = "Opening file \"" + ap.string() + "\" failed";
+            perror( errmsg.c_str() );
+            std::cerr << "Skip." << std::endl;
+            it = this -> _hlist.erase( it );
             continue;
         } // open file failed
         it -> hash_future = pool.enqueue( this -> _hf , f ).share();
