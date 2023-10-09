@@ -22,7 +22,7 @@ CPSTR dump_CHAR_to_HEX( const unsigned char* hash , int len ){
 */
 
 CPSTR rena::calc_file_md5( std::filesystem::path path ){
-    std::ifstream rFile( path );
+    std::ifstream rFile( path , std::ios::binary );
     if ( !rFile.is_open() )
     {
         throw std::exception( "Open file failed" );
@@ -49,7 +49,7 @@ CPSTR rena::calc_file_md5( std::filesystem::path path ){
 }
 
 CPSTR rena::calc_file_sha1( std::filesystem::path path ){
-    std::ifstream rFile( path );
+    std::ifstream rFile( path , std::ios::binary );
     if ( !rFile.is_open() )
     {
         throw std::exception( "Open file failed" );
@@ -76,7 +76,7 @@ CPSTR rena::calc_file_sha1( std::filesystem::path path ){
 }
 
 CPSTR rena::calc_file_sha256( std::filesystem::path path ){
-    std::ifstream rFile( path );
+    std::ifstream rFile( path , std::ios::binary );
     if ( !rFile.is_open() )
     {
         throw std::exception( "Open file failed" );
@@ -103,7 +103,7 @@ CPSTR rena::calc_file_sha256( std::filesystem::path path ){
 }
 
 CPSTR rena::calc_file_sha512( std::filesystem::path path ){
-    std::ifstream rFile( path );
+    std::ifstream rFile( path , std::ios::binary );
     if ( !rFile.is_open() )
     {
         throw std::exception( "Open file failed" );
