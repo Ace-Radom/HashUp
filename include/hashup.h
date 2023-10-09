@@ -9,6 +9,7 @@
 #include<filesystem>
 #include<vector>
 #include<cerrno>
+#include<codecvt>
 
 #include"openssl/md5.h"
 #include"openssl/sha.h"
@@ -25,15 +26,10 @@ namespace rena {
 #define RFILE_BLOCK_SIZE 1024
 #endif
 
-    // std::string calc_file_md5( FILE* rFile );
-    // std::string calc_file_sha1( FILE* rFile );
-    // std::string calc_file_sha256( FILE* rFile );
-    // std::string calc_file_sha512( FILE* rFile );
-
-    std::string calc_file_md5( std::filesystem::path path );
-    std::string calc_file_sha1( std::filesystem::path path );
-    std::string calc_file_sha256( std::filesystem::path path );
-    std::string calc_file_sha512( std::filesystem::path path );
+    CPSTR calc_file_md5( std::filesystem::path path );
+    CPSTR calc_file_sha1( std::filesystem::path path );
+    CPSTR calc_file_sha256( std::filesystem::path path );
+    CPSTR calc_file_sha512( std::filesystem::path path );
 
 ////////////////////////////////////////////////////////////
 //                        hufo.cpp                        //
@@ -54,7 +50,7 @@ namespace rena {
         public:
             HUFO(){};
             ~HUFO();
-            HUFOSTATUS open( const std::string& path , HASHPURPOSE p );
+            HUFOSTATUS open( const CPSTR& path , HASHPURPOSE p );
             void set_mode( HASHMODE mode );
             void set_purpose( HASHPURPOSE purpose );
             HUFOSTATUS do_create( unsigned short threads );
@@ -62,13 +58,13 @@ namespace rena {
 
         private:
             typedef struct {
-                std::filesystem::path           fp;
-                std::shared_future<std::string> hash_future;
-                std::string                     hash;
+                std::filesystem::path       fp;
+                std::shared_future<CPSTR>   hash_future;
+                CPSTR                       hash;
 
             } HASHOBJ;
             typedef std::vector<HASHOBJ> HASHLIST;
-            typedef std::string ( *HASHFUNCTIONHOOK )( std::filesystem::path path );
+            typedef CPSTR ( *HASHFUNCTIONHOOK )( std::filesystem::path path );
 
         private:
             void _traversal_dir_write_to_hlist( const std::filesystem::path& dir );
