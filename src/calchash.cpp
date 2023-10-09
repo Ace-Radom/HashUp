@@ -1,6 +1,6 @@
 #include"hashup.h"
 
-std::string dump_CHAR_to_HEX( const unsigned char* hash , int len ){
+CPSTR dump_CHAR_to_HEX( const unsigned char* hash , int len ){
     std::string out;
     for ( int i = 0 ; i < len ; i++ )
     {
@@ -9,133 +9,122 @@ std::string dump_CHAR_to_HEX( const unsigned char* hash , int len ){
         sprintf( dump_HEX_temp , "%02x" ,  hash[i] );
         out += dump_HEX_temp;
     }
+#ifdef _MSC_VER
+    std::wstring_convert<std::codecvt_utf8<wchar_t>> conv;
+    return conv.from_bytes( out );
+#else
     return out;
+#endif
 }
 
 /**
  * FILE objects will NOT be opened or closed in the following functions
 */
 
-// std::string rena::calc_file_md5( FILE* rFile ){
-std::string rena::calc_file_md5( std::filesystem::path path ){
-    FILE* rFile = nullptr;
-    rFile = fopen( path.string().c_str() , "rb" );
-    if ( rFile == nullptr )
+CPSTR rena::calc_file_md5( std::filesystem::path path ){
+    std::ifstream rFile( path );
+    if ( !rFile.is_open() )
     {
-        throw std::ios::failure( strerror( errno ) );
-    } // open failed, throw
+        throw std::exception( "Open file failed" );
+    }
 
     MD5_CTX ctx;
     MD5_Init( &ctx );
     errno_t ret;
-    unsigned char buf[RFILE_BLOCK_SIZE];
+    char buf[RFILE_BLOCK_SIZE];
     unsigned char out[MD5_DIGEST_LENGTH];
     while ( 1 )
     {
-        if ( ( ret = fread( buf , sizeof( unsigned char ) , sizeof( buf ) , rFile ) ) == -1 )
-        {
-            return "\0";
-        }
-        MD5_Update( &ctx , ( char* ) buf , ret );
-        if ( ret == 0 || ret < RFILE_BLOCK_SIZE )
+        if ( rFile.eof() )
         {
             break;
         }
+        rFile.read( buf , sizeof( buf ) );
+        ret = rFile.gcount();
+        MD5_Update( &ctx , buf , ret );
     }
     MD5_Final( out , &ctx );
-    fclose( rFile );
+    rFile.close();
     return dump_CHAR_to_HEX( out , MD5_DIGEST_LENGTH );
 }
 
-// std::string rena::calc_file_sha1( FILE* rFile ){
-std::string rena::calc_file_sha1( std::filesystem::path path ){
-    FILE* rFile = nullptr;
-    rFile = fopen( path.string().c_str() , "rb" );
-    if ( rFile == nullptr )
+CPSTR rena::calc_file_sha1( std::filesystem::path path ){
+    std::ifstream rFile( path );
+    if ( !rFile.is_open() )
     {
-        throw std::ios::failure( strerror( errno ) );
-    } // open failed, throw
+        throw std::exception( "Open file failed" );
+    }
 
     SHA_CTX ctx;
     SHA1_Init( &ctx );
     errno_t ret;
-    unsigned char buf[RFILE_BLOCK_SIZE];
+    char buf[RFILE_BLOCK_SIZE];
     unsigned char out[SHA_DIGEST_LENGTH];
     while ( 1 )
     {
-        if ( ( ret = fread( buf , sizeof( unsigned char ) , sizeof( buf ) , rFile ) ) == -1 )
-        {
-            return "\0";
-        }
-        SHA1_Update( &ctx , ( char* ) buf , ret );
-        if ( ret == 0 || ret < RFILE_BLOCK_SIZE )
+        if ( rFile.eof() )
         {
             break;
         }
+        rFile.read( buf , sizeof( buf ) );
+        ret = rFile.gcount();
+        SHA1_Update( &ctx , ( char* ) buf , ret );
     }
     SHA1_Final( out , &ctx );
-    fclose( rFile );
+    rFile.close();
     return dump_CHAR_to_HEX( out , SHA_DIGEST_LENGTH );
 }
 
-// std::string rena::calc_file_sha256( FILE* rFile ){
-std::string rena::calc_file_sha256( std::filesystem::path path ){
-    FILE* rFile = nullptr;
-    rFile = fopen( path.string().c_str() , "rb" );
-    if ( rFile == nullptr )
+CPSTR rena::calc_file_sha256( std::filesystem::path path ){
+    std::ifstream rFile( path );
+    if ( !rFile.is_open() )
     {
-        throw std::ios::failure( strerror( errno ) );
-    } // open failed, throw
+        throw std::exception( "Open file failed" );
+    }
 
     SHA256_CTX ctx;
     SHA256_Init( &ctx );
     errno_t ret;
-    unsigned char buf[RFILE_BLOCK_SIZE];
+    char buf[RFILE_BLOCK_SIZE];
     unsigned char out[SHA256_DIGEST_LENGTH];
     while ( 1 )
     {
-        if ( ( ret = fread( buf , sizeof( unsigned char ) , sizeof( buf ) , rFile ) ) == -1 )
-        {
-            return "\0";
-        }
-        SHA256_Update( &ctx , ( char* ) buf , ret );
-        if ( ret == 0 || ret < RFILE_BLOCK_SIZE )
+        if ( rFile.eof() )
         {
             break;
         }
+        rFile.read( buf , sizeof( buf ) );
+        ret = rFile.gcount();
+        SHA256_Update( &ctx , ( char* ) buf , ret );
     }
     SHA256_Final( out , &ctx );
-    fclose( rFile );
+    rFile.close();
     return dump_CHAR_to_HEX( out , SHA256_DIGEST_LENGTH );
 }
 
-// std::string rena::calc_file_sha512( FILE* rFile ){
-std::string rena::calc_file_sha512( std::filesystem::path path ){
-    FILE* rFile = nullptr;
-    rFile = fopen( path.string().c_str() , "rb" );
-    if ( rFile == nullptr )
+CPSTR rena::calc_file_sha512( std::filesystem::path path ){
+    std::ifstream rFile( path );
+    if ( !rFile.is_open() )
     {
-        throw std::ios::failure( strerror( errno ) );
-    } // open failed, throw
+        throw std::exception( "Open file failed" );
+    }
 
     SHA512_CTX ctx;
     SHA512_Init( &ctx );
     errno_t ret;
-    unsigned char buf[RFILE_BLOCK_SIZE];
+    char buf[RFILE_BLOCK_SIZE];
     unsigned char out[SHA512_DIGEST_LENGTH];
     while ( 1 )
     {
-        if ( ( ret = fread( buf , sizeof( unsigned char ) , sizeof( buf ) , rFile ) ) == -1 )
-        {
-            return "\0";
-        }
-        SHA512_Update( &ctx , ( char* ) buf , ret );
-        if ( ret == 0 || ret < RFILE_BLOCK_SIZE )
+        if ( rFile.eof() )
         {
             break;
         }
+        rFile.read( buf , sizeof( buf ) );
+        ret = rFile.gcount();
+        SHA512_Update( &ctx , ( char* ) buf , ret );
     }
     SHA512_Final( out , &ctx );
-    fclose( rFile );
+    rFile.close();
     return dump_CHAR_to_HEX( out , SHA512_DIGEST_LENGTH );
 }
