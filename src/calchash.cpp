@@ -25,12 +25,12 @@ CPSTR rena::calc_file_md5( std::filesystem::path path ){
     std::ifstream rFile( path );
     if ( !rFile.is_open() )
     {
-        throw std::exception( "Open file failed" );
+        throw std::runtime_error( "Open file failed" );
     }
 
     MD5_CTX ctx;
     MD5_Init( &ctx );
-    errno_t ret;
+    size_t ret;
     char buf[RFILE_BLOCK_SIZE];
     unsigned char out[MD5_DIGEST_LENGTH];
     while ( 1 )
@@ -52,12 +52,12 @@ CPSTR rena::calc_file_sha1( std::filesystem::path path ){
     std::ifstream rFile( path );
     if ( !rFile.is_open() )
     {
-        throw std::exception( "Open file failed" );
+        throw std::runtime_error( "Open file failed" );
     }
 
     SHA_CTX ctx;
     SHA1_Init( &ctx );
-    errno_t ret;
+    size_t ret;
     char buf[RFILE_BLOCK_SIZE];
     unsigned char out[SHA_DIGEST_LENGTH];
     while ( 1 )
@@ -79,12 +79,12 @@ CPSTR rena::calc_file_sha256( std::filesystem::path path ){
     std::ifstream rFile( path );
     if ( !rFile.is_open() )
     {
-        throw std::exception( "Open file failed" );
+        throw std::runtime_error( "Open file failed" );
     }
 
     SHA256_CTX ctx;
     SHA256_Init( &ctx );
-    errno_t ret;
+    size_t ret;
     char buf[RFILE_BLOCK_SIZE];
     unsigned char out[SHA256_DIGEST_LENGTH];
     while ( 1 )
@@ -106,12 +106,12 @@ CPSTR rena::calc_file_sha512( std::filesystem::path path ){
     std::ifstream rFile( path );
     if ( !rFile.is_open() )
     {
-        throw std::exception( "Open file failed" );
+        throw std::runtime_error( "Open file failed" );
     }
 
     SHA512_CTX ctx;
     SHA512_Init( &ctx );
-    errno_t ret;
+    size_t ret;
     char buf[RFILE_BLOCK_SIZE];
     unsigned char out[SHA512_DIGEST_LENGTH];
     while ( 1 )
