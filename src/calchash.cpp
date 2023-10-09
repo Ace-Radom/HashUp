@@ -16,7 +16,15 @@ std::string dump_CHAR_to_HEX( const unsigned char* hash , int len ){
  * FILE objects will NOT be opened or closed in the following functions
 */
 
-std::string rena::calc_file_md5( FILE* rFile ){
+// std::string rena::calc_file_md5( FILE* rFile ){
+std::string rena::calc_file_md5( std::filesystem::path path ){
+    FILE* rFile = nullptr;
+    rFile = fopen( path.string().c_str() , "rb" );
+    if ( rFile == nullptr )
+    {
+        throw std::ios::failure( strerror( errno ) );
+    } // open failed, throw
+
     MD5_CTX ctx;
     MD5_Init( &ctx );
     errno_t ret;
@@ -35,10 +43,19 @@ std::string rena::calc_file_md5( FILE* rFile ){
         }
     }
     MD5_Final( out , &ctx );
+    fclose( rFile );
     return dump_CHAR_to_HEX( out , MD5_DIGEST_LENGTH );
 }
 
-std::string rena::calc_file_sha1( FILE* rFile ){
+// std::string rena::calc_file_sha1( FILE* rFile ){
+std::string rena::calc_file_sha1( std::filesystem::path path ){
+    FILE* rFile = nullptr;
+    rFile = fopen( path.string().c_str() , "rb" );
+    if ( rFile == nullptr )
+    {
+        throw std::ios::failure( strerror( errno ) );
+    } // open failed, throw
+
     SHA_CTX ctx;
     SHA1_Init( &ctx );
     errno_t ret;
@@ -57,10 +74,19 @@ std::string rena::calc_file_sha1( FILE* rFile ){
         }
     }
     SHA1_Final( out , &ctx );
+    fclose( rFile );
     return dump_CHAR_to_HEX( out , SHA_DIGEST_LENGTH );
 }
 
-std::string rena::calc_file_sha256( FILE* rFile ){
+// std::string rena::calc_file_sha256( FILE* rFile ){
+std::string rena::calc_file_sha256( std::filesystem::path path ){
+    FILE* rFile = nullptr;
+    rFile = fopen( path.string().c_str() , "rb" );
+    if ( rFile == nullptr )
+    {
+        throw std::ios::failure( strerror( errno ) );
+    } // open failed, throw
+
     SHA256_CTX ctx;
     SHA256_Init( &ctx );
     errno_t ret;
@@ -79,10 +105,19 @@ std::string rena::calc_file_sha256( FILE* rFile ){
         }
     }
     SHA256_Final( out , &ctx );
+    fclose( rFile );
     return dump_CHAR_to_HEX( out , SHA256_DIGEST_LENGTH );
 }
 
-std::string rena::calc_file_sha512( FILE* rFile ){
+// std::string rena::calc_file_sha512( FILE* rFile ){
+std::string rena::calc_file_sha512( std::filesystem::path path ){
+    FILE* rFile = nullptr;
+    rFile = fopen( path.string().c_str() , "rb" );
+    if ( rFile == nullptr )
+    {
+        throw std::ios::failure( strerror( errno ) );
+    } // open failed, throw
+
     SHA512_CTX ctx;
     SHA512_Init( &ctx );
     errno_t ret;
@@ -101,5 +136,6 @@ std::string rena::calc_file_sha512( FILE* rFile ){
         }
     }
     SHA512_Final( out , &ctx );
+    fclose( rFile );
     return dump_CHAR_to_HEX( out , SHA512_DIGEST_LENGTH );
 }

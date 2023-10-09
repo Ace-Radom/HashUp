@@ -25,10 +25,15 @@ namespace rena {
 #define RFILE_BLOCK_SIZE 1024
 #endif
 
-    std::string calc_file_md5( FILE* rFile );
-    std::string calc_file_sha1( FILE* rFile );
-    std::string calc_file_sha256( FILE* rFile );
-    std::string calc_file_sha512( FILE* rFile );
+    // std::string calc_file_md5( FILE* rFile );
+    // std::string calc_file_sha1( FILE* rFile );
+    // std::string calc_file_sha256( FILE* rFile );
+    // std::string calc_file_sha512( FILE* rFile );
+
+    std::string calc_file_md5( std::filesystem::path path );
+    std::string calc_file_sha1( std::filesystem::path path );
+    std::string calc_file_sha256( std::filesystem::path path );
+    std::string calc_file_sha512( std::filesystem::path path );
 
 ////////////////////////////////////////////////////////////
 //                        hufo.cpp                        //
@@ -63,7 +68,7 @@ namespace rena {
 
             } HASHOBJ;
             typedef std::vector<HASHOBJ> HASHLIST;
-            typedef std::string ( *HASHFUNCTIONHOOK )( FILE* rFile );
+            typedef std::string ( *HASHFUNCTIONHOOK )( std::filesystem::path path );
 
         private:
             void _traversal_dir_write_to_hlist( const std::filesystem::path& dir );
