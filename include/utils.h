@@ -10,11 +10,13 @@
 #define CPERR std::wcerr
 #define CPSTR std::wstring
 #define CPSTRTOFCONV( str ) std::wstring_convert<std::codecvt_utf8<wchar_t>,wchar_t>{}.to_bytes( str ) // cp str to file convert
+#define CPPATHTOSTR( path ) ( path ).wstring()
 #else
 #define CPOUT std::cout
 #define CPERR std::cerr
 #define CPSTR std::string
-#define CPSTRTOFCONV( str ) str
+#define CPSTRTOFCONV( str ) ( str )
+#define CPPATHTOSTR( path ) ( path ).string()
 #endif
 
 #ifdef NDEBUG

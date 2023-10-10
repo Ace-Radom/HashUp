@@ -90,7 +90,7 @@ rena::HUFO::HUFOSTATUS rena::HUFO::do_create( unsigned short threads ){
     for ( auto it : this -> _hlist )
     {
         DEBUG_MSG( it.fp << " " << it.hash );
-        this -> _rwF << CPSTRTOFCONV( ( "." / it.fp ).wstring() ) << " " << CPSTRTOFCONV( it.hash ) << std::endl;
+        this -> _rwF << CPSTRTOFCONV( CPPATHTOSTR( "." / it.fp ) ) << " " << CPSTRTOFCONV( it.hash ) << std::endl;
     }
     return HUFOSTATUS::OK;
 }
@@ -149,7 +149,7 @@ void rena::HUFO::_traversal_dir_write_to_hlist( const std::filesystem::path& dir
 
 void rena::HUFO::test(){
 
-    DEBUG_MSG( this -> open( L"D:\\Music\\test.huf" , HASHPURPOSE::CREATE ) );
+    DEBUG_MSG( this -> open( "/mnt/d/BaiduNetdiskDownload/1/1/LilPy102-pc/LilPy102-pc/game/gui/sound/test.huf" , HASHPURPOSE::CREATE ) );
     DEBUG_MSG( this -> do_create( 8 ) );
  
 
