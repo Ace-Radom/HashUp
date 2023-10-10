@@ -5,13 +5,16 @@
 #include<future>
 
 #ifdef _MSC_VER
+#include<codecvt>
 #define CPOUT std::wcout
 #define CPERR std::wcerr
 #define CPSTR std::wstring
+#define CPSTRTOFCONV( str ) std::wstring_convert<std::codecvt_utf8<wchar_t>,wchar_t>{}.to_bytes( str ) // cp str to file convert
 #else
 #define CPOUT std::cout
 #define CPERR std::cerr
 #define CPSTR std::string
+#define CPSTRTOFCONV( str ) str
 #endif
 
 #ifdef NDEBUG
