@@ -90,6 +90,7 @@ rena::HUFO::HUFOSTATUS rena::HUFO::do_create( unsigned short threads ){
     for ( auto it : this -> _hlist )
     {
         DEBUG_MSG( it.fp << " " << it.hash );
+        this -> _rwF << CPSTRTOFCONV( ( "." / it.fp ).wstring() ) << " " << CPSTRTOFCONV( it.hash ) << std::endl;
     }
     return HUFOSTATUS::OK;
 }
