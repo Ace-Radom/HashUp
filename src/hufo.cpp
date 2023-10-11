@@ -84,6 +84,7 @@ rena::HUFO::HUFOSTATUS rena::HUFO::do_create( unsigned short threads ){
         this -> set_mode( HASHMODE::MD5 );
     } // hash mode not set, use default (MD5)
 
+    this -> _hlist.clear();
     this -> _traversal_dir_write_to_hlist( this -> _pdpath );
     this -> _do_hashcalc( threads );
 
@@ -109,14 +110,24 @@ rena::HUFO::HUFOSTATUS rena::HUFO::do_check( unsigned short threads ){
         return HUFOSTATUS::HMODENOTSET;
     } // hash mode not set
 
+    this -> _hlist.clear();
+    this -> _errhlist.clear();
     this -> _read_huf_write_to_hlist();
     this -> _do_hashcalc( threads );
 
     for ( auto it : this -> _hlist )
     {
-        DEBUG_MSG( it.fp << " " << ( it.hash == it.hash_readin ? "Checked" : "Unchecked" ) );
+        if ( it.hash == it.hash_readin )
+        {
+            DEBUG_MSG( it.fp << " Checked" );
+        }
+        else
+        {
+            DEBUG_MSG( it.fp << " Check Failed: " << it.hash_readin << " -> " << it.hash );
+            this -> _errhlist.push_back( it );
+        }
     }
-    return HUFOSTATUS::OK;
+    return ( _errhlist.empty() ) ? HUFOSTATUS::OK : HUFOSTATUS::HASCHECKFAILEDF;
 }
 
 rena::HUFO::HUFOSTATUS rena::HUFO::_do_hashcalc( unsigned short threads ){

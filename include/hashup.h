@@ -45,7 +45,8 @@ namespace rena {
                 INTERRUPT,      // function interrupted
                 NOWORKINGDIR,   // no parent dir path
                 HUFNOTOPEN,     // HashUp File isn't opened and ready to read/write
-                HMODENOTSET     // hash mode not set (by hash check)
+                HMODENOTSET,    // hash mode not set (by hash check)
+                HASCHECKFAILEDF // hash hash check failed files
             } HUFOSTATUS;
 
         public:
@@ -82,6 +83,7 @@ namespace rena {
             HASHFUNCTIONHOOK        _hf = nullptr;  // hash function 
             HASHPURPOSE             _hpurpose;      // hash purpose
             HASHLIST                _hlist;         // hash list
+            HASHLIST                _errhlist;      // error hash list
 
     }; // class HUFO (HashUp File Object)
 
