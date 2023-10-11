@@ -1,3 +1,6 @@
+// tanakh/cmdline <https://github.com/tanakh/cmdline>
+// commit a68095a, Oct 22. 2012
+
 /*
   Copyright (c) 2009, Hideyuki Tanaka
   All rights reserved.
@@ -36,7 +39,9 @@
 #include <typeinfo>
 #include <cstring>
 #include <algorithm>
+#ifdef __GNUC__
 #include <cxxabi.h>
+#endif
 #include <cstdlib>
 
 namespace cmdline{
@@ -104,11 +109,17 @@ Target lexical_cast(const Source &arg)
 
 static inline std::string demangle(const std::string &name)
 {
+#if   defined( _MSC_VER )
+  return name;
+#elif defined( __GNUC__ )
   int status=0;
   char *p=abi::__cxa_demangle(name.c_str(), 0, 0, &status);
   std::string ret(p);
   free(p);
   return ret;
+#else
+#error Unexpected Complier (MSVC/GCC)
+#endif
 }
 
 template <class T>
