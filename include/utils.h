@@ -9,13 +9,15 @@
 #define CPOUT std::wcout
 #define CPERR std::wcerr
 #define CPSTR std::wstring
-#define CPSTRTOFCONV( str ) std::wstring_convert<std::codecvt_utf8<wchar_t>,wchar_t>{}.to_bytes( str ) // cp str to file convert
-#define CPPATHTOSTR( path ) ( path ).wstring()
+#define CPATOWCONV( str )   std::wstring_convert<std::codecvt_utf8<wchar_t>>{}.to_bytes( str )      // cp str to wstr convert
+#define CPWTOACONV( str )   std::wstring_convert<std::codecvt_utf8<wchar_t>>{}.from_bytes( str )    // cp wstr to str convert
+#define CPPATHTOSTR( path ) ( path ).wstring()                                                      // cp path to str
 #else
 #define CPOUT std::cout
 #define CPERR std::cerr
 #define CPSTR std::string
-#define CPSTRTOFCONV( str ) ( str )
+#define CPATOWCONV( str ) ( str )
+#define CPWTOACONV( str ) ( str )
 #define CPPATHTOSTR( path ) ( path ).string()
 #endif
 
