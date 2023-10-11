@@ -91,7 +91,7 @@ rena::HUFO::HUFOSTATUS rena::HUFO::do_create( unsigned short threads ){
     for ( auto it : this -> _hlist )
     {
         DEBUG_MSG( it.fp << " " << it.hash );
-        this -> _rwF << CPATOWCONV( CPPATHTOSTR( "." / it.fp ) ) << " " << CPATOWCONV( it.hash ) << std::endl;
+        this -> _rwF << CPWTOACONV( CPPATHTOSTR( "." / it.fp ) ) << " " << CPWTOACONV( it.hash ) << std::endl;
     }
     return HUFOSTATUS::OK;
 }
@@ -196,9 +196,9 @@ void rena::HUFO::_read_huf_write_to_hlist(){
 
 void rena::HUFO::test(){
 
-    DEBUG_MSG( this -> open( "/mnt/d/BaiduNetdiskDownload/1/1/LilPy102-pc/LilPy102-pc/game/gui/sound/test.huf" , HASHPURPOSE::CHECK ) );
+    DEBUG_MSG( this -> open( L"D:\\BaiduNetdiskDownload\\1\\1\\LilPy102-pc\\LilPy102-pc\\game\\gui\\sound\\test.huf" , HASHPURPOSE::CREATE ) );
     this -> set_mode( HASHMODE::MD5 );
-    DEBUG_MSG( this -> do_check( 8 ) );
+    DEBUG_MSG( this -> do_create( 8 ) );
  
 
     return;
