@@ -90,7 +90,31 @@ rena::HUFO::HUFOSTATUS rena::HUFO::do_create( unsigned short threads ){
     for ( auto it : this -> _hlist )
     {
         DEBUG_MSG( it.fp << " " << it.hash );
-        this -> _rwF << CPSTRTOFCONV( CPPATHTOSTR( "." / it.fp ) ) << " " << CPSTRTOFCONV( it.hash ) << std::endl;
+        this -> _rwF << CPATOWCONV( CPPATHTOSTR( "." / it.fp ) ) << " " << CPATOWCONV( it.hash ) << std::endl;
+    }
+    return HUFOSTATUS::OK;
+}
+
+rena::HUFO::HUFOSTATUS rena::HUFO::do_check( unsigned short threads ){
+    if ( this -> _pdpath.empty() )
+    {
+        return HUFOSTATUS::NOWORKINGDIR;
+    } // check root dir (_pdpath) not set
+    if ( !( this -> _rwF.is_open() ) )
+    {
+        return HUFOSTATUS::HUFNOTOPEN;
+    } // _rwF isn't open
+    if ( _hf == nullptr )
+    {
+        return HUFOSTATUS::HMODENOTSET;
+    } // hash mode not set
+
+    this -> _read_huf_write_to_hlist();
+    this -> _do_hashcalc( threads );
+
+    for ( auto it : this -> _hlist )
+    {
+        DEBUG_MSG( it.fp << " " << ( it.hash == it.hash_readin ? "Checked" : "Unchecked" ) );
     }
     return HUFOSTATUS::OK;
 }
@@ -147,10 +171,23 @@ void rena::HUFO::_traversal_dir_write_to_hlist( const std::filesystem::path& dir
     return;
 }
 
+void rena::HUFO::_read_huf_write_to_hlist(){
+    std::string buf;
+    while ( std::getline( this -> _rwF , buf ) )
+    {
+        HASHOBJ temp;
+        temp.fp = CPATOWCONV( buf.substr( 0 , buf.rfind( ' ' ) ) );
+        temp.hash_readin = CPATOWCONV( buf.substr( buf.rfind( ' ' ) + 1 ) );
+        this -> _hlist.push_back( temp );
+    }
+    return;
+}
+
 void rena::HUFO::test(){
 
-    DEBUG_MSG( this -> open( "/mnt/d/BaiduNetdiskDownload/1/1/LilPy102-pc/LilPy102-pc/game/gui/sound/test.huf" , HASHPURPOSE::CREATE ) );
-    DEBUG_MSG( this -> do_create( 8 ) );
+    DEBUG_MSG( this -> open( "/mnt/d/BaiduNetdiskDownload/1/1/LilPy102-pc/LilPy102-pc/game/gui/sound/test.huf" , HASHPURPOSE::CHECK ) );
+    this -> set_mode( HASHMODE::MD5 );
+    DEBUG_MSG( this -> do_check( 8 ) );
  
 
     return;

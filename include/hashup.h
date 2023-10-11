@@ -44,7 +44,8 @@ namespace rena {
                 FILENOTEXIST,   // file doesn't exist (mainly when doing hash check)
                 INTERRUPT,      // function interrupted
                 NOWORKINGDIR,   // no parent dir path
-                HUFNOTOPEN      // HashUp File isn't opened and ready to read/write
+                HUFNOTOPEN,     // HashUp File isn't opened and ready to read/write
+                HMODENOTSET     // hash mode not set (by hash check)
             } HUFOSTATUS;
 
         public:
@@ -54,6 +55,7 @@ namespace rena {
             void set_mode( HASHMODE mode );
             void set_purpose( HASHPURPOSE purpose );
             HUFOSTATUS do_create( unsigned short threads );
+            HUFOSTATUS do_check( unsigned short threads );
             void test();
 
         private:
@@ -61,6 +63,7 @@ namespace rena {
                 std::filesystem::path       fp;
                 std::shared_future<CPSTR>   hash_future;
                 CPSTR                       hash;
+                CPSTR                       hash_readin;   // read in hash (only be used when checking)
 
             } HASHOBJ;
             typedef std::vector<HASHOBJ> HASHLIST;
@@ -68,6 +71,7 @@ namespace rena {
 
         private:
             void _traversal_dir_write_to_hlist( const std::filesystem::path& dir );
+            void _read_huf_write_to_hlist();
             HUFOSTATUS _do_hashcalc( unsigned short threads );
 
         private:
