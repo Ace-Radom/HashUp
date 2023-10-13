@@ -54,9 +54,9 @@ namespace rena {
             ~HUFO();
             HUFOSTATUS open( const std::filesystem::path& path , HASHPURPOSE p );
             void set_mode( HASHMODE mode );
+            HUFOSTATUS start( unsigned short threads );
             HUFOSTATUS do_create( unsigned short threads );
             HUFOSTATUS do_check( unsigned short threads );
-            void test();
 
         private:
             typedef struct {

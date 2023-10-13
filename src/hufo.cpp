@@ -65,6 +65,17 @@ void rena::HUFO::set_mode( rena::HASHMODE mode ){
     return;
 }
 
+rena::HUFO::HUFOSTATUS rena::HUFO::start( unsigned short threads ){
+    if ( this -> _hpurpose == HASHPURPOSE::CHECK )
+    {
+        return this -> do_check( threads );
+    }
+    else if ( this -> _hpurpose == HASHPURPOSE::CREATE )
+    {
+        return this -> do_create( threads );
+    }
+}
+
 rena::HUFO::HUFOSTATUS rena::HUFO::do_create( unsigned short threads ){
     if ( this -> _pdpath.empty() )
     {
@@ -186,15 +197,5 @@ void rena::HUFO::_read_huf_write_to_hlist(){
         temp.hash_readin = CPATOWCONV( buf.substr( buf.rfind( ' ' ) + 1 ) );
         this -> _hlist.push_back( temp );
     }
-    return;
-}
-
-void rena::HUFO::test(){
-
-    DEBUG_MSG( this -> open( "/mnt/d/BaiduNetdiskDownload/1/1/LilPy102-pc/LilPy102-pc/game/gui/sound/test.huf" , HASHPURPOSE::CREATE ) );
-    this -> set_mode( HASHMODE::MD5 );
-    DEBUG_MSG( this -> do_create( 8 ) );
- 
-
     return;
 }
