@@ -33,7 +33,7 @@ rena::HUFO::HUFOSTATUS rena::HUFO::open( const std::filesystem::path& path , ren
         if ( std::filesystem::exists( path ) )
         {
 #ifdef _MSC_VER
-            if ( !confirm_interrupt( L"This file \"" + path + L"\" already exist. Are you sure to overwrite it?" , 'y' , 'N' ) )
+            if ( !confirm_interrupt( L"This file \"" + CPPATHTOSTR( path ) + L"\" already exist. Are you sure to overwrite it?" , 'y' , 'N' ) )
 #else
             if ( !confirm_interrupt( "This file \"" + CPPATHTOSTR( path ) + "\" already exist. Are you sure to overwrite it?" , 'y' , 'N' ) )
 #endif
@@ -129,7 +129,7 @@ rena::HUFO::HUFOSTATUS rena::HUFO::do_check( unsigned short threads ){
         }
         else
         {
-            CPOUT << it.fp << " Check Failed: " << it.hash_readin << " -> " << it.hash << std::endl;
+            CPOUT << "\"" << CPPATHTOSTR( it.fp ) << "\" Check Failed: " << it.hash_readin << " -> " << it.hash << std::endl;
             this -> _errhlist.push_back( it );
         }
     }

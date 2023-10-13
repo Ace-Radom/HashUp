@@ -80,7 +80,7 @@ int main( int argc , char** argv ){
     if ( cmdparser.exist( "mode" ) )
     {
         std::string mode = cmdparser.get<std::string>( "mode" );
-        DEBUG_MSG( "Set Hash Mode: " << mode );
+        DEBUG_MSG( "Set Hash Mode: " << CPATOWCONV( mode ) );
         if ( mode == "md5" )
         {
             hufo.set_mode( rena::HASHMODE::MD5 );
