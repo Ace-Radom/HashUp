@@ -129,11 +129,15 @@ rena::HUFO::HUFOSTATUS rena::HUFO::do_check( unsigned short threads ){
         }
         else
         {
-            DEBUG_MSG( it.fp << " Check Failed: " << it.hash_readin << " -> " << it.hash );
+            CPOUT << it.fp << " Check Failed: " << it.hash_readin << " -> " << it.hash << std::endl;
             this -> _errhlist.push_back( it );
         }
     }
     return ( _errhlist.empty() ) ? HUFOSTATUS::OK : HUFOSTATUS::HASCHECKFAILEDF;
+}
+
+unsigned int rena::HUFO::get_errhlist_len(){
+    return this -> _errhlist.size();
 }
 
 rena::HUFO::HUFOSTATUS rena::HUFO::_do_hashcalc( unsigned short threads ){

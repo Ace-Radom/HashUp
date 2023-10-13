@@ -57,6 +57,7 @@ namespace rena {
             HUFOSTATUS start( unsigned short threads );
             HUFOSTATUS do_create( unsigned short threads );
             HUFOSTATUS do_check( unsigned short threads );
+            unsigned int get_errhlist_len();
 
         private:
             typedef struct {
