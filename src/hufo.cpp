@@ -8,7 +8,7 @@ rena::HUFO::~HUFO(){
     return;
 }
 
-rena::HUFO::HUFOSTATUS rena::HUFO::open( const CPSTR& path , rena::HASHPURPOSE p ){
+rena::HUFO::HUFOSTATUS rena::HUFO::open( const std::filesystem::path& path , rena::HASHPURPOSE p ){
     this -> _hpurpose = p;
     if ( this -> _hpurpose == HASHPURPOSE::CHECK )
     {
@@ -35,7 +35,7 @@ rena::HUFO::HUFOSTATUS rena::HUFO::open( const CPSTR& path , rena::HASHPURPOSE p
 #ifdef _MSC_VER
             if ( !confirm_interrupt( L"This file \"" + path + L"\" already exist. Are you sure to overwrite it?" , 'y' , 'N' ) )
 #else
-            if ( !confirm_interrupt( "This file \"" + path + "\" already exist. Are you sure to overwrite it?" , 'y' , 'N' ) )
+            if ( !confirm_interrupt( "This file \"" + CPPATHTOSTR( path ) + "\" already exist. Are you sure to overwrite it?" , 'y' , 'N' ) )
 #endif
             {
                 return HUFOSTATUS::INTERRUPT;
@@ -62,11 +62,6 @@ void rena::HUFO::set_mode( rena::HASHMODE mode ){
         case SHA256: this -> _hf = calc_file_sha256; break;
         case SHA512: this -> _hf = calc_file_sha512; break;
     }
-    return;
-}
-
-void rena::HUFO::set_purpose( rena::HASHPURPOSE purpose ){
-    this -> _hpurpose = purpose;
     return;
 }
 
@@ -196,7 +191,7 @@ void rena::HUFO::_read_huf_write_to_hlist(){
 
 void rena::HUFO::test(){
 
-    DEBUG_MSG( this -> open( L"D:\\BaiduNetdiskDownload\\1\\1\\LilPy102-pc\\LilPy102-pc\\game\\gui\\sound\\test.huf" , HASHPURPOSE::CREATE ) );
+    DEBUG_MSG( this -> open( "/mnt/d/BaiduNetdiskDownload/1/1/LilPy102-pc/LilPy102-pc/game/gui/sound/test.huf" , HASHPURPOSE::CREATE ) );
     this -> set_mode( HASHMODE::MD5 );
     DEBUG_MSG( this -> do_create( 8 ) );
  

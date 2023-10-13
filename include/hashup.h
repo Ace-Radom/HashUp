@@ -52,9 +52,8 @@ namespace rena {
         public:
             HUFO(){};
             ~HUFO();
-            HUFOSTATUS open( const CPSTR& path , HASHPURPOSE p );
+            HUFOSTATUS open( const std::filesystem::path& path , HASHPURPOSE p );
             void set_mode( HASHMODE mode );
-            void set_purpose( HASHPURPOSE purpose );
             HUFOSTATUS do_create( unsigned short threads );
             HUFOSTATUS do_check( unsigned short threads );
             void test();
