@@ -7,3 +7,8 @@ target_link_libraries(hashuplib
     OpenSSL::SSL
     OpenSSL::Crypto
 )
+if(UNIX)
+target_link_libraries(hashuplib
+    pthread
+)
+endif()
