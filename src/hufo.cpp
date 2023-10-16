@@ -189,7 +189,15 @@ rena::HUFO::HUFOSTATUS rena::HUFO::_do_hashcalc( unsigned short threads ){
 
     for ( auto it = this -> _hlist.begin() ; it != this -> _hlist.end() ; )
     {
-        std::filesystem::path ap = this -> _pdpath / it -> fp; // absolute path
+        std::filesystem::path ap; // absolute path
+        if ( it -> fp.is_relative() )
+        {
+            ap = this -> _pdpath / it -> fp;
+        }
+        else
+        {
+            ap = it -> fp;
+        }
         it -> hash_future = pool.enqueue( this -> _hf , ap ).share();
         ++it;
     } // iterate _hlist, start tasks
