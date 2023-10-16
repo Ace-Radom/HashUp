@@ -105,13 +105,9 @@ int main( int argc , char** argv ){
         print_hufo_err( do_operate_status );
         return do_operate_status;
     }
-    else if ( do_operate_status == rena::HUFO::HUFOSTATUS::OK )
+    else
     {
         CPOUT << "Work done and success." << std::endl;
-    }
-    else // do_operate_status == rena::HUFO::HUFOSTATUS::HASCHECKFAILEDF
-    {
-        CPOUT << "Work done, " << hufo.get_errhlist_len() << " files check failed." << std::endl;
     }
 
     return 0;

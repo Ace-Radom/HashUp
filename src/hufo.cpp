@@ -113,6 +113,14 @@ rena::HUFO::HUFOSTATUS rena::HUFO::do_create( unsigned short threads ){
         DEBUG_MSG( it.fp << " " << it.hash );
         this -> _rwF << CPWTOACONV( CPPATHTOSTR( "." / it.fp ) ) << " " << CPWTOACONV( it.hash ) << std::endl;
     }
+
+#ifdef SHOW_PROGRESS_DETAIL
+    CPOUT << "Create complete: " << this -> _ori_hlist_len << " files got in total; "
+          << this -> _hlist.size() << " created; "
+          << this -> _ori_hlist_len - this -> _hlist.size() << " error."
+          << std::endl; 
+#endif
+
     return HUFOSTATUS::OK;
 }
 
@@ -162,15 +170,22 @@ rena::HUFO::HUFOSTATUS rena::HUFO::do_check( unsigned short threads ){
             this -> _errhlist.push_back( it );
         }
     }
-    return ( _errhlist.empty() ) ? HUFOSTATUS::OK : HUFOSTATUS::HASCHECKFAILEDF;
-}
 
-unsigned int rena::HUFO::get_errhlist_len(){
-    return this -> _errhlist.size();
+#ifdef SHOW_PROGRESS_DETAIL
+    CPOUT << "Check complete: " << this -> _ori_hlist_len << " files got in total; " 
+          << this -> _hlist.size() - this -> _errhlist.size() << " passed; " 
+          << this -> _errhlist.size() << " failed; " 
+          << this -> _ori_hlist_len - this -> _hlist.size() << " error." 
+          << std::endl; 
+#endif
+
+    return ( _errhlist.empty() ) ? HUFOSTATUS::OK : HUFOSTATUS::HASCHECKFAILEDF;
 }
 
 rena::HUFO::HUFOSTATUS rena::HUFO::_do_hashcalc( unsigned short threads ){
     ThreadPool pool( threads );
+
+    this -> _ori_hlist_len = this -> _hlist.size();
 
     for ( auto it = this -> _hlist.begin() ; it != this -> _hlist.end() ; )
     {

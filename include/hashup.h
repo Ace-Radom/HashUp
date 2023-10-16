@@ -58,7 +58,6 @@ namespace rena {
             HUFOSTATUS start( unsigned short threads );
             HUFOSTATUS do_create( unsigned short threads );
             HUFOSTATUS do_check( unsigned short threads );
-            unsigned int get_errhlist_len();
 
         private:
             typedef struct {
@@ -84,6 +83,7 @@ namespace rena {
             HASHFUNCTIONHOOK        _hf = nullptr;  // hash function 
             HASHPURPOSE             _hpurpose;      // hash purpose
             HASHLIST                _hlist;         // hash list
+            unsigned long long      _ori_hlist_len; // hash list length at very first step
             HASHLIST                _errhlist;      // error hash list
 
     }; // class HUFO (HashUp File Object)
