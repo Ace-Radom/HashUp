@@ -2,6 +2,7 @@
 #define _HASHUP_H_
 
 #include<iostream>
+#include<iomanip>
 #include<string>
 #include<cstdio>
 #include<cstdlib>

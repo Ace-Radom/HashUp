@@ -77,6 +77,11 @@ rena::HUFO::HUFOSTATUS rena::HUFO::start( unsigned short threads ){
 }
 
 rena::HUFO::HUFOSTATUS rena::HUFO::do_create( unsigned short threads ){
+
+#ifdef SHOW_PROGRESS_DETAIL
+    CPOUT << "Doing hash list create." << std::endl;
+#endif
+
     if ( this -> _pdpath.empty() )
     {
         return HUFOSTATUS::NOWORKINGDIR;
@@ -92,7 +97,16 @@ rena::HUFO::HUFOSTATUS rena::HUFO::do_create( unsigned short threads ){
 
     this -> _hlist.clear();
     this -> _traversal_dir_write_to_hlist( this -> _pdpath );
+
+#ifdef SHOW_PROGRESS_DETAIL
+    CPOUT << "Found " << this -> _hlist.size() << " files in total." << std::endl;
+#endif
+
     this -> _do_hashcalc( threads );
+
+#ifdef SHOW_PROGRESS_DETAIL
+    CPOUT << "Write hash list to file." << std::endl;
+#endif
 
     for ( auto it : this -> _hlist )
     {
@@ -103,6 +117,11 @@ rena::HUFO::HUFOSTATUS rena::HUFO::do_create( unsigned short threads ){
 }
 
 rena::HUFO::HUFOSTATUS rena::HUFO::do_check( unsigned short threads ){
+
+#ifdef SHOW_PROGRESS_DETAIL
+    CPOUT << "Doing hash check." << std::endl;
+#endif
+
     if ( this -> _pdpath.empty() )
     {
         return HUFOSTATUS::NOWORKINGDIR;
@@ -118,8 +137,18 @@ rena::HUFO::HUFOSTATUS rena::HUFO::do_check( unsigned short threads ){
 
     this -> _hlist.clear();
     this -> _errhlist.clear();
+
     this -> _read_huf_write_to_hlist();
+
+#ifdef SHOW_PROGRESS_DETAIL
+    CPOUT << "Found " << this -> _hlist.size() << " files in total." << std::endl;
+#endif
+
     this -> _do_hashcalc( threads );
+
+#ifdef SHOW_PROGRESS_DETAIL
+    CPOUT << "Checking." << std::endl;
+#endif
 
     for ( auto it : this -> _hlist )
     {
@@ -129,7 +158,7 @@ rena::HUFO::HUFOSTATUS rena::HUFO::do_check( unsigned short threads ){
         }
         else
         {
-            CPOUT << "\"" << CPPATHTOSTR( it.fp ) << "\" Check Failed: " << it.hash_readin << " -> " << it.hash << std::endl;
+            CPOUT << "File \"" << CPPATHTOSTR( it.fp ) << "\" Check Failed: " << it.hash_readin << " -> " << it.hash << std::endl;
             this -> _errhlist.push_back( it );
         }
     }
@@ -150,9 +179,15 @@ rena::HUFO::HUFOSTATUS rena::HUFO::_do_hashcalc( unsigned short threads ){
         ++it;
     } // iterate _hlist, start tasks
 
+    unsigned long long file_waiting_now_index = 1;
     for ( auto it = this -> _hlist.begin() ; it != this -> _hlist.end() ; )
     {
-        DEBUG_MSG( "Wait for " << it -> fp );
+        DEBUG_MSG( "Waiting for " << it -> fp );
+
+#ifdef SHOW_PROGRESS_DETAIL
+        CPOUT << "Progress: " << file_waiting_now_index << "/" << this -> _hlist.size() << "\r" << std::flush;
+#endif
+
         it -> hash_future.wait();
         try {
             it -> hash = it -> hash_future.get();
@@ -165,7 +200,12 @@ rena::HUFO::HUFOSTATUS rena::HUFO::_do_hashcalc( unsigned short threads ){
             continue;
         } // open file failed when calculating hash of this file
         ++it;
+        file_waiting_now_index++;
     }
+
+#ifdef SHOW_PROGRESS_DETAIL
+    CPOUT << "\n";
+#endif
 
     return HUFOSTATUS::OK;
 }

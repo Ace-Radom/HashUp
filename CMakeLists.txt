@@ -24,6 +24,7 @@ include_directories(${OPENSSL_INCLUDE_DIR})
 #                     main
 # ============================================
 
+add_definitions(-DSHOW_PROGRESS_DETAIL)
 include_directories(${CMAKE_SOURCE_DIR}/include)
 add_subdirectory(src)
 
