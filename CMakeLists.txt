@@ -32,3 +32,8 @@ add_executable(hashup main.cpp)
 target_link_libraries(hashup
     hashuplib
 )
+
+install(
+    TARGETS hashup
+    RUNTIME DESTINATION bin
+)
