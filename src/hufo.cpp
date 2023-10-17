@@ -57,10 +57,10 @@ void rena::HUFO::set_mode( rena::HASHMODE mode ){
     this -> _hmode = mode;
     switch ( this -> _hmode )
     {
-        case MD5:    this -> _hf = calc_file_md5;    break;
-        case SHA1:   this -> _hf = calc_file_sha1;   break;
-        case SHA256: this -> _hf = calc_file_sha256; break;
-        case SHA512: this -> _hf = calc_file_sha512; break;
+        case MD5:    this -> _hf = calc_file_md5;    this -> _hlen = 32;  break;
+        case SHA1:   this -> _hf = calc_file_sha1;   this -> _hlen = 40;  break;
+        case SHA256: this -> _hf = calc_file_sha256; this -> _hlen = 64;  break;
+        case SHA512: this -> _hf = calc_file_sha512; this -> _hlen = 128; break;
     }
     return;
 }
@@ -185,7 +185,7 @@ rena::HUFO::HUFOSTATUS rena::HUFO::do_check( unsigned short threads ){
 rena::HUFO::HUFOSTATUS rena::HUFO::_do_hashcalc( unsigned short threads ){
     ThreadPool pool( threads );
 
-    this -> _ori_hlist_len = this -> _hlist.size();
+    this -> _ori_hlist_len += this -> _hlist.size();
 
     for ( auto it = this -> _hlist.begin() ; it != this -> _hlist.end() ; )
     {
@@ -217,8 +217,8 @@ rena::HUFO::HUFOSTATUS rena::HUFO::_do_hashcalc( unsigned short threads ){
         }
         catch ( const std::exception& e )
         {
-            CPERR << "Operate file " << this -> _pdpath / it -> fp << " failed: " << e.what() << std::endl;
-            CPERR << "Skip." << std::endl;
+            CPERR << "Operate file \"" << CPPATHTOSTR( it -> fp ) << "\" failed: " << e.what() << std::endl
+                  << "Skip." << std::endl;
             it = this -> _hlist.erase( it );
             continue;
         } // open file failed when calculating hash of this file
@@ -262,6 +262,14 @@ void rena::HUFO::_read_huf_write_to_hlist(){
         HASHOBJ temp;
         temp.fp = CPATOWCONV( buf.substr( 0 , buf.rfind( ' ' ) ) );
         temp.hash_readin = CPATOWCONV( buf.substr( buf.rfind( ' ' ) + 1 ) );
+        if ( temp.hash_readin.size() != this -> _hlen )
+        {
+            CPERR << "File \"" << CPPATHTOSTR( temp.fp ) << "\" wrong hash length: " << temp.hash_readin.size() << " -> " << this -> _hlen << std::endl
+                  << "Skip." << std::endl;
+            this -> _ori_hlist_len++;
+            // this file will not be written into _hlist, but it's still an error file
+            continue;
+        }
         this -> _hlist.push_back( temp );
     }
     return;

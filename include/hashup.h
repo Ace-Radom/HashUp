@@ -76,15 +76,16 @@ namespace rena {
             HUFOSTATUS _do_hashcalc( unsigned short threads );
 
         private:
-            std::filesystem::path   _pdpath;        // parent dir path
-            std::filesystem::path   _hufopath;      // HUFO path
-            std::fstream            _rwF;           // read write file
-            HASHMODE                _hmode;         // hash mode
-            HASHFUNCTIONHOOK        _hf = nullptr;  // hash function 
-            HASHPURPOSE             _hpurpose;      // hash purpose
-            HASHLIST                _hlist;         // hash list
-            unsigned long long      _ori_hlist_len; // hash list length at very first step
-            HASHLIST                _errhlist;      // error hash list
+            std::filesystem::path   _pdpath;            // parent dir path
+            std::filesystem::path   _hufopath;          // HUFO path
+            std::fstream            _rwF;               // read write file
+            HASHMODE                _hmode;             // hash mode
+            HASHFUNCTIONHOOK        _hf = nullptr;      // hash function
+            unsigned short          _hlen;              // hash length
+            HASHPURPOSE             _hpurpose;          // hash purpose
+            HASHLIST                _hlist;             // hash list
+            unsigned long long      _ori_hlist_len = 0; // hash list length at very first step
+            HASHLIST                _errhlist;          // error hash list
 
     }; // class HUFO (HashUp File Object)
 
