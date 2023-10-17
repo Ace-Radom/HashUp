@@ -98,10 +98,6 @@ rena::HUFO::HUFOSTATUS rena::HUFO::do_create( unsigned short threads ){
     this -> _hlist.clear();
     this -> _traversal_dir_write_to_hlist( this -> _pdpath );
 
-#ifdef SHOW_PROGRESS_DETAIL
-    CPOUT << "Found " << this -> _hlist.size() << " files in total." << std::endl;
-#endif
-
     this -> _do_hashcalc( threads );
 
 #ifdef SHOW_PROGRESS_DETAIL
@@ -148,10 +144,6 @@ rena::HUFO::HUFOSTATUS rena::HUFO::do_check( unsigned short threads ){
 
     this -> _read_huf_write_to_hlist();
 
-#ifdef SHOW_PROGRESS_DETAIL
-    CPOUT << "Found " << this -> _hlist.size() << " files in total." << std::endl;
-#endif
-
     this -> _do_hashcalc( threads );
 
 #ifdef SHOW_PROGRESS_DETAIL
@@ -166,7 +158,7 @@ rena::HUFO::HUFOSTATUS rena::HUFO::do_check( unsigned short threads ){
         }
         else
         {
-            CPOUT << "File \"" << CPPATHTOSTR( it.fp ) << "\" Check Failed: " << it.hash_readin << " -> " << it.hash << std::endl;
+            CPOUT << "File \"" << CPPATHTOSTR( it.fp ) << "\" Check Failed: got " << it.hash_readin << ", should be " << it.hash << "." << std::endl;
             this -> _errhlist.push_back( it );
         }
     }
@@ -186,6 +178,19 @@ rena::HUFO::HUFOSTATUS rena::HUFO::_do_hashcalc( unsigned short threads ){
     ThreadPool pool( threads );
 
     this -> _ori_hlist_len += this -> _hlist.size();
+
+#ifdef SHOW_PROGRESS_DETAIL
+    CPOUT << "Found " << this -> _ori_hlist_len << " files in total";
+    if ( this -> _ori_hlist_len == this -> _hlist.size() )
+    {
+        CPOUT << "." << std::endl;
+    } // no files have error and have already been erased before hashcalc
+    else
+    {
+        size_t err_before_hashcalc_num = this -> _ori_hlist_len - this -> _hlist.size();
+        CPOUT << ", " << err_before_hashcalc_num << " file" << ( ( err_before_hashcalc_num == 1 ) ? " " : "s " ) << "had error and skipped." << std::endl;
+    }
+#endif
 
     for ( auto it = this -> _hlist.begin() ; it != this -> _hlist.end() ; )
     {
@@ -264,7 +269,7 @@ void rena::HUFO::_read_huf_write_to_hlist(){
         temp.hash_readin = CPATOWCONV( buf.substr( buf.rfind( ' ' ) + 1 ) );
         if ( temp.hash_readin.size() != this -> _hlen )
         {
-            CPERR << "File \"" << CPPATHTOSTR( temp.fp ) << "\" wrong hash length: " << temp.hash_readin.size() << " -> " << this -> _hlen << std::endl
+            CPERR << "File \"" << CPPATHTOSTR( temp.fp ) << "\" wrong hash length: got " << temp.hash_readin.size() << ", should be " << this -> _hlen << "." << std::endl
                   << "Skip." << std::endl;
             this -> _ori_hlist_len++;
             // this file will not be written into _hlist, but it's still an error file
