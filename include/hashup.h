@@ -84,7 +84,7 @@ namespace rena {
             unsigned short          _hlen;              // hash length
             HASHPURPOSE             _hpurpose;          // hash purpose
             HASHLIST                _hlist;             // hash list
-            unsigned long long      _ori_hlist_len = 0; // hash list length at very first step
+            size_t                  _ori_hlist_len = 0; // hash list length at very first step
             HASHLIST                _errhlist;          // error hash list
 
     }; // class HUFO (HashUp File Object)
