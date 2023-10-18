@@ -4,9 +4,9 @@ name: CMake Release Build Mac
 
 on:
   push:
-    branches: [ "mac-workflow-test" ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ "mac-workflow-test" ]
+    branches: [ "main" ]
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
