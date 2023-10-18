@@ -47,7 +47,7 @@ int main( int argc , char** argv ){
         } // show help page
         else
         {
-            CPOUT << "HashUp " << HASHUP_VERSION << " (branch/" << BUILD_GIT_BRANCH << ":" << BUILD_GIT_COMMIT << ", " << BUILD_TIME << ") [" << CXX_COMPILER_ID << " v." << CXX_COMPILER_VERSION << "] on " << BUILD_SYS_NAME << std::endl;
+            CPOUT << "HashUp " << HASHUP_VERSION << " (branch/" << BUILD_GIT_BRANCH << ":" << BUILD_GIT_COMMIT << ", " << BUILD_TIME << ") [" << CXX_COMPILER_ID << " " << CXX_COMPILER_VERSION << "] on " << BUILD_SYS_NAME << std::endl;
             return 0;
         } // show version
     } // arg error
