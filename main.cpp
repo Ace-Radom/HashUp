@@ -7,6 +7,7 @@
 
 #include"cmdline.h"
 #include"hashup.h"
+#include"build_config.h"
 
 void print_hufo_err( rena::HUFO::HUFOSTATUS tag );
 
@@ -20,12 +21,13 @@ int main( int argc , char** argv ){
 #pragma region create_cmd_parser
 
     cmdline::parser cmdparser;
-    cmdparser.add                ( "help"   , '?' , "Show this help page" );
-    cmdparser.add                ( "create" , 'w' , "Create a hash list for a directory" );
-    cmdparser.add                ( "check"  , 'r' , "Do hash check for a directory" );
-    cmdparser.add<std::string>   ( "file"   , 'f' , "The path of the hash list"                            , true  , "" );
-    cmdparser.add<std::string>   ( "mode"   , 'm' , "Set hash mode (md5, sha1, sha256, sha512)"            , false , "md5" , cmdline::oneof<std::string>( "md5" , "sha1" , "sha256" , "sha512" ) );
-    cmdparser.add<unsigned short>( "thread" , 'j' , "Set the thread-number of multithreading acceleration" , false , 8     , cmdline::range<unsigned short>( 1 , 128 ) );
+    cmdparser.add                ( "help"    , '?' , "Show this help page" );
+    cmdparser.add                ( "create"  , 'w' , "Create a hash list for a directory" );
+    cmdparser.add                ( "check"   , 'r' , "Do hash check for a directory" );
+    cmdparser.add<std::string>   ( "file"    , 'f' , "The path of the hash list"                            , true  , "" );
+    cmdparser.add<std::string>   ( "mode"    , 'm' , "Set hash mode (md5, sha1, sha256, sha512)"            , false , "md5" , cmdline::oneof<std::string>( "md5" , "sha1" , "sha256" , "sha512" ) );
+    cmdparser.add<unsigned short>( "thread"  , 'j' , "Set the thread-number of multithreading acceleration" , false , 8     , cmdline::range<unsigned short>( 1 , 128 ) );
+    cmdparser.add                ( "version" , 'v' , "Show HashUp version" );
     cmdparser.set_program_name( "hashup" );
 
 #pragma endregion create_cmd_parser
@@ -33,16 +35,21 @@ int main( int argc , char** argv ){
     bool pret = cmdparser.parse( argc , argv );
     if ( !pret )
     {
-        if ( !cmdparser.exist( "help" ) )
+        if ( !cmdparser.exist( "help" ) && !cmdparser.exist( "version" ) )
         {
             CPOUT << CPATOWCONV( cmdparser.error() ) << std::endl << CPATOWCONV( cmdparser.usage() ) << std::endl;
             return 128;
         } // show help
-        else
+        else if ( cmdparser.exist( "help" ) )
         {
             CPOUT << CPATOWCONV( cmdparser.usage() ) << std::endl;
             return 0;
-        }
+        } // show help page
+        else
+        {
+            CPOUT << "HashUp " << HASHUP_VERSION << " (branch/" << BUILD_GIT_BRANCH << ":" << BUILD_GIT_COMMIT << ", " << BUILD_TIME << ") [" << CXX_COMPILER_ID << " v." << CXX_COMPILER_VERSION << "] on " << BUILD_SYS_NAME << std::endl;
+            return 0;
+        } // show version
     } // arg error
 
     rena::HASHPURPOSE p;

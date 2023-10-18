@@ -1,5 +1,35 @@
 cmake_minimum_required(VERSION 3.10)
-project(HashUp)
+project(HashUp VERSION 0.9.0 LANGUAGES CXX)
+
+# ============================================
+#                 build config
+# ============================================
+
+find_package(Git QUIET)
+if(GIT_FOUND)
+    execute_process(
+        COMMAND ${GIT_EXECUTABLE} log -1 --pretty=format:%h
+        OUTPUT_VARIABLE GIT_COMMIT_HASH
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        ERROR_QUIET
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    )
+    execute_process(
+        COMMAND ${GIT_EXECUTABLE} symbolic-ref --short -q HEAD
+        OUTPUT_VARIABLE GIT_BRANCH
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        ERROR_QUIET
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    )
+endif()
+
+string(TIMESTAMP BUILD_TIME %Y.%m.%d)
+
+configure_file(
+    BUILD_CONFIG.in
+    ${CMAKE_SOURCE_DIR}/include/build_config.h
+    @ONLY
+)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
