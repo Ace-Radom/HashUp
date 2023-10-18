@@ -22,7 +22,7 @@ cmake .. -DCMAKE_BUILD_TYPE=Release
 cmake --build . --config Release
 ```
 
-You should find `hashup.exe` under `HashUp\build\Release`.
+You should find `hashup.exe` under `HashUp\build\Release` (because installing it doesn't really make sense under Windows, it won't make things any easier).
 
 ### Linux
 
@@ -30,9 +30,8 @@ You should find `hashup.exe` under `HashUp\build\Release`.
 mkdir build && cd build
 cmake .. -DCMAKE_BUILD_TYPE=Release
 make
+sudo make install
 ```
-
-You should find `hashup` under `HashUp/build`.
 
 ## How to use
 
