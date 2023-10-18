@@ -21,13 +21,15 @@ int main( int argc , char** argv ){
 #pragma region create_cmd_parser
 
     cmdline::parser cmdparser;
-    cmdparser.add                ( "help"    , '?' , "Show this help page" );
-    cmdparser.add                ( "create"  , 'w' , "Create a hash list for a directory" );
-    cmdparser.add                ( "check"   , 'r' , "Do hash check for a directory" );
-    cmdparser.add<std::string>   ( "file"    , 'f' , "The path of the hash list"                            , true  , "" );
-    cmdparser.add<std::string>   ( "mode"    , 'm' , "Set hash mode (md5, sha1, sha256, sha512)"            , false , "md5" , cmdline::oneof<std::string>( "md5" , "sha1" , "sha256" , "sha512" ) );
-    cmdparser.add<unsigned short>( "thread"  , 'j' , "Set the thread-number of multithreading acceleration" , false , 8     , cmdline::range<unsigned short>( 1 , 128 ) );
-    cmdparser.add                ( "version" , 'v' , "Show HashUp version" );
+    cmdparser.add                ( "help"    , '?'  , "Show this help page" );
+    cmdparser.add                ( "create"  , 'w'  , "Create a hash list for a directory" );
+    cmdparser.add                ( "check"   , 'r'  , "Do hash check for a directory" );
+    cmdparser.add<std::string>   ( "file"    , 'f'  , "The path of the hash list"                            , true  , "" );
+    cmdparser.add                ( "single"  , 's'  , "Use single file mode" );
+    cmdparser.add<std::string>   ( "hash"    , '\0' , "File hash (only available by single file check)"      , false );
+    cmdparser.add<std::string>   ( "mode"    , 'm'  , "Set hash mode (md5, sha1, sha256, sha512)"            , false , "md5" , cmdline::oneof<std::string>( "md5" , "sha1" , "sha256" , "sha512" ) );
+    cmdparser.add<unsigned short>( "thread"  , 'j'  , "Set the thread-number of multithreading acceleration" , false , 8     , cmdline::range<unsigned short>( 1 , 128 ) );
+    cmdparser.add                ( "version" , 'v'  , "Show HashUp version" );
     cmdparser.set_program_name( "hashup" );
 
 #pragma endregion create_cmd_parser
@@ -68,6 +70,62 @@ int main( int argc , char** argv ){
         DEBUG_MSG( "Doing Check" );
         p = rena::HASHPURPOSE::CHECK;
     }
+    // get hash purpose
+
+    if ( cmdparser.exist( "single" ) )
+    {
+        if ( p == rena::HASHPURPOSE::CHECK && !cmdparser.exist( "hash" ) )
+        {
+            CPERR << "Doing single file hash check but file hash not given, exit." << std::endl;
+            return 127;
+        }
+
+        std::filesystem::path fp( cmdparser.get<std::string>( "file" ) );
+        CPSTR hash;
+        std::string mode = cmdparser.get<std::string>( "mode" );
+        DEBUG_MSG( "Set Hash Mode: " << CPATOWCONV( mode ) );
+        try {
+            if ( mode == "md5" )
+            {
+                hash = rena::calc_file_md5( fp );
+            }
+            else if ( mode == "sha1" )
+            {
+                hash = rena::calc_file_sha1( fp );
+            }
+            else if ( mode == "sha256" )
+            {
+                hash = rena::calc_file_sha256( fp );
+            }
+            else if ( mode == "sha512" )
+            {
+                hash = rena::calc_file_sha512( fp );
+            }
+        }
+        catch ( const std::exception& e )
+        {
+            CPERR << "Operate file \"" << CPPATHTOSTR( fp ) << "\" failed: " << e.what() << std::endl
+                  << "Exit." << std::endl;
+            return 127;
+        }
+        
+        if ( p == rena::HASHPURPOSE::CREATE )
+        {
+            CPOUT << hash << std::endl;
+        }
+        else if ( p == rena::HASHPURPOSE::CHECK )
+        {
+            if ( hash == CPATOWCONV( cmdparser.get<std::string>( "hash" ) ) )
+            {
+                CPOUT << "Passed." << std::endl;
+            }
+            else
+            {
+                CPOUT << "Failed: got " << CPATOWCONV( cmdparser.get<std::string>( "hash" ) ) << ", should be " << hash << "." << std::endl;
+            }
+        }
+        return 0;
+    } // single file mode
 
     rena::HUFO hufo;
 
