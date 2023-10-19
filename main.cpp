@@ -129,13 +129,22 @@ int main( int argc , char** argv ){
         }
         else if ( p == rena::HASHPURPOSE::CHECK )
         {
-            if ( hash == CPATOWCONV( cmdparser.get<std::string>( "hash" ) ) )
+            CPSTR hash_get = CPATOWCONV( cmdparser.get<std::string>( "hash" ) );
+            for ( auto& c : hash_get )
+            {
+                if ( std::isupper( c ) )
+                {
+                    c = std::tolower( c );
+                }
+            }
+
+            if ( hash == hash_get )
             {
                 CPOUT << "Passed." << std::endl;
             }
             else
             {
-                CPOUT << "Failed: got " << CPATOWCONV( cmdparser.get<std::string>( "hash" ) ) << ", should be " << hash << "." << std::endl;
+                CPOUT << "Failed: got " << hash_get << ", should be " << hash << "." << std::endl;
             }
         }
         FREE_ARGV;
