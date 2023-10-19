@@ -34,11 +34,13 @@ namespace rena {
     CPSTR calc_file_sha256( const std::filesystem::path& path );
     CPSTR calc_file_sha384( const std::filesystem::path& path );
     CPSTR calc_file_sha512( const std::filesystem::path& path );
-    CPSTR calc_file_sha3( const std::filesystem::path& path , const EVP_MD* algo );
+#ifdef USE_OPENSSL_EVP
+    CPSTR calc_file_hash( const std::filesystem::path& path , const EVP_MD* algo );
     CPSTR calc_file_sha3_224( const std::filesystem::path& path );
     CPSTR calc_file_sha3_256( const std::filesystem::path& path );
     CPSTR calc_file_sha3_384( const std::filesystem::path& path );
     CPSTR calc_file_sha3_512( const std::filesystem::path& path );
+#endif
 
 ////////////////////////////////////////////////////////////
 //                        hufo.cpp                        //

@@ -12,11 +12,76 @@ CPSTR dump_CHAR_to_HEX( const unsigned char* hash , int len ){
     return CPATOWCONV( out );
 }
 
-/**
- * FILE objects will NOT be opened or closed in the following functions
-*/
+#ifdef USE_OPENSSL_EVP
 
-CPSTR rena::calc_file_md5( std::filesystem::path path ){
+CPSTR rena::calc_file_hash( const std::filesystem::path& path , const EVP_MD* algo ){
+    std::ifstream rFile( path , std::ios::binary );
+    if ( !rFile.is_open() )
+    {
+        throw std::runtime_error( "Open file failed" );
+    }
+
+    EVP_MD_CTX* ctx = EVP_MD_CTX_create();
+    EVP_DigestInit_ex( ctx , algo , NULL );
+    size_t ret;
+    char buf[RFILE_BLOCK_SIZE];
+    unsigned char out[EVP_MAX_MD_SIZE];
+    unsigned int out_len;
+    while ( !rFile.eof() )
+    {
+        rFile.read( buf , sizeof( buf ) );
+        ret = rFile.gcount();
+        EVP_DigestUpdate( ctx , ( char* ) buf , ret );
+    }
+    EVP_DigestFinal_ex( ctx , out , &out_len );
+    rFile.close();
+    EVP_MD_CTX_destroy( ctx );
+    return dump_CHAR_to_HEX( out , out_len );
+}
+
+CPSTR rena::calc_file_md5( const std::filesystem::path& path ){
+    return calc_file_hash( path , EVP_md5() );
+}
+
+CPSTR rena::calc_file_sha1( const std::filesystem::path& path ){
+    return calc_file_hash( path , EVP_sha1() );
+}
+
+CPSTR rena::calc_file_sha224( const std::filesystem::path& path ){
+    return calc_file_hash( path , EVP_sha224() );
+}
+
+CPSTR rena::calc_file_sha256( const std::filesystem::path& path ){
+    return calc_file_hash( path , EVP_sha256() );
+}
+
+CPSTR rena::calc_file_sha384( const std::filesystem::path& path ){
+    return calc_file_hash( path , EVP_sha384() );
+}
+
+CPSTR rena::calc_file_sha512( const std::filesystem::path& path ){
+    return calc_file_hash( path , EVP_sha512() );
+}
+
+CPSTR rena::calc_file_sha3_224( const std::filesystem::path& path ){
+    return calc_file_hash( path , EVP_sha3_224() );
+}
+
+CPSTR rena::calc_file_sha3_256( const std::filesystem::path& path ){
+    return calc_file_hash( path , EVP_sha3_256() );
+}
+
+CPSTR rena::calc_file_sha3_384( const std::filesystem::path& path ){
+    return calc_file_hash( path , EVP_sha3_384() );
+}
+
+CPSTR rena::calc_file_sha3_512( const std::filesystem::path& path ){
+    return calc_file_hash( path , EVP_sha3_512() );
+}
+
+#else
+
+CPSTR rena::calc_file_md5( const std::filesystem::path& path ){
     std::ifstream rFile( path , std::ios::binary );
     if ( !rFile.is_open() )
     {
@@ -28,12 +93,8 @@ CPSTR rena::calc_file_md5( std::filesystem::path path ){
     size_t ret;
     char buf[RFILE_BLOCK_SIZE];
     unsigned char out[MD5_DIGEST_LENGTH];
-    while ( 1 )
+    while ( !rFile.eof() )
     {
-        if ( rFile.eof() )
-        {
-            break;
-        }
         rFile.read( buf , sizeof( buf ) );
         ret = rFile.gcount();
         MD5_Update( &ctx , buf , ret );
@@ -43,7 +104,7 @@ CPSTR rena::calc_file_md5( std::filesystem::path path ){
     return dump_CHAR_to_HEX( out , MD5_DIGEST_LENGTH );
 }
 
-CPSTR rena::calc_file_sha1( std::filesystem::path path ){
+CPSTR rena::calc_file_sha1( const std::filesystem::path& path ){
     std::ifstream rFile( path , std::ios::binary );
     if ( !rFile.is_open() )
     {
@@ -55,12 +116,8 @@ CPSTR rena::calc_file_sha1( std::filesystem::path path ){
     size_t ret;
     char buf[RFILE_BLOCK_SIZE];
     unsigned char out[SHA_DIGEST_LENGTH];
-    while ( 1 )
+    while ( !rFile.eof() )
     {
-        if ( rFile.eof() )
-        {
-            break;
-        }
         rFile.read( buf , sizeof( buf ) );
         ret = rFile.gcount();
         SHA1_Update( &ctx , ( char* ) buf , ret );
@@ -70,7 +127,7 @@ CPSTR rena::calc_file_sha1( std::filesystem::path path ){
     return dump_CHAR_to_HEX( out , SHA_DIGEST_LENGTH );
 }
 
-CPSTR rena::calc_file_sha224( std::filesystem::path path ){
+CPSTR rena::calc_file_sha224( const std::filesystem::path& path ){
     std::ifstream rFile( path , std::ios::binary );
     if ( !rFile.is_open() )
     {
@@ -82,12 +139,8 @@ CPSTR rena::calc_file_sha224( std::filesystem::path path ){
     size_t ret;
     char buf[RFILE_BLOCK_SIZE];
     unsigned char out[SHA224_DIGEST_LENGTH];
-    while ( 1 )
+    while ( !rFile.eof() )
     {
-        if ( rFile.eof() )
-        {
-            break;
-        }
         rFile.read( buf , sizeof( buf ) );
         ret = rFile.gcount();
         SHA224_Update( &ctx , ( char* ) buf , ret );
@@ -97,7 +150,7 @@ CPSTR rena::calc_file_sha224( std::filesystem::path path ){
     return dump_CHAR_to_HEX( out , SHA224_DIGEST_LENGTH );
 }
 
-CPSTR rena::calc_file_sha256( std::filesystem::path path ){
+CPSTR rena::calc_file_sha256( const std::filesystem::path& path ){
     std::ifstream rFile( path , std::ios::binary );
     if ( !rFile.is_open() )
     {
@@ -109,12 +162,8 @@ CPSTR rena::calc_file_sha256( std::filesystem::path path ){
     size_t ret;
     char buf[RFILE_BLOCK_SIZE];
     unsigned char out[SHA256_DIGEST_LENGTH];
-    while ( 1 )
+    while ( !rFile.eof() )
     {
-        if ( rFile.eof() )
-        {
-            break;
-        }
         rFile.read( buf , sizeof( buf ) );
         ret = rFile.gcount();
         SHA256_Update( &ctx , ( char* ) buf , ret );
@@ -124,7 +173,7 @@ CPSTR rena::calc_file_sha256( std::filesystem::path path ){
     return dump_CHAR_to_HEX( out , SHA256_DIGEST_LENGTH );
 }
 
-CPSTR rena::calc_file_sha384( std::filesystem::path path ){
+CPSTR rena::calc_file_sha384( const std::filesystem::path& path ){
     std::ifstream rFile( path , std::ios::binary );
     if ( !rFile.is_open() )
     {
@@ -136,12 +185,8 @@ CPSTR rena::calc_file_sha384( std::filesystem::path path ){
     size_t ret;
     char buf[RFILE_BLOCK_SIZE];
     unsigned char out[SHA384_DIGEST_LENGTH];
-    while ( 1 )
+    while ( !rFile.eof() )
     {
-        if ( rFile.eof() )
-        {
-            break;
-        }
         rFile.read( buf , sizeof( buf ) );
         ret = rFile.gcount();
         SHA384_Update( &ctx , ( char* ) buf , ret );
@@ -151,7 +196,7 @@ CPSTR rena::calc_file_sha384( std::filesystem::path path ){
     return dump_CHAR_to_HEX( out , SHA384_DIGEST_LENGTH );
 }
 
-CPSTR rena::calc_file_sha512( std::filesystem::path path ){
+CPSTR rena::calc_file_sha512( const std::filesystem::path& path ){
     std::ifstream rFile( path , std::ios::binary );
     if ( !rFile.is_open() )
     {
@@ -163,12 +208,8 @@ CPSTR rena::calc_file_sha512( std::filesystem::path path ){
     size_t ret;
     char buf[RFILE_BLOCK_SIZE];
     unsigned char out[SHA512_DIGEST_LENGTH];
-    while ( 1 )
+    while ( !rFile.eof() )
     {
-        if ( rFile.eof() )
-        {
-            break;
-        }
         rFile.read( buf , sizeof( buf ) );
         ret = rFile.gcount();
         SHA512_Update( &ctx , ( char* ) buf , ret );
@@ -177,3 +218,5 @@ CPSTR rena::calc_file_sha512( std::filesystem::path path ){
     rFile.close();
     return dump_CHAR_to_HEX( out , SHA512_DIGEST_LENGTH );
 }
+
+#endif
