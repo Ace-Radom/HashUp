@@ -38,11 +38,11 @@ int main( int argc , char** argv ){
     cmdparser.add                ( "help"    , '?'  , "Show this help page" );
     cmdparser.add                ( "create"  , 'w'  , "Create a hash list for a directory" );
     cmdparser.add                ( "check"   , 'r'  , "Do hash check for a directory" );
-    cmdparser.add<std::string>   ( "file"    , 'f'  , "The path of the hash list"                            , true  , "" );
+    cmdparser.add<std::string>   ( "file"    , 'f'  , "The path of the hash list"                                                                 , true  , "" );
     cmdparser.add                ( "single"  , 's'  , "Use single file mode" );
-    cmdparser.add<std::string>   ( "hash"    , '\0' , "File hash (only available by single file check)"      , false );
-    cmdparser.add<std::string>   ( "mode"    , 'm'  , "Set hash mode (md5, sha1, sha224, sha256, sha512)"            , false , "md5" , cmdline::oneof<std::string>( "md5" , "sha1" , "sha224" , "sha256" , "sha384" , "sha512" ) );
-    cmdparser.add<unsigned short>( "thread"  , 'j'  , "Set the thread-number of multithreading acceleration" , false , 8     , cmdline::range<unsigned short>( 1 , 128 ) );
+    cmdparser.add<std::string>   ( "hash"    , '\0' , "File hash (only available by single file check)"                                           , false );
+    cmdparser.add<std::string>   ( "mode"    , 'm'  , "Set hash mode (md5, sha1, sha224, sha256, sha512, sha3-224, sha3-256, sha3-384, sha3-512)" , false , "md5" , cmdline::oneof<std::string>( "md5" , "sha1" , "sha224" , "sha256" , "sha384" , "sha512" , "sha3-224" , "sha3-256" , "sha3-384" , "sha3-512" ) );
+    cmdparser.add<unsigned short>( "thread"  , 'j'  , "Set the thread-number of multithreading acceleration"                                      , false , 8     , cmdline::range<unsigned short>( 1 , 128 ) );
     cmdparser.add                ( "version" , 'v'  , "Show HashUp version" );
     cmdparser.set_program_name( "hashup" );
 
@@ -110,6 +110,10 @@ int main( int argc , char** argv ){
             else if ( mode == "sha256" )    hash = rena::calc_file_sha256( fp );
             else if ( mode == "sha384" )    hash = rena::calc_file_sha384( fp );
             else if ( mode == "sha512" )    hash = rena::calc_file_sha512( fp );
+            else if ( mode == "sha3-224" )  hash = rena::calc_file_sha3_224( fp );
+            else if ( mode == "sha3-256" )  hash = rena::calc_file_sha3_256( fp );
+            else if ( mode == "sha3-384" )  hash = rena::calc_file_sha3_384( fp );
+            else if ( mode == "sha3-512" )  hash = rena::calc_file_sha3_512( fp );
         }
         catch ( const std::exception& e )
         {
@@ -164,6 +168,10 @@ int main( int argc , char** argv ){
         else if ( mode == "sha256" )    hufo.set_mode( rena::HASHMODE::SHA256 );
         else if ( mode == "sha384" )    hufo.set_mode( rena::HASHMODE::SHA384 );
         else if ( mode == "sha512" )    hufo.set_mode( rena::HASHMODE::SHA512 );
+        else if ( mode == "sha3-224" )  hufo.set_mode( rena::HASHMODE::SHA3_224 );
+        else if ( mode == "sha3-256" )  hufo.set_mode( rena::HASHMODE::SHA3_256 );
+        else if ( mode == "sha3-384" )  hufo.set_mode( rena::HASHMODE::SHA3_384 );
+        else if ( mode == "sha3-512" )  hufo.set_mode( rena::HASHMODE::SHA3_512 );
     } // set hash mode
 
     rena::HUFO::HUFOSTATUS do_operate_status = hufo.start( cmdparser.get<unsigned short>( "thread" ) );

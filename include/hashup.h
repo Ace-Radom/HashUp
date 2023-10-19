@@ -28,12 +28,17 @@ namespace rena {
 #define RFILE_BLOCK_SIZE 1024
 #endif
 
-    CPSTR calc_file_md5( std::filesystem::path path );
-    CPSTR calc_file_sha1( std::filesystem::path path );
-    CPSTR calc_file_sha224( std::filesystem::path path );
-    CPSTR calc_file_sha256( std::filesystem::path path );
-    CPSTR calc_file_sha384( std::filesystem::path path );
-    CPSTR calc_file_sha512( std::filesystem::path path );
+    CPSTR calc_file_md5( const std::filesystem::path& path );
+    CPSTR calc_file_sha1( const std::filesystem::path& path );
+    CPSTR calc_file_sha224( const std::filesystem::path& path );
+    CPSTR calc_file_sha256( const std::filesystem::path& path );
+    CPSTR calc_file_sha384( const std::filesystem::path& path );
+    CPSTR calc_file_sha512( const std::filesystem::path& path );
+    CPSTR calc_file_sha3( const std::filesystem::path& path , const EVP_MD* algo );
+    CPSTR calc_file_sha3_224( const std::filesystem::path& path );
+    CPSTR calc_file_sha3_256( const std::filesystem::path& path );
+    CPSTR calc_file_sha3_384( const std::filesystem::path& path );
+    CPSTR calc_file_sha3_512( const std::filesystem::path& path );
 
 ////////////////////////////////////////////////////////////
 //                        hufo.cpp                        //
@@ -71,7 +76,7 @@ namespace rena {
 
             } HASHOBJ;
             typedef std::vector<HASHOBJ> HASHLIST;
-            typedef CPSTR ( *HASHFUNCTIONHOOK )( std::filesystem::path path );
+            typedef CPSTR ( *HASHFUNCTIONHOOK )( const std::filesystem::path& path );
 
         private:
             void _traversal_dir_write_to_hlist( const std::filesystem::path& dir );
