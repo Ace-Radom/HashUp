@@ -14,7 +14,9 @@
 
 #include"openssl/md5.h"
 #include"openssl/sha.h"
+#ifdef USE_OPENSSL_EVP
 #include"openssl/evp.h"
+#endif
 #include"utils.h"
 #include"ThreadPool.h"
 
