@@ -14,6 +14,7 @@
 
 #include"openssl/md5.h"
 #include"openssl/sha.h"
+#include"openssl/evp.h"
 #include"utils.h"
 #include"ThreadPool.h"
 
@@ -29,7 +30,9 @@ namespace rena {
 
     CPSTR calc_file_md5( std::filesystem::path path );
     CPSTR calc_file_sha1( std::filesystem::path path );
+    CPSTR calc_file_sha224( std::filesystem::path path );
     CPSTR calc_file_sha256( std::filesystem::path path );
+    CPSTR calc_file_sha384( std::filesystem::path path );
     CPSTR calc_file_sha512( std::filesystem::path path );
 
 ////////////////////////////////////////////////////////////

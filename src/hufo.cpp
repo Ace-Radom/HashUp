@@ -59,7 +59,9 @@ void rena::HUFO::set_mode( rena::HASHMODE mode ){
     {
         case MD5:    this -> _hf = calc_file_md5;    this -> _hlen = 32;  break;
         case SHA1:   this -> _hf = calc_file_sha1;   this -> _hlen = 40;  break;
+        case SHA224: this -> _hf = calc_file_sha224; this -> _hlen = 56;  break;
         case SHA256: this -> _hf = calc_file_sha256; this -> _hlen = 64;  break;
+        case SHA384: this -> _hf = calc_file_sha384; this -> _hlen = 96;  break;
         case SHA512: this -> _hf = calc_file_sha512; this -> _hlen = 128; break;
     }
     return;

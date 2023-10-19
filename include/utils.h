@@ -37,7 +37,9 @@ namespace rena {
     typedef enum {
         MD5,
         SHA1,
+        SHA224,
         SHA256,
+        SHA384,
         SHA512
     } HASHMODE;
 
