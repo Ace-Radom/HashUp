@@ -9,25 +9,41 @@
 #include"hashup.h"
 #include"build_config.h"
 
+#ifdef _MSC_VER
+#define FREE_ARGV delete[] argv;
+#else
+#define FREE_ARGV ;
+#endif
+
 void print_hufo_err( rena::HUFO::HUFOSTATUS tag );
 
-int main( int argc , char** argv ){
-
 #ifdef _MSC_VER
+int wmain( int argc , wchar_t** wargv ){
     _setmode( _fileno( stdout ) , _O_WTEXT );
     _setmode( _fileno( stderr ) , _O_WTEXT );
+
+    char** argv = new char*[ argc ];
+    for ( int i = 0 ; i < argc ; i++ )
+    {
+        argv[i] = new char[ wcslen( wargv[i] ) * sizeof( wchar_t ) * 2 ];
+        strcpy( argv[i] , CPWTOACONV( wargv[i] ).c_str() );
+    }
+#else
+int main( int argc , char** argv ){
 #endif
 
 #pragma region create_cmd_parser
 
     cmdline::parser cmdparser;
-    cmdparser.add                ( "help"    , '?' , "Show this help page" );
-    cmdparser.add                ( "create"  , 'w' , "Create a hash list for a directory" );
-    cmdparser.add                ( "check"   , 'r' , "Do hash check for a directory" );
-    cmdparser.add<std::string>   ( "file"    , 'f' , "The path of the hash list"                            , true  , "" );
-    cmdparser.add<std::string>   ( "mode"    , 'm' , "Set hash mode (md5, sha1, sha256, sha512)"            , false , "md5" , cmdline::oneof<std::string>( "md5" , "sha1" , "sha256" , "sha512" ) );
-    cmdparser.add<unsigned short>( "thread"  , 'j' , "Set the thread-number of multithreading acceleration" , false , 8     , cmdline::range<unsigned short>( 1 , 128 ) );
-    cmdparser.add                ( "version" , 'v' , "Show HashUp version" );
+    cmdparser.add                ( "help"    , '?'  , "Show this help page" );
+    cmdparser.add                ( "create"  , 'w'  , "Create a hash list for a directory" );
+    cmdparser.add                ( "check"   , 'r'  , "Do hash check for a directory" );
+    cmdparser.add<std::string>   ( "file"    , 'f'  , "The path of the hash list"                            , true  , "" );
+    cmdparser.add                ( "single"  , 's'  , "Use single file mode" );
+    cmdparser.add<std::string>   ( "hash"    , '\0' , "File hash (only available by single file check)"      , false );
+    cmdparser.add<std::string>   ( "mode"    , 'm'  , "Set hash mode (md5, sha1, sha256, sha512)"            , false , "md5" , cmdline::oneof<std::string>( "md5" , "sha1" , "sha256" , "sha512" ) );
+    cmdparser.add<unsigned short>( "thread"  , 'j'  , "Set the thread-number of multithreading acceleration" , false , 8     , cmdline::range<unsigned short>( 1 , 128 ) );
+    cmdparser.add                ( "version" , 'v'  , "Show HashUp version" );
     cmdparser.set_program_name( "hashup" );
 
 #pragma endregion create_cmd_parser
@@ -38,16 +54,19 @@ int main( int argc , char** argv ){
         if ( !cmdparser.exist( "help" ) && !cmdparser.exist( "version" ) )
         {
             CPOUT << CPATOWCONV( cmdparser.error() ) << std::endl << CPATOWCONV( cmdparser.usage() ) << std::endl;
+            FREE_ARGV;
             return 128;
         } // show help
         else if ( cmdparser.exist( "help" ) )
         {
             CPOUT << CPATOWCONV( cmdparser.usage() ) << std::endl;
+            FREE_ARGV;
             return 0;
         } // show help page
         else
         {
-            CPOUT << "HashUp " << HASHUP_VERSION << " (branch/" << BUILD_GIT_BRANCH << ":" << BUILD_GIT_COMMIT << ", " << BUILD_TIME << ") [" << CXX_COMPILER_ID << " v." << CXX_COMPILER_VERSION << "] on " << BUILD_SYS_NAME << std::endl;
+            CPOUT << "HashUp " << HASHUP_VERSION << " (branch/" << BUILD_GIT_BRANCH << ":" << BUILD_GIT_COMMIT << ", " << BUILD_TIME << ") [" << CXX_COMPILER_ID << " " << CXX_COMPILER_VERSION << "] on " << BUILD_SYS_NAME << std::endl;
+            FREE_ARGV;
             return 0;
         } // show version
     } // arg error
@@ -56,6 +75,7 @@ int main( int argc , char** argv ){
     if ( cmdparser.exist( "create" ) && cmdparser.exist( "check" ) )
     {
         CPERR << "Cannot create hash list and do hash check at the same time, exit." << std::endl;
+        FREE_ARGV;
         return 128;
     } // do create and check at the same time
     else if ( cmdparser.exist( "create" ) )
@@ -68,10 +88,69 @@ int main( int argc , char** argv ){
         DEBUG_MSG( "Doing Check" );
         p = rena::HASHPURPOSE::CHECK;
     }
+    // get hash purpose
+
+    if ( cmdparser.exist( "single" ) )
+    {
+        if ( p == rena::HASHPURPOSE::CHECK && !cmdparser.exist( "hash" ) )
+        {
+            CPERR << "Doing single file hash check but file hash not given, exit." << std::endl;
+            FREE_ARGV;
+            return 128;
+        }
+
+        std::filesystem::path fp( CPATOWCONV( cmdparser.get<std::string>( "file" ) ) );
+        CPSTR hash;
+        std::string mode = cmdparser.get<std::string>( "mode" );
+        DEBUG_MSG( "Set Hash Mode: " << CPATOWCONV( mode ) );
+        try {
+            if ( mode == "md5" )
+            {
+                hash = rena::calc_file_md5( fp );
+            }
+            else if ( mode == "sha1" )
+            {
+                hash = rena::calc_file_sha1( fp );
+            }
+            else if ( mode == "sha256" )
+            {
+                hash = rena::calc_file_sha256( fp );
+            }
+            else if ( mode == "sha512" )
+            {
+                hash = rena::calc_file_sha512( fp );
+            }
+        }
+        catch ( const std::exception& e )
+        {
+            CPERR << "Operate file \"" << CPPATHTOSTR( fp ) << "\" failed: " << e.what() << std::endl
+                  << "Exit." << std::endl;
+            FREE_ARGV;
+            return 128;
+        }
+        
+        if ( p == rena::HASHPURPOSE::CREATE )
+        {
+            CPOUT << hash << std::endl;
+        }
+        else if ( p == rena::HASHPURPOSE::CHECK )
+        {
+            if ( hash == CPATOWCONV( cmdparser.get<std::string>( "hash" ) ) )
+            {
+                CPOUT << "Passed." << std::endl;
+            }
+            else
+            {
+                CPOUT << "Failed: got " << CPATOWCONV( cmdparser.get<std::string>( "hash" ) ) << ", should be " << hash << "." << std::endl;
+            }
+        }
+        FREE_ARGV;
+        return 0;
+    } // single file mode
 
     rena::HUFO hufo;
 
-    std::filesystem::path huf_path_get = cmdparser.get<std::string>( "file" );
+    std::filesystem::path huf_path_get = CPATOWCONV( cmdparser.get<std::string>( "file" ) );
     if ( huf_path_get.is_relative() )
     {
         huf_path_get = std::filesystem::current_path() / huf_path_get;
@@ -81,6 +160,7 @@ int main( int argc , char** argv ){
     if ( open_status != rena::HUFO::HUFOSTATUS::OK )
     {
         print_hufo_err( open_status );
+        FREE_ARGV;
         return open_status;
     } // open failed
 
@@ -110,6 +190,7 @@ int main( int argc , char** argv ){
     if ( do_operate_status != rena::HUFO::HUFOSTATUS::OK && do_operate_status != rena::HUFO::HUFOSTATUS::HASCHECKFAILEDF )
     {
         print_hufo_err( do_operate_status );
+        FREE_ARGV;
         return do_operate_status;
     }
     else
@@ -117,6 +198,7 @@ int main( int argc , char** argv ){
         CPOUT << "Work done and success." << std::endl;
     }
 
+    FREE_ARGV;
     return 0;
 }
 

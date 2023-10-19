@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(HashUp VERSION 0.9.0 LANGUAGES CXX)
+project(HashUp VERSION 1.0.0 LANGUAGES CXX)
 
 # ============================================
 #                 build config
