@@ -27,10 +27,12 @@ int main( int argc , char** argv ){
 #endif
 
     int ret;
+    cmdline::parser cmdparser;
+    rena::HUFO hufo;
+    std::filesystem::path huf_path_get;
 
 #pragma region create_cmd_parser
 
-    cmdline::parser cmdparser;
     cmdparser.add                ( "help"    , '?'  , "Show this help page" );
     cmdparser.add                ( "create"  , 'w'  , "Create a hash list for a directory" );
     cmdparser.add                ( "check"   , 'r'  , "Do hash check for a directory" );
@@ -40,7 +42,6 @@ int main( int argc , char** argv ){
     cmdparser.add<std::string>   ( "mode"    , 'm'  , "Set hash mode (md5, sha1, sha256, sha512)"            , false , "md5" , cmdline::oneof<std::string>( "md5" , "sha1" , "sha256" , "sha512" ) );
     cmdparser.add<unsigned short>( "thread"  , 'j'  , "Set the thread-number of multithreading acceleration" , false , 8     , cmdline::range<unsigned short>( 1 , 128 ) );
     cmdparser.add                ( "version" , 'v'  , "Show HashUp version" );
-    cmdparser.add<std::string>( "test" , '\0' );
     cmdparser.set_program_name( "hashup" );
 
 #pragma endregion create_cmd_parser
@@ -96,7 +97,7 @@ int main( int argc , char** argv ){
             goto program_end;
         }
 
-        std::filesystem::path fp( cmdparser.get<std::string>( "file" ) );
+        std::filesystem::path fp( CPATOWCONV( cmdparser.get<std::string>( "file" ) ) );
         CPSTR hash;
         std::string mode = cmdparser.get<std::string>( "mode" );
         DEBUG_MSG( "Set Hash Mode: " << CPATOWCONV( mode ) );
@@ -145,9 +146,7 @@ int main( int argc , char** argv ){
         goto program_end;
     } // single file mode
 
-    rena::HUFO hufo;
-
-    std::filesystem::path huf_path_get = cmdparser.get<std::string>( "file" );
+    huf_path_get = CPATOWCONV( cmdparser.get<std::string>( "file" ) );
     if ( huf_path_get.is_relative() )
     {
         huf_path_get = std::filesystem::current_path() / huf_path_get;
