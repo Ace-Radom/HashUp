@@ -11,12 +11,22 @@
 
 void print_hufo_err( rena::HUFO::HUFOSTATUS tag );
 
-int main( int argc , char** argv ){
-
 #ifdef _MSC_VER
+int wmain( int argc , wchar_t** wargv ){
     _setmode( _fileno( stdout ) , _O_WTEXT );
     _setmode( _fileno( stderr ) , _O_WTEXT );
+
+    char** argv = new char*[ argc ];
+    for ( int i = 0 ; i < argc ; i++ )
+    {
+        argv[i] = new char[ wcslen( wargv[i] ) * sizeof( wchar_t ) * 2 ];
+        strcpy( argv[i] , CPWTOACONV( wargv[i] ).c_str() );
+    }
+#else
+int main( int argc , char** argv ){
 #endif
+
+    int ret;
 
 #pragma region create_cmd_parser
 
@@ -30,6 +40,7 @@ int main( int argc , char** argv ){
     cmdparser.add<std::string>   ( "mode"    , 'm'  , "Set hash mode (md5, sha1, sha256, sha512)"            , false , "md5" , cmdline::oneof<std::string>( "md5" , "sha1" , "sha256" , "sha512" ) );
     cmdparser.add<unsigned short>( "thread"  , 'j'  , "Set the thread-number of multithreading acceleration" , false , 8     , cmdline::range<unsigned short>( 1 , 128 ) );
     cmdparser.add                ( "version" , 'v'  , "Show HashUp version" );
+    cmdparser.add<std::string>( "test" , '\0' );
     cmdparser.set_program_name( "hashup" );
 
 #pragma endregion create_cmd_parser
@@ -40,17 +51,20 @@ int main( int argc , char** argv ){
         if ( !cmdparser.exist( "help" ) && !cmdparser.exist( "version" ) )
         {
             CPOUT << CPATOWCONV( cmdparser.error() ) << std::endl << CPATOWCONV( cmdparser.usage() ) << std::endl;
-            return 128;
+            ret = 128;
+            goto program_end;
         } // show help
         else if ( cmdparser.exist( "help" ) )
         {
             CPOUT << CPATOWCONV( cmdparser.usage() ) << std::endl;
-            return 0;
+            ret = 0;
+            goto program_end;
         } // show help page
         else
         {
             CPOUT << "HashUp " << HASHUP_VERSION << " (branch/" << BUILD_GIT_BRANCH << ":" << BUILD_GIT_COMMIT << ", " << BUILD_TIME << ") [" << CXX_COMPILER_ID << " " << CXX_COMPILER_VERSION << "] on " << BUILD_SYS_NAME << std::endl;
-            return 0;
+            ret = 0;
+            goto program_end;
         } // show version
     } // arg error
 
@@ -58,7 +72,8 @@ int main( int argc , char** argv ){
     if ( cmdparser.exist( "create" ) && cmdparser.exist( "check" ) )
     {
         CPERR << "Cannot create hash list and do hash check at the same time, exit." << std::endl;
-        return 128;
+        ret = 128;
+        goto program_end;
     } // do create and check at the same time
     else if ( cmdparser.exist( "create" ) )
     {
@@ -77,7 +92,8 @@ int main( int argc , char** argv ){
         if ( p == rena::HASHPURPOSE::CHECK && !cmdparser.exist( "hash" ) )
         {
             CPERR << "Doing single file hash check but file hash not given, exit." << std::endl;
-            return 127;
+            ret = 128;
+            goto program_end;
         }
 
         std::filesystem::path fp( cmdparser.get<std::string>( "file" ) );
@@ -106,7 +122,8 @@ int main( int argc , char** argv ){
         {
             CPERR << "Operate file \"" << CPPATHTOSTR( fp ) << "\" failed: " << e.what() << std::endl
                   << "Exit." << std::endl;
-            return 127;
+            ret = 128;
+            goto program_end;
         }
         
         if ( p == rena::HASHPURPOSE::CREATE )
@@ -124,7 +141,8 @@ int main( int argc , char** argv ){
                 CPOUT << "Failed: got " << CPATOWCONV( cmdparser.get<std::string>( "hash" ) ) << ", should be " << hash << "." << std::endl;
             }
         }
-        return 0;
+        ret = 0;
+        goto program_end;
     } // single file mode
 
     rena::HUFO hufo;
@@ -139,7 +157,8 @@ int main( int argc , char** argv ){
     if ( open_status != rena::HUFO::HUFOSTATUS::OK )
     {
         print_hufo_err( open_status );
-        return open_status;
+        ret = open_status;
+        goto program_end;
     } // open failed
 
     if ( cmdparser.exist( "mode" ) )
@@ -168,14 +187,23 @@ int main( int argc , char** argv ){
     if ( do_operate_status != rena::HUFO::HUFOSTATUS::OK && do_operate_status != rena::HUFO::HUFOSTATUS::HASCHECKFAILEDF )
     {
         print_hufo_err( do_operate_status );
-        return do_operate_status;
+        ret = do_operate_status;
+        goto program_end;
     }
     else
     {
         CPOUT << "Work done and success." << std::endl;
     }
 
-    return 0;
+    ret = 0;
+
+program_end:
+
+#ifdef _MSC_VER
+    delete[] argv;
+#endif
+
+    return ret;
 }
 
 void print_hufo_err( rena::HUFO::HUFOSTATUS tag ){
