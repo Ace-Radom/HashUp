@@ -54,8 +54,18 @@ That means:
 | `-w, --create` | Create a hash list for a directory | Cannot be used with `-r` |
 | `-r, --check` | Do hash check for a directory | Cannot be used with `-w` |
 | `-f, --file FILE` | Give the path of target hash list file, its parent path will be set as the root working directory | Mandatory argument |
+| `-s, --single` | Use single file mode | Should be used with `--hash` together when doing single file hash check |
+| `--hash HASH` | Give in file hash | Only available by single file hash check |
 | `-m, --mode MODE` | Set hash function (`md5`, `sha1`, `sha256`, `sha512`) | Default as `md5` |
 | `-j, --thread NUM` | Set the thread-number of multithreading acceleration | Default as `8` |
+
+### Single File Mode
+
+Single file mode is just like `curtutil -hashfile` under Windows and `md5sum`, `sha1sum`, etc. under Linux.
+
+You can use `-s, --single` argument to enable it.
+
+If you want to do single file hash check, you should give in the file hash with `--hash` argument.
 
 ### Examples
 
@@ -63,13 +73,13 @@ That means:
 hashup -w -f test.md5
 
 hashup -r -f ~/test/test.sha512 -m sha512 -j 16
+
+hashup -sw -f testfile -m md5
+
+hashup -sr -f testfile -m md5 --hash cdcc3d481ed7319c3fccec101126a75d
 ```
 
-## Known issues
-
-You can only give in an ASCII-Character only path with `-f, --file` under Windows.
-
-This problem is caused by wide-character encoding under Windows. The convert between UTF-8 and UTF-16LE and ANSI is a mess. I can only guarantee that HashUp can handle all filenames that can be saved under Windows (even if they contain unicode extension characters), but the problem above I really don't know how to solve it. If you know, feel free to PR.
+HashUp allows short arguments to be grouped after a hyphen. Actually arguments like `-srf testfile` is also okay, but I personally don't recommend it.
 
 ## Third Party Components
 

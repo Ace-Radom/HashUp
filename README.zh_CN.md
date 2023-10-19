@@ -54,8 +54,18 @@ sudo make install
 | `-w, --create` | 进行哈希表生成 | 不能和 `-r` 连用 |
 | `-r, --check` | 进行哈希校验 | 不能和 `-w` 连用 |
 | `-f, --file` | 传入目标哈希表的路径，其父路径会被设为工作根路径 | 必须参数 |
+| `-s, --single` | 启用单文件模式 | 当进行单文件哈希校验时需要通过 `--hash` 开关传入哈希 |
+| `--hash HASH` | 传入文件哈希值 | 只在进行单文件哈希校验时可用 |
 | `-m, --mode MODE` | 设置哈希函数（`md5`，`sha1`，`sha256`，`sha512`）| 默认为 `md5` |
 | `-j, --thread NUM` | 设置多线程加速的线程数量 | 默认为 `8` |
+
+### 单文件模式
+
+单文件模式的功能和Windows下的 `certutil -hashfile` 和Linux下的 `md5sum`，`sha1sum` 等等的功能类似。
+
+你可以通过 `-s, --single` 开关启用单文件模式。
+
+如果你想进行单文件哈希校验，你应当通过 `--hash` 开关传入文件哈希值。
 
 ### 示例
 
@@ -63,13 +73,13 @@ sudo make install
 hashup -w -f test.md5
 
 hashup -r -f ~/test/test.sha512 -m sha512 -j 16
+
+hashup -sw -f testfile -m md5
+
+hashup -sr -f testfile -m md5 --hash cdcc3d481ed7319c3fccec101126a75d
 ```
 
-## 已知的问题
-
-在Windows下只能用 `-f, --file` 开关传入只包含ASCII字符的路径。
-
-这是由Windows下宽字符编码问题造成的。我只能保证HashUp可以处理所有Windows可以接受的文件名（即便他们包含unicode扩展字符）但我不知道怎么处理这里的命令行传入参数的编码转换问题。如果你知道应该怎么做并愿意告诉我，请提交PR。
+HashUp允许在一个中划线后同时传入多个短参数。其实类似于 `-srf testfile` 的传入方法也是合法的，但我个人不推荐这么做。
 
 ## 第三方组件
 
