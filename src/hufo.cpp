@@ -281,6 +281,13 @@ void rena::HUFO::_read_huf_write_to_hlist(){
             // this file will not be written into _hlist, but it's still an error file
             continue;
         }
+        for ( auto& c : temp.hash_readin )
+        {
+            if ( std::isupper( c ) )
+            {
+                c = std::tolower( c );
+            }
+        } // ignore cases
         this -> _hlist.push_back( temp );
     }
     return;
