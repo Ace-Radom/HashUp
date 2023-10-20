@@ -103,6 +103,12 @@ CPSTR rena::calc_file_md5( const std::filesystem::path& path ){
     {
         rFile.read( buf , sizeof( buf ) );
         ret = rFile.gcount();
+#ifdef SHOW_PROGRESS_DETAIL
+        if ( global_speed_watcher != nullptr )
+        {
+            global_speed_watcher -> add( ret );
+        }
+#endif
         MD5_Update( &ctx , buf , ret );
     }
     MD5_Final( out , &ctx );
@@ -126,6 +132,12 @@ CPSTR rena::calc_file_sha1( const std::filesystem::path& path ){
     {
         rFile.read( buf , sizeof( buf ) );
         ret = rFile.gcount();
+#ifdef SHOW_PROGRESS_DETAIL
+        if ( global_speed_watcher != nullptr )
+        {
+            global_speed_watcher -> add( ret );
+        }
+#endif
         SHA1_Update( &ctx , ( char* ) buf , ret );
     }
     SHA1_Final( out , &ctx );
@@ -149,6 +161,12 @@ CPSTR rena::calc_file_sha224( const std::filesystem::path& path ){
     {
         rFile.read( buf , sizeof( buf ) );
         ret = rFile.gcount();
+#ifdef SHOW_PROGRESS_DETAIL
+        if ( global_speed_watcher != nullptr )
+        {
+            global_speed_watcher -> add( ret );
+        }
+#endif
         SHA224_Update( &ctx , ( char* ) buf , ret );
     }
     SHA224_Final( out , &ctx );
@@ -172,6 +190,12 @@ CPSTR rena::calc_file_sha256( const std::filesystem::path& path ){
     {
         rFile.read( buf , sizeof( buf ) );
         ret = rFile.gcount();
+#ifdef SHOW_PROGRESS_DETAIL
+        if ( global_speed_watcher != nullptr )
+        {
+            global_speed_watcher -> add( ret );
+        }
+#endif
         SHA256_Update( &ctx , ( char* ) buf , ret );
     }
     SHA256_Final( out , &ctx );
@@ -195,6 +219,12 @@ CPSTR rena::calc_file_sha384( const std::filesystem::path& path ){
     {
         rFile.read( buf , sizeof( buf ) );
         ret = rFile.gcount();
+#ifdef SHOW_PROGRESS_DETAIL
+        if ( global_speed_watcher != nullptr )
+        {
+            global_speed_watcher -> add( ret );
+        }
+#endif
         SHA384_Update( &ctx , ( char* ) buf , ret );
     }
     SHA384_Final( out , &ctx );
@@ -218,6 +248,12 @@ CPSTR rena::calc_file_sha512( const std::filesystem::path& path ){
     {
         rFile.read( buf , sizeof( buf ) );
         ret = rFile.gcount();
+#ifdef SHOW_PROGRESS_DETAIL
+        if ( global_speed_watcher != nullptr )
+        {
+            global_speed_watcher -> add( ret );
+        }
+#endif
         SHA512_Update( &ctx , ( char* ) buf , ret );
     }
     SHA512_Final( out , &ctx );
