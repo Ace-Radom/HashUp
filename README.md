@@ -34,7 +34,7 @@ make
 sudo make install
 ```
 
-HashUp will automatically enable OpenSSL EVP if your openssl version is higher than 1.1. If you are still using openssl version 1.0 or lower, EVP will be disabled.
+HashUp will automatically enable OpenSSL EVP if your openssl version is higher than 1.1.1. If you are still using openssl version 1.1.0 or lower, EVP will be disabled.
 
 If you don't want to use OpenSSL EVP functions, do CMake like:
 
