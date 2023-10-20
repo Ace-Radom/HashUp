@@ -11,6 +11,7 @@
 #include<vector>
 #include<codecvt>
 #include<cstring>
+#include<chrono>
 
 #include"openssl/md5.h"
 #include"openssl/sha.h"

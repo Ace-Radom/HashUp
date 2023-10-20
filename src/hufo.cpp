@@ -200,6 +200,14 @@ rena::HUFO::HUFOSTATUS rena::HUFO::_do_hashcalc( unsigned short threads ){
     }
 #endif
 
+    if ( this -> _hlist.empty() )
+        return HUFOSTATUS::OK;
+    // empty hlist
+
+#ifdef SHOW_PROGRESS_DETAIL
+    auto calc_hash_start_time = std::chrono::steady_clock::now();
+#endif
+
     for ( auto it = this -> _hlist.begin() ; it != this -> _hlist.end() ; )
     {
         std::filesystem::path ap; // absolute path
@@ -240,7 +248,10 @@ rena::HUFO::HUFOSTATUS rena::HUFO::_do_hashcalc( unsigned short threads ){
     }
 
 #ifdef SHOW_PROGRESS_DETAIL
-    CPOUT << "\n";
+    auto calc_hash_end_time = std::chrono::steady_clock::now();
+    auto calc_hash_duration = std::chrono::duration_cast<std::chrono::milliseconds>( calc_hash_end_time - calc_hash_start_time );
+    CPOUT << "\n"
+          << "Total time spent on hash calculations: " << calc_hash_duration.count() / 1000.0 << "s." << std::endl;
 #endif
 
     return HUFOSTATUS::OK;
