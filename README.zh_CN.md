@@ -34,6 +34,16 @@ make
 sudo make install
 ```
 
+如果你的OpenSSL版本大于1.1，HashUp会自动启用OpenSSL EVP；反之EVP则会被自动禁用。
+
+如果你不想使用OpenSSL EVP系列函数，你可以如此调用CMake：
+
+```sh
+cmake .. -DCMAKE_BUILD_TYPE=Release -DUSE_OPENSSL_EVP_FUNCS=OFF
+```
+
+请注意 `SHA3` 系列哈希函数在禁用OpenSSL EVP时将不可用。
+
 ## 使用方法
 
 你只需要将目标哈希表的路径（绝对相对皆可）通过 `-f, --file` 开关传入HashUp。该目标哈希表的父路径会被自动设置为HashUp的工作根路径。
@@ -45,6 +55,25 @@ sudo make install
 - 如果你正在进行哈希表生成，HashUp会遍历工作根路径下的所有文件，计算他们的哈希值，并将他们相对于工作根路径的相对路径和他们的哈希值一同写入目标哈希表。
 
 - 如果你正在进行哈希校验，你应该确保目标哈希表被放在了你想要校验的所有文件的最上层文件夹下。
+
+### 可用的哈希函数
+
+HashUp支持 `MD5`，`SHA1` 和所有 `SHA2` 系列函数。
+
+当OpenSSL EVP被启用时HashUp也支持 `SHA3` 系列函数。
+
+| 哈希函数 | 模式Tag |
+| :------: | :-: |
+| `MD5` | `md5` |
+| `SHA1` | `sha1` |
+| `SHA2-224` | `sha224` |
+| `SHA2-256` | `sha256` |
+| `SHA2-384` | `sha384` |
+| `SHA2-512` | `sha512` |
+| `SHA3-224` | `sha3-224` |
+| `SHA3-256` | `sha3-256` |
+| `SHA3-384` | `sha3-384` |
+| `SHA3-512` | `sha3-512` |
 
 ### 可用的命令行参数
 
