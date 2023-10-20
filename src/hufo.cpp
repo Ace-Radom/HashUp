@@ -230,7 +230,7 @@ rena::HUFO::HUFOSTATUS rena::HUFO::_do_hashcalc( unsigned short threads ){
         DEBUG_MSG( "Waiting for " << it -> fp );
 
 #ifdef SHOW_PROGRESS_DETAIL
-        CPOUT << "Progress: " << file_waiting_now_index << "/" << this -> _hlist.size() << " " << std::setprecision( 2 ) << global_speed_watcher -> get_speed() / 1024 / 1024.0 <<  "MB/s\r" << std::flush;
+        CPOUT << "Progress: " << file_waiting_now_index << "/" << this -> _hlist.size() << " " << std::fixed << std::setprecision( 2 ) << global_speed_watcher -> get_speed() / 1048576.0 <<  "MB/s\r" << std::flush;
 #endif
 
         it -> hash_future.wait();
