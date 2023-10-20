@@ -32,7 +32,10 @@ CPSTR rena::calc_file_hash( const std::filesystem::path& path , const EVP_MD* al
         rFile.read( buf , sizeof( buf ) );
         ret = rFile.gcount();
 #ifdef SHOW_PROGRESS_DETAIL
-        global_speed_watcher -> add( ret );
+        if ( global_speed_watcher != nullptr )
+        {
+            global_speed_watcher -> add( ret );
+        }
 #endif
         EVP_DigestUpdate( ctx , ( char* ) buf , ret );
     }
