@@ -2,7 +2,7 @@
 
 #ifdef SHOW_PROGRESS_DETAIL
 
-rena::speedwatcher* rena::global_speed_watcher;
+rena::speedwatcher* rena::global_speed_watcher = nullptr;
 
 void rena::speedwatcher::add( size_t size ){
     std::unique_lock<std::mutex> lock( this -> global_mutex );
