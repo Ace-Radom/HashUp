@@ -206,6 +206,7 @@ rena::HUFO::HUFOSTATUS rena::HUFO::_do_hashcalc( unsigned short threads ){
 
 #ifdef SHOW_PROGRESS_DETAIL
     auto calc_hash_start_time = std::chrono::steady_clock::now();
+    rena::global_speed_watcher = new rena::speedwatcher( calc_hash_start_time );
 #endif
 
     for ( auto it = this -> _hlist.begin() ; it != this -> _hlist.end() ; )
@@ -229,7 +230,7 @@ rena::HUFO::HUFOSTATUS rena::HUFO::_do_hashcalc( unsigned short threads ){
         DEBUG_MSG( "Waiting for " << it -> fp );
 
 #ifdef SHOW_PROGRESS_DETAIL
-        CPOUT << "Progress: " << file_waiting_now_index << "/" << this -> _hlist.size() << "\r" << std::flush;
+        CPOUT << "Progress: " << file_waiting_now_index << "/" << this -> _hlist.size() << " " << std::setprecision( 2 ) << global_speed_watcher -> get_speed() / 1024 / 1024.0 <<  "MB/s\r" << std::flush;
 #endif
 
         it -> hash_future.wait();
@@ -252,6 +253,7 @@ rena::HUFO::HUFOSTATUS rena::HUFO::_do_hashcalc( unsigned short threads ){
     auto calc_hash_duration = std::chrono::duration_cast<std::chrono::milliseconds>( calc_hash_end_time - calc_hash_start_time );
     CPOUT << "\n"
           << "Total time spent on hash calculations: " << calc_hash_duration.count() / 1000.0 << "s." << std::endl;
+    delete global_speed_watcher;
 #endif
 
     return HUFOSTATUS::OK;

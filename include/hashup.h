@@ -12,6 +12,7 @@
 #include<codecvt>
 #include<cstring>
 #include<chrono>
+#include<mutex>
 
 #include"openssl/md5.h"
 #include"openssl/sha.h"
@@ -101,6 +102,31 @@ namespace rena {
             HASHLIST                _errhlist;          // error hash list
 
     }; // class HUFO (HashUp File Object)
+
+#ifdef SHOW_PROGRESS_DETAIL
+
+////////////////////////////////////////////////////////////
+//                     speedwatch.cpp                     //
+////////////////////////////////////////////////////////////
+
+    class speedwatcher {
+        public:
+            speedwatcher( std::chrono::steady_clock::time_point start_time_point ) 
+                : start_time( start_time_point ) , total_size( 0 ){};
+            ~speedwatcher(){};
+
+            void add( size_t size );
+            size_t get_speed();
+
+        private:
+            std::chrono::steady_clock::time_point start_time;
+            size_t total_size;
+            std::mutex global_mutex;
+    }; // class speedwatcher
+
+    extern speedwatcher* global_speed_watcher;
+
+#endif
 
 }; // namespace rena
 
