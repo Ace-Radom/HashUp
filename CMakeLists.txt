@@ -1,7 +1,16 @@
 cmake_minimum_required(VERSION 3.10)
 project(HashUp VERSION 1.0.0 LANGUAGES CXX)
 
-option(USE_OPENSSL_EVP "Use OpenSSL EVP functions to calculate file hashes and enable sha3" ON)
+option(USE_OPENSSL_EVP_FUNCS "Use OpenSSL EVP functions to calculate file hashes and enable sha3" ON)
+
+# ============================================
+#                search OpenSSL
+# ============================================
+
+find_package(OpenSSL REQUIRED)
+if(NOT OPENSSL_FOUND)
+    message(FATAL "Cannot found OpenSSL, please check environment")
+endif()
 
 # ============================================
 #                 build config
@@ -42,26 +51,18 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /utf-8")
 endif()
 
-if(${USE_OPENSSL_EVP})
+string(SUBSTRING ${OPENSSL_VERSION} 0 3 OPENSSL_VERSION_MAJOR_MINOR)
+if(${USE_OPENSSL_EVP_FUNCS} AND NOT ("${OPENSSL_VERSION_MAJOR_MINOR}" STREQUAL "1.0"))
     add_definitions(-DUSE_OPENSSL_EVP)
 endif()
-
-# ============================================
-#                search OpenSSL
-# ============================================
-
-find_package(OpenSSL REQUIRED)
-if(NOT OPENSSL_FOUND)
-    message(FATAL "Cannot found OpenSSL, please check environment")
-endif()
-include_directories(${OPENSSL_INCLUDE_DIR})
+add_definitions(-DSHOW_PROGRESS_DETAIL)
 
 # ============================================
 #                     main
 # ============================================
 
-add_definitions(-DSHOW_PROGRESS_DETAIL)
-include_directories(${CMAKE_SOURCE_DIR}/include)
+include_directories(${OPENSSL_INCLUDE_DIR})
+include_directories(include)
 add_subdirectory(src)
 
 add_executable(hashup main.cpp)
