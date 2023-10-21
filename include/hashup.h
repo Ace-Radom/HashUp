@@ -11,9 +11,14 @@
 #include<vector>
 #include<codecvt>
 #include<cstring>
+#include<chrono>
+#include<mutex>
 
 #include"openssl/md5.h"
 #include"openssl/sha.h"
+#ifdef USE_OPENSSL_EVP
+#include"openssl/evp.h"
+#endif
 #include"utils.h"
 #include"ThreadPool.h"
 
@@ -27,10 +32,19 @@ namespace rena {
 #define RFILE_BLOCK_SIZE 1024
 #endif
 
-    CPSTR calc_file_md5( std::filesystem::path path );
-    CPSTR calc_file_sha1( std::filesystem::path path );
-    CPSTR calc_file_sha256( std::filesystem::path path );
-    CPSTR calc_file_sha512( std::filesystem::path path );
+    CPSTR calc_file_md5( const std::filesystem::path& path );
+    CPSTR calc_file_sha1( const std::filesystem::path& path );
+    CPSTR calc_file_sha224( const std::filesystem::path& path );
+    CPSTR calc_file_sha256( const std::filesystem::path& path );
+    CPSTR calc_file_sha384( const std::filesystem::path& path );
+    CPSTR calc_file_sha512( const std::filesystem::path& path );
+#ifdef USE_OPENSSL_EVP
+    CPSTR calc_file_hash( const std::filesystem::path& path , const EVP_MD* algo );
+    CPSTR calc_file_sha3_224( const std::filesystem::path& path );
+    CPSTR calc_file_sha3_256( const std::filesystem::path& path );
+    CPSTR calc_file_sha3_384( const std::filesystem::path& path );
+    CPSTR calc_file_sha3_512( const std::filesystem::path& path );
+#endif
 
 ////////////////////////////////////////////////////////////
 //                        hufo.cpp                        //
@@ -68,7 +82,7 @@ namespace rena {
 
             } HASHOBJ;
             typedef std::vector<HASHOBJ> HASHLIST;
-            typedef CPSTR ( *HASHFUNCTIONHOOK )( std::filesystem::path path );
+            typedef CPSTR ( *HASHFUNCTIONHOOK )( const std::filesystem::path& path );
 
         private:
             void _traversal_dir_write_to_hlist( const std::filesystem::path& dir );
@@ -88,6 +102,31 @@ namespace rena {
             HASHLIST                _errhlist;          // error hash list
 
     }; // class HUFO (HashUp File Object)
+
+#ifdef SHOW_PROGRESS_DETAIL
+
+////////////////////////////////////////////////////////////
+//                     speedwatch.cpp                     //
+////////////////////////////////////////////////////////////
+
+    class speedwatcher {
+        public:
+            speedwatcher( std::chrono::steady_clock::time_point start_time_point ) 
+                : start_time( start_time_point ) , total_size( 0 ){};
+            ~speedwatcher(){};
+
+            void add( size_t size );
+            size_t get_speed();
+
+        private:
+            std::chrono::steady_clock::time_point start_time;
+            size_t total_size;
+            std::mutex global_mutex;
+    }; // class speedwatcher
+
+    extern speedwatcher* global_speed_watcher;
+
+#endif
 
 }; // namespace rena
 

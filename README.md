@@ -34,6 +34,16 @@ make
 sudo make install
 ```
 
+HashUp will automatically enable OpenSSL EVP if your openssl version is higher than 1.1.1. If you are still using openssl version 1.1.0 or lower, EVP will be disabled.
+
+If you don't want to use OpenSSL EVP functions, do CMake like:
+
+```sh
+cmake .. -DCMAKE_BUILD_TYPE=Release -DUSE_OPENSSL_EVP_FUNCS=OFF
+```
+
+Be sure that `SHA3` functions are not available without OpenSSL EVP.
+
 ## How to use
 
 You only needs to give in the path (whether an absolute one or a relative one) of the target hash list file with `-f, --file` argument. The parent directory of this hash list will be automatically set as the root working directory.
@@ -46,6 +56,25 @@ That means:
 
 - when you are doing file verification, you should make sure that the target hash list has been put under the root of the directory you want to verify.
 
+### Available Hash Functions
+
+HashUp supports `MD5`, `SHA1` and all `SHA2` functions.
+
+HashUp also supports all `SHA3` functions when OpenSSL EVP is enabled.
+
+| Function | Mode Tag |
+| :------: | :-: |
+| `MD5` | `md5` |
+| `SHA1` | `sha1` |
+| `SHA2-224` | `sha224` |
+| `SHA2-256` | `sha256` |
+| `SHA2-384` | `sha384` |
+| `SHA2-512` | `sha512` |
+| `SHA3-224` | `sha3-224` |
+| `SHA3-256` | `sha3-256` |
+| `SHA3-384` | `sha3-384` |
+| `SHA3-512` | `sha3-512` |
+
 ### Available Arguments
 
 | Arguments | Description | Attention |
@@ -56,7 +85,7 @@ That means:
 | `-f, --file FILE` | Give the path of target hash list file, its parent path will be set as the root working directory | Mandatory argument |
 | `-s, --single` | Use single file mode | Should be used with `--hash` together when doing single file hash check |
 | `--hash HASH` | Give in file hash | Only available by single file hash check |
-| `-m, --mode MODE` | Set hash function (`md5`, `sha1`, `sha256`, `sha512`) | Default as `md5` |
+| `-m, --mode MODE` | Set hash function | Default as `md5` |
 | `-j, --thread NUM` | Set the thread-number of multithreading acceleration | Default as `8` |
 
 ### Single File Mode

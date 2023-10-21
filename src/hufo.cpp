@@ -57,10 +57,18 @@ void rena::HUFO::set_mode( rena::HASHMODE mode ){
     this -> _hmode = mode;
     switch ( this -> _hmode )
     {
-        case MD5:    this -> _hf = calc_file_md5;    this -> _hlen = 32;  break;
-        case SHA1:   this -> _hf = calc_file_sha1;   this -> _hlen = 40;  break;
-        case SHA256: this -> _hf = calc_file_sha256; this -> _hlen = 64;  break;
-        case SHA512: this -> _hf = calc_file_sha512; this -> _hlen = 128; break;
+        case MD5:      this -> _hf = calc_file_md5;      this -> _hlen = 32;  break;
+        case SHA1:     this -> _hf = calc_file_sha1;     this -> _hlen = 40;  break;
+        case SHA224:   this -> _hf = calc_file_sha224;   this -> _hlen = 56;  break;
+        case SHA256:   this -> _hf = calc_file_sha256;   this -> _hlen = 64;  break;
+        case SHA384:   this -> _hf = calc_file_sha384;   this -> _hlen = 96;  break;
+        case SHA512:   this -> _hf = calc_file_sha512;   this -> _hlen = 128; break;
+#ifdef USE_OPENSSL_EVP
+        case SHA3_224: this -> _hf = calc_file_sha3_224; this -> _hlen = 56;  break;
+        case SHA3_256: this -> _hf = calc_file_sha3_256; this -> _hlen = 64;  break;
+        case SHA3_384: this -> _hf = calc_file_sha3_384; this -> _hlen = 96;  break;
+        case SHA3_512: this -> _hf = calc_file_sha3_512; this -> _hlen = 128; break;
+#endif
     }
     return;
 }
@@ -192,6 +200,15 @@ rena::HUFO::HUFOSTATUS rena::HUFO::_do_hashcalc( unsigned short threads ){
     }
 #endif
 
+    if ( this -> _hlist.empty() )
+        return HUFOSTATUS::OK;
+    // empty hlist
+
+#ifdef SHOW_PROGRESS_DETAIL
+    auto calc_hash_start_time = std::chrono::steady_clock::now();
+    rena::global_speed_watcher = new rena::speedwatcher( calc_hash_start_time );
+#endif
+
     for ( auto it = this -> _hlist.begin() ; it != this -> _hlist.end() ; )
     {
         std::filesystem::path ap; // absolute path
@@ -213,7 +230,7 @@ rena::HUFO::HUFOSTATUS rena::HUFO::_do_hashcalc( unsigned short threads ){
         DEBUG_MSG( "Waiting for " << it -> fp );
 
 #ifdef SHOW_PROGRESS_DETAIL
-        CPOUT << "Progress: " << file_waiting_now_index << "/" << this -> _hlist.size() << "\r" << std::flush;
+        CPOUT << "Progress: " << file_waiting_now_index << "/" << this -> _hlist.size() << " " << std::fixed << std::setprecision( 2 ) << global_speed_watcher -> get_speed() / 1048576.0 <<  "MB/s\r" << std::flush;
 #endif
 
         it -> hash_future.wait();
@@ -232,7 +249,12 @@ rena::HUFO::HUFOSTATUS rena::HUFO::_do_hashcalc( unsigned short threads ){
     }
 
 #ifdef SHOW_PROGRESS_DETAIL
-    CPOUT << "\n";
+    auto calc_hash_end_time = std::chrono::steady_clock::now();
+    auto calc_hash_duration = std::chrono::duration_cast<std::chrono::milliseconds>( calc_hash_end_time - calc_hash_start_time );
+    CPOUT << "\n"
+          << "Total time spent on hash calculations: " << calc_hash_duration.count() / 1000.0 << "s." << std::endl;
+    delete global_speed_watcher;
+    global_speed_watcher = nullptr;
 #endif
 
     return HUFOSTATUS::OK;
@@ -275,6 +297,13 @@ void rena::HUFO::_read_huf_write_to_hlist(){
             // this file will not be written into _hlist, but it's still an error file
             continue;
         }
+        for ( auto& c : temp.hash_readin )
+        {
+            if ( std::isupper( c ) )
+            {
+                c = std::tolower( c );
+            }
+        } // ignore cases
         this -> _hlist.push_back( temp );
     }
     return;
