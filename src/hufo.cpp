@@ -254,6 +254,7 @@ rena::HUFO::HUFOSTATUS rena::HUFO::_do_hashcalc( unsigned short threads ){
     CPOUT << "\n"
           << "Total time spent on hash calculations: " << calc_hash_duration.count() / 1000.0 << "s." << std::endl;
     delete global_speed_watcher;
+    global_speed_watcher = nullptr;
 #endif
 
     return HUFOSTATUS::OK;
