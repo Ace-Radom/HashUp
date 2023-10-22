@@ -44,6 +44,8 @@ namespace rena {
     CPSTR calc_file_sha3_256( const std::filesystem::path& path );
     CPSTR calc_file_sha3_384( const std::filesystem::path& path );
     CPSTR calc_file_sha3_512( const std::filesystem::path& path );
+    CPSTR calc_file_shake128( const std::filesystem::path& path );
+    CPSTR calc_file_shake256( const std::filesystem::path& path );
 #endif
 
 ////////////////////////////////////////////////////////////
