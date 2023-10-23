@@ -1,7 +1,6 @@
 #include"hashup.h"
 
 int main(){
-    std::wcout << rena::calc_file_md5( TEST_SINGLE_FILE_PATH ) << std::endl;
     if (
         rena::calc_file_md5( TEST_SINGLE_FILE_PATH )      == CPATOWCONV( "1c9a06711a8076d5d47a3ecb6ceb2431" )                                                                                                 &&
         rena::calc_file_sha1( TEST_SINGLE_FILE_PATH )     == CPATOWCONV( "1a96f7a27006c30ebd764b5490b3d5d681d40008" )                                                                                         &&
