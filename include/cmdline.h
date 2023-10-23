@@ -1,6 +1,9 @@
 // tanakh/cmdline <https://github.com/tanakh/cmdline>
 // commit a68095a, Oct 22. 2012
 
+// ubnt-intrepid/cmdline <https://github.com/ubnt-intrepid/cmdline>
+// commit 7e8320b, Feb 7. 2016
+
 /*
   Copyright (c) 2009, Hideyuki Tanaka
   All rights reserved.
@@ -39,10 +42,16 @@
 #include <typeinfo>
 #include <cstring>
 #include <algorithm>
-#ifdef __GNUC__
+#include <cstdlib>
+#if defined(_MSC_VER)
+#define CMDLINE_DEMANGLE_WINDOWS
+#include <windows.h>
+#include <dbghelp.h>
+#undef max
+#pragma comment(lib, "dbghelp.lib")
+#elif defined(__clang__) || defined(__GNUC__)
 #include <cxxabi.h>
 #endif
-#include <cstdlib>
 
 namespace cmdline{
 
@@ -56,7 +65,7 @@ public:
     std::stringstream ss;
     if (!(ss<<arg && ss>>ret && ss.eof()))
       throw std::bad_cast();
-    
+
     return ret;
   }
 };
@@ -66,7 +75,7 @@ class lexical_cast_t<Target, Source, true>{
 public:
   static Target cast(const Source &arg){
     return arg;
-  }  
+  }
 };
 
 template <typename Source>
@@ -109,16 +118,17 @@ Target lexical_cast(const Source &arg)
 
 static inline std::string demangle(const std::string &name)
 {
-#if   defined( _MSC_VER )
-  return name;
-#elif defined( __GNUC__ )
+#if defined(CMDLINE_DEMANGLE_WINDOWS)
+  CHAR ret[256];
+  std::memset(ret, 0, 256);
+  ::UnDecorateSymbolName(name.c_str(), ret, 256, 0);
+  return ret;
+#else
   int status=0;
   char *p=abi::__cxa_demangle(name.c_str(), 0, 0, &status);
   std::string ret(p);
   free(p);
   return ret;
-#else
-#error Unexpected Complier (MSVC/GCC)
 #endif
 }
 
@@ -431,10 +441,10 @@ public:
   void parse_check(const std::vector<std::string> &args){
     if (!options.count("help"))
       add("help", '?', "print this message");
-    check(args.size(), parse(args));
+    check(static_cast<int>(args.size()), parse(args));
   }
 
-  void parse_check(int argc, char *argv[]){
+  void parse_check(int argc, const char *argv[]){
     if (!options.count("help"))
       add("help", '?', "print this message");
     check(argc, parse(argc, argv));
@@ -458,7 +468,7 @@ public:
       if (ordered[i]->must())
         oss<<ordered[i]->short_description()<<" ";
     }
-    
+
     oss<<"[options] ... "<<ftr<<std::endl;
     oss<<"options:"<<std::endl;
 
@@ -619,7 +629,7 @@ private:
         actual=read(value);
         has=true;
       }
-      catch(const std::exception &e){
+      catch(const std::exception &){
         return false;
       }
       return true;
