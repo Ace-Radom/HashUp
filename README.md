@@ -34,6 +34,14 @@ make
 sudo make install
 ```
 
+If you want to build tests, do CMake like:
+
+```sh
+cmake .. -DCMAKE_BUILD_TYPE=Release -DMAKE_TEST=ON
+```
+
+Be sure that you need python3 on your computer to run tests.
+
 HashUp will automatically enable OpenSSL EVP if your openssl version is higher than 1.1.1. If you are still using openssl version 1.1.0 or lower, EVP will be disabled.
 
 If you don't want to use OpenSSL EVP functions, do CMake like:

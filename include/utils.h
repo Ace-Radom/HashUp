@@ -46,6 +46,8 @@ namespace rena {
         SHA3_256,
         SHA3_384,
         SHA3_512,
+        SHAKE128,
+        SHAKE256
 #endif
     } HASHMODE;
 

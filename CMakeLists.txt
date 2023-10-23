@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 3.10)
-project(HashUp VERSION 1.1.0 LANGUAGES CXX)
+project(HashUp VERSION 1.2.0 LANGUAGES CXX)
 
 option(USE_OPENSSL_EVP_FUNCS "Use OpenSSL EVP functions to calculate file hashes and enable sha3" ON)
+option(MAKE_TEST             "Make tests"                                                         OFF)
 
 # ============================================
 #                search OpenSSL
@@ -9,7 +10,7 @@ option(USE_OPENSSL_EVP_FUNCS "Use OpenSSL EVP functions to calculate file hashes
 
 find_package(OpenSSL REQUIRED)
 if(NOT OPENSSL_FOUND)
-    message(FATAL "Cannot found OpenSSL, please check environment")
+    message(FATAL "Cannot find OpenSSL, please check environment")
 endif()
 
 # ============================================
@@ -72,6 +73,11 @@ add_executable(hashup main.cpp)
 target_link_libraries(hashup
     hashuplib
 )
+
+if(${MAKE_TEST})
+    enable_testing()
+    add_subdirectory(test)
+endif()
 
 install(
     TARGETS hashup

@@ -85,6 +85,14 @@ CPSTR rena::calc_file_sha3_512( const std::filesystem::path& path ){
     return calc_file_hash( path , EVP_sha3_512() );
 }
 
+CPSTR rena::calc_file_shake128( const std::filesystem::path& path ){
+    return calc_file_hash( path , EVP_shake128() );
+}
+
+CPSTR rena::calc_file_shake256( const std::filesystem::path& path ){
+    return calc_file_hash( path , EVP_shake256() );
+}
+
 #else
 
 CPSTR rena::calc_file_md5( const std::filesystem::path& path ){

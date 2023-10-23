@@ -8,7 +8,10 @@ rena::HUFO::~HUFO(){
     return;
 }
 
-rena::HUFO::HUFOSTATUS rena::HUFO::open( const std::filesystem::path& path , rena::HASHPURPOSE p ){
+/**
+ * @param _ol_no_ask overlay no ask
+*/
+rena::HUFO::HUFOSTATUS rena::HUFO::open( const std::filesystem::path& path , rena::HASHPURPOSE p  , bool _ol_no_ask ){
     this -> _hpurpose = p;
     if ( this -> _hpurpose == HASHPURPOSE::CHECK )
     {
@@ -30,7 +33,7 @@ rena::HUFO::HUFOSTATUS rena::HUFO::open( const std::filesystem::path& path , ren
     } // doing hash check
     else if ( this -> _hpurpose == HASHPURPOSE::CREATE )
     {
-        if ( std::filesystem::exists( path ) )
+        if ( std::filesystem::exists( path ) && !_ol_no_ask )
         {
 #ifdef _MSC_VER
             if ( !confirm_interrupt( L"This file \"" + CPPATHTOSTR( path ) + L"\" already exist. Are you sure to overwrite it?" , 'y' , 'N' ) )
@@ -68,6 +71,8 @@ void rena::HUFO::set_mode( rena::HASHMODE mode ){
         case SHA3_256: this -> _hf = calc_file_sha3_256; this -> _hlen = 64;  break;
         case SHA3_384: this -> _hf = calc_file_sha3_384; this -> _hlen = 96;  break;
         case SHA3_512: this -> _hf = calc_file_sha3_512; this -> _hlen = 128; break;
+        case SHAKE128: this -> _hf = calc_file_shake128; this -> _hlen = 32;  break;
+        case SHAKE256: this -> _hf = calc_file_shake256; this -> _hlen = 64;  break;
 #endif
     }
     return;

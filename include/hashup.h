@@ -44,6 +44,8 @@ namespace rena {
     CPSTR calc_file_sha3_256( const std::filesystem::path& path );
     CPSTR calc_file_sha3_384( const std::filesystem::path& path );
     CPSTR calc_file_sha3_512( const std::filesystem::path& path );
+    CPSTR calc_file_shake128( const std::filesystem::path& path );
+    CPSTR calc_file_shake256( const std::filesystem::path& path );
 #endif
 
 ////////////////////////////////////////////////////////////
@@ -67,7 +69,7 @@ namespace rena {
         public:
             HUFO(){};
             ~HUFO();
-            HUFOSTATUS open( const std::filesystem::path& path , HASHPURPOSE p );
+            HUFOSTATUS open( const std::filesystem::path& path , HASHPURPOSE p , bool _ol_no_ask );
             void set_mode( HASHMODE mode );
             HUFOSTATUS start( unsigned short threads );
             HUFOSTATUS do_create( unsigned short threads );
