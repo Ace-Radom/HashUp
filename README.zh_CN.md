@@ -34,6 +34,14 @@ make
 sudo make install
 ```
 
+如果你想测试HashUp的功能，可以如此调用CMake：
+
+```sh
+cmake .. -DCMAKE_BUILD_TYPE=Release -DMAKE_TEST=ON
+```
+
+请注意你需要在你的电脑上安装Python3以运行测试。
+
 如果你的OpenSSL版本大于1.1.1，HashUp会自动启用OpenSSL EVP；反之EVP则会被自动禁用。
 
 如果你不想使用OpenSSL EVP系列函数，你可以如此调用CMake：
