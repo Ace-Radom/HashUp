@@ -8,7 +8,10 @@ rena::HUFO::~HUFO(){
     return;
 }
 
-rena::HUFO::HUFOSTATUS rena::HUFO::open( const std::filesystem::path& path , rena::HASHPURPOSE p ){
+/**
+ * @param _ol_no_ask overlay no ask
+*/
+rena::HUFO::HUFOSTATUS rena::HUFO::open( const std::filesystem::path& path , rena::HASHPURPOSE p  , bool _ol_no_ask ){
     this -> _hpurpose = p;
     if ( this -> _hpurpose == HASHPURPOSE::CHECK )
     {
@@ -30,7 +33,7 @@ rena::HUFO::HUFOSTATUS rena::HUFO::open( const std::filesystem::path& path , ren
     } // doing hash check
     else if ( this -> _hpurpose == HASHPURPOSE::CREATE )
     {
-        if ( std::filesystem::exists( path ) )
+        if ( std::filesystem::exists( path ) && !_ol_no_ask )
         {
 #ifdef _MSC_VER
             if ( !confirm_interrupt( L"This file \"" + CPPATHTOSTR( path ) + L"\" already exist. Are you sure to overwrite it?" , 'y' , 'N' ) )

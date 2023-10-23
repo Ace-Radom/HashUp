@@ -37,6 +37,7 @@ int main( int argc , char** argv ){
     cmdline::parser cmdparser;
     cmdparser.add                ( "help"    , '?'  , "Show this help page" );
     cmdparser.add                ( "create"  , 'w'  , "Create a hash list for a directory" );
+    cmdparser.add                ( "overlay" , '\0' , "Overlay old hash list without asking" );
     cmdparser.add                ( "check"   , 'r'  , "Do hash check for a directory" );
     cmdparser.add<std::string>   ( "file"    , 'f'  , "The path of the hash list"                                                                                     , true  , "" );
     cmdparser.add                ( "single"  , 's'  , "Use single file mode" );
@@ -167,7 +168,7 @@ int main( int argc , char** argv ){
         huf_path_get = std::filesystem::current_path() / huf_path_get;
     } // relative huf path
 
-    rena::HUFO::HUFOSTATUS open_status = hufo.open( huf_path_get , p );
+    rena::HUFO::HUFOSTATUS open_status = hufo.open( huf_path_get , p , cmdparser.exist( "overlay" ) ? true : false );
     if ( open_status != rena::HUFO::HUFOSTATUS::OK )
     {
         print_hufo_err( open_status );
