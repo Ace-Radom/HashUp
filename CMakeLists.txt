@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(HashUp VERSION 1.2.0 LANGUAGES CXX)
+project(HashUp VERSION 1.2.1 LANGUAGES CXX)
 
 option(USE_OPENSSL_EVP_FUNCS "Use OpenSSL EVP functions to calculate file hashes and enable sha3" ON)
 option(MAKE_TEST             "Make tests"                                                         OFF)
