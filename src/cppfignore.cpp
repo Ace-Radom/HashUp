@@ -85,19 +85,21 @@ int rena::cppfignore::parse(){
             }
         }
         regex_temp_str += "$";
-        std::cout << regex_temp_str << std::endl;
+        DEBUG_MSG( CPATOWCONV( regex_temp_str ) );
         try {
             std::regex regex_temp( regex_temp_str );
             this -> _rlist.push_back( regex_temp );
         }
         catch ( const std::exception& e )
         {
-            std::cout << e.what() << std::endl;
+            CPERR << e.what() << std::endl;
+            return -1;
         }
 
 #pragma endregion line_parse
 
     }
+    return 0;
 }
 
 bool rena::cppfignore::check( std::filesystem::path path ){
@@ -120,9 +122,18 @@ bool rena::cppfignore::check( std::filesystem::path path ){
 }
 
 bool rena::cppfignore::_check_pp( std::filesystem::path path ){
+    std::string path_str = CPWTOACONV( CPPATHTOSTR( path ) );
+
+#ifdef WIN32
+    std::replace( path_str.begin() , path_str.end() , '\\' , '/' );
+    // cppfignore always use unix-like path format: that means '\' under windows should be changed into '/'
+#endif
+
+    DEBUG_MSG( "converted str: " << CPATOWCONV( path_str ) );
+
     for ( const auto& r : this -> _rlist )
     {
-        if ( std::regex_match( path.string() , r ) )
+        if ( std::regex_match( path_str , r ) )
         {
             return true;
         }

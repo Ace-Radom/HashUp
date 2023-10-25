@@ -6,6 +6,8 @@
 #include<regex>
 #include<filesystem>
 
+#include"utils.h"
+
 namespace rena {
 
     class rena_exception : public std::exception {
@@ -22,13 +24,6 @@ namespace rena {
     }; // struct rena_exception
 
     class cppfignore {
-
-        public:
-            typedef struct {
-                std::regex regex;
-                bool       ignore_when_match;
-            } ignore_list;
-
         public:
             cppfignore(){};
             ~cppfignore();
