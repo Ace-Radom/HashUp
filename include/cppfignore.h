@@ -10,25 +10,12 @@
 
 namespace rena {
 
-    class rena_exception : public std::exception {
-
-        public:
-            rena_exception( std::string msg ) : _msg( msg ){};
-            const char* what() const noexcept {
-                return this -> _msg.c_str();
-            }
-
-        private:
-            std::string _msg;
-
-    }; // struct rena_exception
-
     class cppfignore {
         public:
             cppfignore(){};
             ~cppfignore();
 
-            void open( std::filesystem::path ifp );
+            int open( std::filesystem::path ifp );
             int parse();
             bool check( std::filesystem::path path );
 

@@ -18,14 +18,14 @@ rena::cppfignore::~cppfignore(){
     return;
 }
 
-void rena::cppfignore::open( std::filesystem::path ifp ){
+int rena::cppfignore::open( std::filesystem::path ifp ){
     this -> _rwFile.open( ifp , std::ios::in );
     if ( !( this -> _rwFile.is_open() ) )
     {
-        throw rena_exception( "Open ignore file failed" );
+        return 1;
     }
     this -> _ifp = ifp;
-    return;
+    return 0;
 }
 
 int rena::cppfignore::parse(){
