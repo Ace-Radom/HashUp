@@ -11,7 +11,7 @@ rena::HUFO::~HUFO(){
 /**
  * @param _ol_no_ask overlay no ask
 */
-rena::HUFO::HUFOSTATUS rena::HUFO::open( const std::filesystem::path& path , rena::HASHPURPOSE p  , bool _ol_no_ask ){
+rena::HUFO::HUFOSTATUS rena::HUFO::open( const std::filesystem::path& path , rena::HASHPURPOSE p , bool _ol_no_ask ){
     this -> _hpurpose = p;
     if ( this -> _hpurpose == HASHPURPOSE::CHECK )
     {
@@ -54,6 +54,19 @@ rena::HUFO::HUFOSTATUS rena::HUFO::open( const std::filesystem::path& path , ren
     } // doing hash create
     this -> _hufopath = path;
     return HUFOSTATUS::OK;
+}
+
+rena::HUFO::HUFOSTATUS rena::HUFO::open( const std::filesystem::path& path , rena::HASHPURPOSE p , bool _ol_no_ask , const std::filesystem::path& ignore_file_path ){
+    if ( this -> _figobj.open( ignore_file_path ) != 0 )
+    {
+        return HUFOSTATUS::OPENIGFERR;
+    }
+    if ( this -> _figobj.parse() != 0 )
+    {
+        return HUFOSTATUS::PARSEIGFERR;
+    }
+    this -> _using_fig = true;
+    return this -> open( path , p , _ol_no_ask );
 }
 
 void rena::HUFO::set_mode( rena::HASHMODE mode ){
@@ -271,6 +284,13 @@ void rena::HUFO::_traversal_dir_write_to_hlist( const std::filesystem::path& dir
         auto fp = it.path(); // file path
         if ( std::filesystem::is_directory( fp ) )
         {
+            if ( this -> _using_fig )
+            {
+                if ( this -> _figobj.check( std::filesystem::relative( fp , this -> _pdpath ) ) )
+                {
+                    continue;
+                } // should be ignored
+            } // using file ignore, do ignore check
             _traversal_dir_write_to_hlist( fp );
         } // dir found, traversal it
         else
@@ -281,6 +301,13 @@ void rena::HUFO::_traversal_dir_write_to_hlist( const std::filesystem::path& dir
             } // ignore HUFO itself
             HASHOBJ temp;
             temp.fp = std::filesystem::relative( fp , this -> _pdpath );
+            if ( this -> _using_fig )
+            {
+                if ( this -> _figobj.check( temp.fp ) )
+                {
+                    continue;
+                } // should be ignored
+            } // using file ignore, do ignore check
             this -> _hlist.push_back( temp );
         } // write relative path to _hlist
     }

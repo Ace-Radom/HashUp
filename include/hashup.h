@@ -21,6 +21,7 @@
 #endif
 #include"utils.h"
 #include"ThreadPool.h"
+#include"cppfignore.h"
 
 namespace rena {
 
@@ -58,6 +59,8 @@ namespace rena {
             typedef enum {
                 OK,             // success
                 OPENFILEERR,    // open file error
+                OPENIGFERR,     // open ignore file error
+                PARSEIGFERR,    // parse ignore file error
                 FILENOTEXIST,   // file doesn't exist (mainly when doing hash check)
                 INTERRUPT,      // function interrupted
                 NOWORKINGDIR,   // no parent dir path
@@ -70,6 +73,7 @@ namespace rena {
             HUFO(){};
             ~HUFO();
             HUFOSTATUS open( const std::filesystem::path& path , HASHPURPOSE p , bool _ol_no_ask );
+            HUFOSTATUS open( const std::filesystem::path& path , HASHPURPOSE p , bool _ol_no_ask , const std::filesystem::path& ignore_file_path );
             void set_mode( HASHMODE mode );
             HUFOSTATUS start( unsigned short threads );
             HUFOSTATUS do_create( unsigned short threads );
@@ -102,6 +106,8 @@ namespace rena {
             HASHLIST                _hlist;             // hash list
             size_t                  _ori_hlist_len = 0; // hash list length at very first step
             HASHLIST                _errhlist;          // error hash list
+            cppfignore              _figobj;            // file ignore object
+            bool                    _using_fig = false; // using file ignore
 
     }; // class HUFO (HashUp File Object)
 
