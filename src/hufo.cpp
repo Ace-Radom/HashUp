@@ -311,6 +311,10 @@ void rena::HUFO::_traversal_dir_write_to_hlist( const std::filesystem::path& dir
             this -> _hlist.push_back( temp );
         } // write relative path to _hlist
     }
+    std::sort( this -> _hlist.begin() , this -> _hlist.end() , []( const HASHOBJ& a , const HASHOBJ& b ){
+        return a.fp < b.fp;
+    });
+    // sort hash list to lexicographic order
     return;
 }
 
