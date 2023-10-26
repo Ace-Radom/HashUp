@@ -31,3 +31,11 @@ add_test(
     NAME Check_Created_Hash_List
     COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/check_hashlist.py ${CMAKE_CURRENT_SOURCE_DIR}/test_dir
 )
+add_test(
+    NAME Call_File_Ignore_Function
+    COMMAND $<TARGET_FILE:hashup> -w -f ${CMAKE_CURRENT_SOURCE_DIR}/test_dir/test_dir.md5 -m md5 --overlay --ignore ${CMAKE_CURRENT_SOURCE_DIR}/test_dir/.hashupignore
+)
+add_test(
+    NAME Test_File_Ignore_Function
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/check_ignore_func.py ${CMAKE_CURRENT_SOURCE_DIR}/test_dir
+)

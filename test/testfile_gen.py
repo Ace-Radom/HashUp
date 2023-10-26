@@ -29,3 +29,13 @@ for i in range( 0 , 64 ):
     with open( f"test_dir/test{ i }" , 'w' ) as wFile:
         for j in range( 0 , 32 ):
             wFile.write( get_random_line( 64 ) + "\n" )
+
+with open( "test_dir/.hashupignore" , 'w' ) as wFile:
+    wFile.writelines(
+        [
+            "# test ignore file, ignore all test files num 0~9\n",
+            "test?\n",
+            "# ignore ignore file itself\n",
+            ".hashupignore"
+        ]
+    )
