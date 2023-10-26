@@ -64,11 +64,11 @@ int rena::cppfignore::parse(){
             
             if ( this_line[i] == '*' )
             {
-                regex_temp_str += ".*";
+                regex_temp_str += "[^/]*";
             }
             else if ( this_line[i] == '?' )
             {
-                regex_temp_str += ".";
+                regex_temp_str += "[^/]";
             }
             else if ( this_line[i] == '.'  ||
                       this_line[i] == '\\' ||
