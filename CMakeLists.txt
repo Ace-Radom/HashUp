@@ -79,7 +79,16 @@ if(${MAKE_TEST})
     add_subdirectory(test)
 endif()
 
+# ============================================
+#                install & pack
+# ============================================
+
 install(
     TARGETS hashup
     RUNTIME DESTINATION bin
 )
+
+include(InstallRequiredSystemLibraries)
+set(CPACK_RESOURCE_FILE_LICENSE ${CMAKE_SOURCE_DIR}/LICENSE)
+set(CPACK_PACKAGE_VERSION ${PROJECT_VERSION})
+include(CPack)
