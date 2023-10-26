@@ -51,11 +51,18 @@ int rena::cppfignore::parse(){
         std::string regex_temp_str;
         for ( int i = 0 ; i < this_line.size() ; i++ )
         {
-            if ( i == 0 && this_line[i] == '/' )
+            if ( i == 0 )
             {
-                regex_temp_str += "^";
+                if ( this_line[i] == '/' )
+                {
+                    regex_temp_str += "^/";
+                    continue;
+                }
+                regex_temp_str += "/";
             }
-            else if ( this_line[i] == '*' )
+            // add '/' to regex begin to fix bugs like: 'test?' matches 'ttest0'
+            
+            if ( this_line[i] == '*' )
             {
                 regex_temp_str += ".*";
             }
@@ -102,18 +109,23 @@ int rena::cppfignore::parse(){
     return 0;
 }
 
-bool rena::cppfignore::check( std::filesystem::path path ){
+bool rena::cppfignore::check( std::filesystem::path path , rena::cppfignore::FILETYPE ft ){
     std::vector<std::filesystem::path> path_cut_up;
     for ( const auto& pp : path ) // path part
     {
         path_cut_up.push_back( pp );
     }
 
+    if ( path_cut_up[0] != "/" && path_cut_up[0] != "\\" )
+    {
+        path_cut_up.insert( path_cut_up.begin() , "/" );
+    } // add '/' add path begin
+
     std::filesystem::path path_search_temp;
     for ( const auto& it : path_cut_up )
     {
         path_search_temp /= it;
-        if ( this -> _check_pp( path_search_temp ) )
+        if ( this -> _check_pp( path_search_temp , ft ) )
         {
             return true;
         }
@@ -121,7 +133,7 @@ bool rena::cppfignore::check( std::filesystem::path path ){
     return false;
 }
 
-bool rena::cppfignore::_check_pp( std::filesystem::path path ){
+bool rena::cppfignore::_check_pp( std::filesystem::path path , FILETYPE ft ){
     std::string path_str = CPWTOACONV( CPPATHTOSTR( path ) );
 
 #ifdef WIN32
@@ -129,11 +141,16 @@ bool rena::cppfignore::_check_pp( std::filesystem::path path ){
     // cppfignore always use unix-like path format: that means '\' under windows should be changed into '/'
 #endif
 
+    if ( ft == FILETYPE::IS_DIR && path_str.back() != '/' )
+    {
+        path_str += "/";
+    } // add '/' to dir path's end
+
     DEBUG_MSG( "converted str: " << CPATOWCONV( path_str ) );
 
     for ( const auto& r : this -> _rlist )
     {
-        if ( std::regex_match( path_str , r ) )
+        if ( std::regex_search( path_str , r ) )
         {
             return true;
         }

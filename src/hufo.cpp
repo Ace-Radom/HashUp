@@ -286,7 +286,7 @@ void rena::HUFO::_traversal_dir_write_to_hlist( const std::filesystem::path& dir
         {
             if ( this -> _using_fig )
             {
-                if ( this -> _figobj.check( std::filesystem::relative( fp , this -> _pdpath ) ) )
+                if ( this -> _figobj.check( std::filesystem::relative( fp , this -> _pdpath ) , cppfignore::FILETYPE::IS_DIR ) )
                 {
                     continue;
                 } // should be ignored
@@ -303,7 +303,7 @@ void rena::HUFO::_traversal_dir_write_to_hlist( const std::filesystem::path& dir
             temp.fp = std::filesystem::relative( fp , this -> _pdpath );
             if ( this -> _using_fig )
             {
-                if ( this -> _figobj.check( temp.fp ) )
+                if ( this -> _figobj.check( temp.fp , cppfignore::FILETYPE::IS_FILE ) )
                 {
                     continue;
                 } // should be ignored
