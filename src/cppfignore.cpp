@@ -46,6 +46,11 @@ int rena::cppfignore::parse(){
             continue;
         } // comment line or empty line
 
+        if ( this_line[0] == '\\' && this_line[1] == '#' )
+        {
+            this_line.erase( 0 , 1 );
+        } // '\#' found, earse '\' and go on to parse
+
 #pragma region line_parse
 
         std::string regex_temp_str;
