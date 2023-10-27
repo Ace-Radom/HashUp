@@ -3,21 +3,32 @@
 
 #include<iostream>
 #include<future>
+#include<cwchar>
+#ifdef _WIN32
+#include<Windows.h>
+#elif defined( __linux__ )
+#include<unistd.h>
+#include<limits.h>
+#elif defined( __APPLE__ )
+#include<mach-o/dyld.h>
+#endif
 
 #ifdef _MSC_VER
 #include<codecvt>
-#define CPOUT std::wcout
-#define CPERR std::wcerr
-#define CPSTR std::wstring
+#define CPOUT  std::wcout
+#define CPERR  std::wcerr
+#define CPSTR  std::wstring
+#define CPCHAR wchar_t
 #define CPATOWCONV( str )   std::wstring_convert<std::codecvt_utf8<wchar_t>>{}.from_bytes( str )    // cp str to wstr convert
 #define CPWTOACONV( str )   std::wstring_convert<std::codecvt_utf8<wchar_t>>{}.to_bytes( str )      // cp wstr to str convert
 #define CPPATHTOSTR( path ) ( path ).wstring()                                                      // cp path to str
 #else
-#define CPOUT std::cout
-#define CPERR std::cerr
-#define CPSTR std::string
-#define CPATOWCONV( str ) ( str )
-#define CPWTOACONV( str ) ( str )
+#define CPOUT  std::cout
+#define CPERR  std::cerr
+#define CPSTR  std::string
+#define CPCHAR char
+#define CPATOWCONV( str )   ( str )
+#define CPWTOACONV( str )   ( str )
 #define CPPATHTOSTR( path ) ( path ).string()
 #endif
 
@@ -57,6 +68,13 @@ namespace rena {
     } HASHPURPOSE;
 
     bool confirm_interrupt( const CPSTR& msg , char y , char n );
+
+    // utils for main function
+
+    CPSTR get_hashup_exe_path();
+
+    extern std::string    CFG_MODE;
+    extern unsigned short CFG_THREAD;
 
 }; // namespace rena
 

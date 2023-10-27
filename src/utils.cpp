@@ -20,3 +20,23 @@ start_confirm:
         goto start_confirm;
     }
 }
+
+CPSTR rena::get_hashup_exe_path(){
+    CPSTR hashup_exe_path;
+    CPCHAR buf[1024];
+    memset( buf , 0 , sizeof( buf ) );
+
+#ifdef _WIN32
+    GetModuleFileName( NULL , buf , sizeof( buf ) );
+    hashup_exe_path = buf;
+#elif defined( __linux__ )
+    
+#elif defined( __APPLE__ )
+
+#endif
+
+    return hashup_exe_path;
+}
+
+std::string rena::CFG_MODE = "md5";
+unsigned short rena::CFG_THREAD = 8;
