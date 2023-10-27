@@ -8,6 +8,7 @@ option(MAKE_TEST             "Make tests"                                       
 #                search OpenSSL
 # ============================================
 
+set(OPENSSL_USE_STATIC_LIBS TRUE)
 find_package(OpenSSL REQUIRED)
 if(NOT OPENSSL_FOUND)
     message(FATAL "Cannot find OpenSSL, please check environment")
@@ -72,12 +73,14 @@ add_subdirectory(src)
 add_executable(hashup main.cpp)
 target_link_libraries(hashup
     hashuplib
+    OpenSSL::Crypto
 )
 
 if(${MAKE_TEST})
     enable_testing()
     add_subdirectory(test)
 endif()
+
 
 # ============================================
 #                install & pack
@@ -87,8 +90,6 @@ install(
     TARGETS hashup
     RUNTIME DESTINATION bin
 )
-
-include(InstallRequiredSystemLibraries)
 set(CPACK_RESOURCE_FILE_LICENSE ${CMAKE_SOURCE_DIR}/LICENSE)
 set(CPACK_PACKAGE_VERSION ${PROJECT_VERSION})
 include(CPack)
