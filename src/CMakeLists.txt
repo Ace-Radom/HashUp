@@ -11,6 +11,6 @@ if(UNIX)
     )
 endif()
 add_library(inireader STATIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/ini.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/ini.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/INIReader.cpp
 )
