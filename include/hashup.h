@@ -13,6 +13,7 @@
 #include<cstring>
 #include<chrono>
 #include<mutex>
+#include<cerrno>
 
 #include"openssl/md5.h"
 #include"openssl/sha.h"
