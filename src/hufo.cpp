@@ -242,18 +242,16 @@ rena::HUFO::HUFOSTATUS rena::HUFO::_do_hashcalc( unsigned short threads ){
         ++it;
     } // iterate _hlist, start tasks
 
-    do {
 #ifdef SHOW_PROGRESS_DETAIL
+    do {
         CPOUT << "Progress: " << global_speed_watcher -> get_finished() << "/" << this -> _hlist.size() << " "
               << std::fixed << std::setprecision( 2 ) << global_speed_watcher -> get_speed() / 1048576.0 <<  "MB/s\r" << std::flush;
         std::this_thread::sleep_for( std::chrono::microseconds( 50 ) );
-#endif
     } while ( !pool.is_terminated() );
     CPOUT << "Progress: " << global_speed_watcher -> get_finished() << "/" << this -> _hlist.size() << " "
           << std::fixed << std::setprecision( 2 ) << global_speed_watcher -> get_speed() / 1048576.0 <<  "MB/s" << std::endl;
     // last flush
 
-#ifdef SHOW_PROGRESS_DETAIL
     auto calc_hash_end_time = std::chrono::steady_clock::now();
     auto calc_hash_duration = std::chrono::duration_cast<std::chrono::milliseconds>( calc_hash_end_time - calc_hash_start_time );
     CPOUT << "Total time spent on hash calculations: " << calc_hash_duration.count() / 1000.0 << "s." << std::endl;
@@ -261,6 +259,8 @@ rena::HUFO::HUFOSTATUS rena::HUFO::_do_hashcalc( unsigned short threads ){
     global_speed_watcher = nullptr;
     // free global_speed_watcher
     CPOUT << "Getting results." << std::endl;
+#else
+    while ( !pool.is_terminated() );
 #endif
 
     for ( auto it = this -> _hlist.begin() ; it != this -> _hlist.end() ; )
