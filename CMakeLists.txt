@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(HashUp VERSION 1.2.1 LANGUAGES CXX)
+project(HashUp VERSION 1.2.1 LANGUAGES C CXX)
 
 option(USE_OPENSSL_EVP_FUNCS "Use OpenSSL EVP functions to calculate file hashes and enable sha3" ON)
 option(MAKE_TEST             "Make tests"                                                         OFF)
@@ -95,6 +95,16 @@ install(
     FILES ${CMAKE_SOURCE_DIR}/hashup.ini
     DESTINATION bin
 )
-set(CPACK_RESOURCE_FILE_LICENSE ${CMAKE_SOURCE_DIR}/LICENSE)
+install(
+    FILES ${CMAKE_SOURCE_DIR}/LICENSE.txt ${CMAKE_SOURCE_DIR}/README.md
+    DESTINATION .
+)
+set(CPACK_PACKAGE_NAME ${PROJECT_NAME})
 set(CPACK_PACKAGE_VERSION ${PROJECT_VERSION})
+set(CPACK_PACKAGE_VENDOR "Ace-Radom")
+set(CPACK_PACKAGE_INSTALL_DIRECTORY ${PROJECT_NAME})
+set(CPACK_PACKAGE_DISCRIPTION_SUMMARY "HashUp - a lightweight cross-platform command-line file hash generation and checking tool")
+set(CPACK_RESOURCE_FILE_LICENSE ${CMAKE_SOURCE_DIR}/LICENSE.txt)
+set(CPACK_WIX_PRODUCT_ICON ${CMAKE_SOURCE_DIR}/hashup.ico)
+set(CPACK_WIX_PATCH_FILE ${CMAKE_SOURCE_DIR}/wix-patch.xml)
 include(CPack)
