@@ -16,12 +16,12 @@ void rena::speedwatcher::add( size_t size ){
 size_t rena::speedwatcher::get_speed(){
     std::lock_guard<std::mutex> lock( this -> global_mutex );
     auto time_now = std::chrono::steady_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>( time_now - this -> start_time );
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>( time_now - this -> start_time );
     if ( duration.count() == 0 )
     {
         return 0;
     }
-    return this -> total_size / duration.count() * 1000;
+    return this -> total_size / duration.count() * 1000000;
 }
 
 #endif
