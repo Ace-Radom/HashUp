@@ -29,3 +29,30 @@ for i in range( 0 , 64 ):
     with open( f"test_dir/test{ i }" , 'w' ) as wFile:
         for j in range( 0 , 32 ):
             wFile.write( get_random_line( 64 ) + "\n" )
+
+for i in range( 0 , 16 ):
+    with open( f"test_dir/{ i }.testf" , 'w' ) as wFile:
+        for j in range( 0 , 32 ):
+            wFile.write( get_random_line( 64 ) + "\n" )
+
+os.makedirs( "test_dir/test_dir_second" )
+
+for i in range( 0 , 16 ):
+    with open( f"test_dir/test_dir_second/test{ i }" , 'w' ) as wFile:
+        for j in range( 0 , 32 ):
+            wFile.write( get_random_line( 64 ) + "\n" )
+
+with open( "test_dir/.hashupignore" , 'w' ) as wFile:
+    wFile.writelines(
+        [
+            "# test ignore file\n",
+            "# ignore all files under test_dir_second\n",
+            "test_dir_second/\n"
+            "# ignore all test files num 0~9\n",
+            "test?\n",
+            "# ignore files which extension are '.testf'\n",
+            "*.testf\n",
+            "# ignore ignore file itself\n",
+            ".hashupignore\n"
+        ]
+    )

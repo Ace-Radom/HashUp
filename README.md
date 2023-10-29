@@ -68,7 +68,7 @@ That means:
 
 HashUp supports `MD5`, `SHA1` and all `SHA2` functions.
 
-HashUp also supports all `SHA3` functions when OpenSSL EVP is enabled.
+HashUp also supports all `SHA3` and `SHAKE` functions when OpenSSL EVP is enabled.
 
 | Function | Mode Tag |
 | :------: | :-: |
@@ -82,6 +82,10 @@ HashUp also supports all `SHA3` functions when OpenSSL EVP is enabled.
 | `SHA3-256` | `sha3-256` |
 | `SHA3-384` | `sha3-384` |
 | `SHA3-512` | `sha3-512` |
+| `SHAKE128` | `shake128` |
+| `SHAKE256` | `shake256` |
+
+Because of the limitations of OpenSSL, the output of the `SHAKE128` function is set to 128 bits, and `SHAKE256` 256 bits.
 
 ### Available Arguments
 
@@ -94,7 +98,41 @@ HashUp also supports all `SHA3` functions when OpenSSL EVP is enabled.
 | `-s, --single` | Use single file mode | Should be used with `--hash` together when doing single file hash check |
 | `--hash HASH` | Give in file hash | Only available by single file hash check |
 | `-m, --mode MODE` | Set hash function | Default as `md5` |
+| `-i, --ignore FILE` | Set ignore file path | Only available by hash list creation |
 | `-j, --thread NUM` | Set the thread-number of multithreading acceleration | Default as `8` |
+
+### Ignore File
+
+An Ignore File allows HashUp to ignore some (or some kinds of) files or directories during hash list creation.
+
+The format is like gitignore, but easier and provides less functions:
+
+- Only one Ignore File for each creation is allowed. You don't need to put the Ignore File under the root working directory.
+
+- The slash `/` is used as the directory separator.
+
+- A line starting with a hash `#` serves as a comment.
+
+- If there is a separator at the beginning of the pattern, then the pattern is relative to the directory level of the root working directory. Otherwise the pattern may also match at any level below root working directory.
+
+- Same as gitignore, a pattern will only match directories **ONLY IF** there is a separator at the end of the pattern, otherwise the pattern can match both files and directories.
+
+- An asterisk `*` matches anything except a slash. A question mark `?` matches any one character except a slash.
+
+One example:
+
+```
+# Use '#' to add comments
+
+# ignore all files / directories end with ".exe"
+*.exe
+
+# ignore all files / directories begin with "test" (e.g. 'test1', 'test.cpp', etc.)
+test*
+
+# ignore the directories under the root working directory which have one character after "test"
+/test?/
+```
 
 ### Single File Mode
 

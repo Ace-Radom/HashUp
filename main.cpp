@@ -6,7 +6,9 @@
 #endif
 
 #include"cmdline.h"
+#include"INIReader.h"
 #include"hashup.h"
+#include"utils.h"
 #include"build_config.h"
 
 #ifdef _MSC_VER
@@ -32,22 +34,42 @@ int wmain( int argc , wchar_t** wargv ){
 int main( int argc , char** argv ){
 #endif
 
+    std::filesystem::path hashup_exe_path( rena::get_hashup_exe_path() );
+    std::filesystem::path cfg_path = hashup_exe_path.parent_path() / "hashup.ini";
+    if ( std::filesystem::exists( cfg_path ) )
+    {
+        INIReader rINI( CPWTOACONV( CPPATHTOSTR( cfg_path ) ) );
+        if ( rINI.ParseError() < 0 )
+        {
+            CPERR << "Load config file error, continue with default settings." << std::endl;
+        }
+        else
+        {
+            rena::CFG_MODE = rINI.Get( "user" , "mode" , "md5" );
+            rena::CFG_THREAD = rINI.GetInteger( "user" , "thread" , 8 );
+        }
+    } // config file exists, parse and get settings
+
+    // if there's no config file, just skip and use default settings
+
 #pragma region create_cmd_parser
 
     cmdline::parser cmdparser;
+//               ------Type------ ----arg---- -abbr- ----------------------------------------------------describe----------------------------------------------------- --nes-- -----default------ ----------------------------------------------------------------------------possible option----------------------------------------------------------------------------
     cmdparser.add                ( "help"    , '?'  , "Show this help page" );
     cmdparser.add                ( "create"  , 'w'  , "Create a hash list for a directory" );
     cmdparser.add                ( "overlay" , '\0' , "Overlay old hash list without asking" );
     cmdparser.add                ( "check"   , 'r'  , "Do hash check for a directory" );
-    cmdparser.add<std::string>   ( "file"    , 'f'  , "The path of the hash list"                                                                                     , true  , "" );
+    cmdparser.add<std::string>   ( "file"    , 'f'  , "Set the path of the hash list"                                                                                 , true  , "" );
     cmdparser.add                ( "single"  , 's'  , "Use single file mode" );
     cmdparser.add<std::string>   ( "hash"    , '\0' , "File hash (only available by single file check)"                                                               , false );
 #ifdef USE_OPENSSL_EVP
-    cmdparser.add<std::string>   ( "mode"    , 'm'  , "Set hash mode (md5, sha1, sha224, sha256, sha512, sha3-224, sha3-256, sha3-384, sha3-512, shake128, shake256)" , false , "md5" , cmdline::oneof<std::string>( "md5" , "sha1" , "sha224" , "sha256" , "sha384" , "sha512" , "sha3-224" , "sha3-256" , "sha3-384" , "sha3-512" , "shake128" , "shake256" ) );
+    cmdparser.add<std::string>   ( "mode"    , 'm'  , "Set hash mode (md5, sha1, sha224, sha256, sha512, sha3-224, sha3-256, sha3-384, sha3-512, shake128, shake256)" , false , rena::CFG_MODE   , cmdline::oneof<std::string>( "md5" , "sha1" , "sha224" , "sha256" , "sha384" , "sha512" , "sha3-224" , "sha3-256" , "sha3-384" , "sha3-512" , "shake128" , "shake256" ) );
 #else
-    cmdparser.add<std::string>   ( "mode"    , 'm'  , "Set hash mode (md5, sha1, sha224, sha256, sha512)"                                                             , false , "md5" , cmdline::oneof<std::string>( "md5" , "sha1" , "sha224" , "sha256" , "sha384" , "sha512" ) );
+    cmdparser.add<std::string>   ( "mode"    , 'm'  , "Set hash mode (md5, sha1, sha224, sha256, sha512)"                                                             , false , rena::CFG_MODE   , cmdline::oneof<std::string>( "md5" , "sha1" , "sha224" , "sha256" , "sha384" , "sha512" ) );
 #endif
-    cmdparser.add<unsigned short>( "thread"  , 'j'  , "Set the thread-number of multithreading acceleration"                                                          , false , 8     , cmdline::range<unsigned short>( 1 , 128 ) );
+    cmdparser.add<std::string>   ( "ignore"  , 'i'  , "Set the path of the ignore file"                                                                               , false );
+    cmdparser.add<unsigned short>( "thread"  , 'j'  , "Set the thread-number of multithreading acceleration"                                                          , false , rena::CFG_THREAD , cmdline::range<unsigned short>( 1 , 128 ) );
     cmdparser.add                ( "version" , 'v'  , "Show HashUp version" );
     cmdparser.set_program_name( "hashup" );
 
@@ -161,6 +183,7 @@ int main( int argc , char** argv ){
     } // single file mode
 
     rena::HUFO hufo;
+    rena::HUFO::HUFOSTATUS open_status;
 
     std::filesystem::path huf_path_get = CPATOWCONV( cmdparser.get<std::string>( "file" ) );
     if ( huf_path_get.is_relative() )
@@ -168,7 +191,19 @@ int main( int argc , char** argv ){
         huf_path_get = std::filesystem::current_path() / huf_path_get;
     } // relative huf path
 
-    rena::HUFO::HUFOSTATUS open_status = hufo.open( huf_path_get , p , cmdparser.exist( "overlay" ) ? true : false );
+    if ( cmdparser.exist( "ignore" ) )
+    {
+        std::filesystem::path fig_path_get = CPATOWCONV( cmdparser.get<std::string>( "ignore" ) );
+        if ( fig_path_get.is_relative() )
+        {
+            fig_path_get = std::filesystem::current_path() / fig_path_get;
+        }
+        open_status = hufo.open( huf_path_get , p , cmdparser.exist( "overlay" ) ? true : false , fig_path_get );
+    }
+    else
+    {
+        open_status = hufo.open( huf_path_get , p , cmdparser.exist( "overlay" ) ? true : false );
+    }
     if ( open_status != rena::HUFO::HUFOSTATUS::OK )
     {
         print_hufo_err( open_status );
@@ -216,6 +251,10 @@ void print_hufo_err( rena::HUFO::HUFOSTATUS tag ){
     switch ( tag ){
         case rena::HUFO::HUFOSTATUS::OPENFILEERR:
             CPERR << "Open target hash list failed, exit." << std::endl; break;
+        case rena::HUFO::HUFOSTATUS::OPENIGFERR:
+            CPERR << "Open ignore file failed, exit." << std::endl; break;
+        case rena::HUFO::HUFOSTATUS::PARSEIGFERR:
+            CPERR << "Failed to parse ignore file, exit." << std::endl; break;
         case rena::HUFO::HUFOSTATUS::FILENOTEXIST:
             CPERR << "Doing hash check but hash list doesn't exist, exit." << std::endl; break;
         case rena::HUFO::HUFOSTATUS::INTERRUPT:

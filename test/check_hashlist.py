@@ -13,7 +13,7 @@ def hash_file( path: str ) -> str:
     return h.hexdigest()
 
 os.chdir( sys.argv[1] )
-# change working dir to HashUp/test (given in argv1)
+# change working dir to HashUp/test/test_dir (given in argv1)
 
 with open( "test_dir.md5" , 'r' ) as rFile:
     while True:
