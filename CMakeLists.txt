@@ -74,7 +74,6 @@ add_executable(hashup main.cpp)
 target_link_libraries(hashup
     hashuplib
     inireader
-    OpenSSL::Crypto
 )
 
 if(${MAKE_TEST})
