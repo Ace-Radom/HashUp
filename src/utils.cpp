@@ -30,9 +30,15 @@ CPSTR rena::get_hashup_exe_path(){
     GetModuleFileName( NULL , buf , sizeof( buf ) );
     hashup_exe_path = buf;
 #elif defined( __linux__ )
-    
+    ssize_t count = readlink( "/proc/self/exe" , buf , sizeof( buf ) );
+    if ( count != -1 )
+    {
+        hashup_exe_path = buf;
+    }
 #elif defined( __APPLE__ )
-
+    uint32_t bufsize = sizeof( buf );
+    _NSGetExecutablePath( buf , &bufsize );
+    hashup_exe_path = buf;
 #endif
 
     return hashup_exe_path;

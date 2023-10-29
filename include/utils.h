@@ -2,8 +2,7 @@
 #define _UTILS_H_
 
 #include<iostream>
-#include<future>
-#include<cwchar>
+#include<cstring>
 #ifdef _WIN32
 #include<Windows.h>
 #elif defined( __linux__ )
