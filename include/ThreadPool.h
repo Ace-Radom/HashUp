@@ -1,6 +1,8 @@
 // progschj/ThreadPool <https://github.com/progschj/ThreadPool>
 // commit 9a42ec1, Sep 26. 2014
 
+// add is_terminated() member function; change the implementation of thread workers
+
 /**
  * Copyright (c) 2012 Jakob Progsch, Václav Zeman
 
@@ -44,9 +46,11 @@ public:
     auto enqueue(F&& f, Args&&... args) 
         -> std::future<typename std::result_of<F(Args...)>::type>;
     ~ThreadPool();
+    bool is_terminated();
+
 private:
     // need to keep track of threads so we can join them
-    std::vector< std::thread > workers;
+    std::vector< std::pair<std::thread,bool> > workers;
     // the task queue
     std::queue< std::function<void()> > tasks;
     
@@ -61,9 +65,10 @@ inline ThreadPool::ThreadPool(size_t threads)
     :   stop(false)
 {
     for(size_t i = 0;i<threads;++i)
-        workers.emplace_back(
-            [this]
+        workers.emplace_back( std::make_pair(
+            [this,i]
             {
+                this -> workers[i].second = true;
                 for(;;)
                 {
                     std::function<void()> task;
@@ -76,12 +81,16 @@ inline ThreadPool::ThreadPool(size_t threads)
                             return;
                         task = std::move(this->tasks.front());
                         this->tasks.pop();
+                        this -> workers[i].second = false;
                     }
 
                     task();
+                    
+                    this -> workers[i].second = true;
                 }
-            }
-        );
+            },
+            true // thread has nothing to do
+        ) );
 }
 
 // add new work item to the pool
@@ -117,8 +126,24 @@ inline ThreadPool::~ThreadPool()
         stop = true;
     }
     condition.notify_all();
-    for(std::thread &worker: workers)
-        worker.join();
+    for(auto& worker: workers)
+        worker.first.join();
+}
+
+inline bool ThreadPool::is_terminated(){
+    std::unique_lock<std::mutex> lock( this -> queue_mutex );
+    for ( const auto& it : this -> workers )
+    {
+        if ( !it.second )
+        {
+            return false;
+        }
+    }
+    if ( !( this -> tasks.empty() ) )
+    {
+        return false;
+    }
+    return true;
 }
 
 #endif

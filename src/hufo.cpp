@@ -242,16 +242,29 @@ rena::HUFO::HUFOSTATUS rena::HUFO::_do_hashcalc( unsigned short threads ){
         ++it;
     } // iterate _hlist, start tasks
 
-    unsigned long long file_waiting_now_index = 1;
-    for ( auto it = this -> _hlist.begin() ; it != this -> _hlist.end() ; )
-    {
-        DEBUG_MSG( "Waiting for " << it -> fp );
+    do {
+#ifdef SHOW_PROGRESS_DETAIL
+        CPOUT << "Progress: " << global_speed_watcher -> get_finished() << "/" << this -> _hlist.size() << " "
+              << std::fixed << std::setprecision( 2 ) << global_speed_watcher -> get_speed() / 1048576.0 <<  "MB/s\r" << std::flush;
+        std::this_thread::sleep_for( std::chrono::microseconds( 50 ) );
+#endif
+    } while ( !pool.is_terminated() );
+    CPOUT << "Progress: " << global_speed_watcher -> get_finished() << "/" << this -> _hlist.size() << " "
+          << std::fixed << std::setprecision( 2 ) << global_speed_watcher -> get_speed() / 1048576.0 <<  "MB/s" << std::endl;
+    // last flush
 
 #ifdef SHOW_PROGRESS_DETAIL
-        CPOUT << "Progress: " << file_waiting_now_index << "/" << this -> _hlist.size() << " " << std::fixed << std::setprecision( 2 ) << global_speed_watcher -> get_speed() / 1048576.0 <<  "MB/s\r" << std::flush;
+    auto calc_hash_end_time = std::chrono::steady_clock::now();
+    auto calc_hash_duration = std::chrono::duration_cast<std::chrono::milliseconds>( calc_hash_end_time - calc_hash_start_time );
+    CPOUT << "Total time spent on hash calculations: " << calc_hash_duration.count() / 1000.0 << "s." << std::endl;
+    delete global_speed_watcher;
+    global_speed_watcher = nullptr;
+    // free global_speed_watcher
+    CPOUT << "Getting results." << std::endl;
 #endif
 
-        it -> hash_future.wait();
+    for ( auto it = this -> _hlist.begin() ; it != this -> _hlist.end() ; )
+    {
         try {
             it -> hash = it -> hash_future.get();
         }
@@ -263,17 +276,7 @@ rena::HUFO::HUFOSTATUS rena::HUFO::_do_hashcalc( unsigned short threads ){
             continue;
         } // open file failed when calculating hash of this file
         ++it;
-        file_waiting_now_index++;
     }
-
-#ifdef SHOW_PROGRESS_DETAIL
-    auto calc_hash_end_time = std::chrono::steady_clock::now();
-    auto calc_hash_duration = std::chrono::duration_cast<std::chrono::milliseconds>( calc_hash_end_time - calc_hash_start_time );
-    CPOUT << "\n"
-          << "Total time spent on hash calculations: " << calc_hash_duration.count() / 1000.0 << "s." << std::endl;
-    delete global_speed_watcher;
-    global_speed_watcher = nullptr;
-#endif
 
     return HUFOSTATUS::OK;
 }

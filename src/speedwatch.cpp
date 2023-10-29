@@ -10,6 +10,12 @@ void rena::speedwatcher::add( size_t size ){
     return;
 }
 
+void rena::speedwatcher::finished_one(){
+    std::lock_guard<std::mutex> lock( this -> global_mutex );
+    this -> finished_num++;
+    return;
+}
+
 /**
  * @return how many bytes is processed per secounds
 */
@@ -22,6 +28,11 @@ size_t rena::speedwatcher::get_speed(){
         return 0;
     }
     return this -> total_size / duration.count() * 1000000;
+}
+
+size_t rena::speedwatcher::get_finished(){
+    std::lock_guard<std::mutex> lock( this -> global_mutex );
+    return this -> finished_num;
 }
 
 #endif

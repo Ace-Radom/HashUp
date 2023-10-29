@@ -15,34 +15,52 @@ CPSTR dump_CHAR_to_HEX( const unsigned char* hash , int len ){
 #ifdef USE_OPENSSL_EVP
 
 CPSTR rena::calc_file_hash( const std::filesystem::path& path , const EVP_MD* algo ){
-    std::ifstream rFile( path , std::ios::binary );
-    if ( !rFile.is_open() )
-    {
-        throw std::runtime_error( "Open file failed" );
-    }
+    try {
+        std::ifstream rFile( path , std::ios::binary );
+        if ( !rFile.is_open() )
+        {
+            throw std::runtime_error( "Open file failed" );
+        }
 
-    EVP_MD_CTX* ctx = EVP_MD_CTX_create();
-    EVP_DigestInit_ex( ctx , algo , NULL );
-    size_t ret;
-    char buf[RFILE_BLOCK_SIZE];
-    unsigned char out[EVP_MAX_MD_SIZE];
-    unsigned int out_len;
-    while ( !rFile.eof() )
-    {
-        rFile.read( buf , sizeof( buf ) );
-        ret = rFile.gcount();
+        EVP_MD_CTX* ctx = EVP_MD_CTX_create();
+        EVP_DigestInit_ex( ctx , algo , NULL );
+        size_t ret;
+        char buf[RFILE_BLOCK_SIZE];
+        unsigned char out[EVP_MAX_MD_SIZE];
+        unsigned int out_len;
+        while ( !rFile.eof() )
+        {
+            rFile.read( buf , sizeof( buf ) );
+            ret = rFile.gcount();
+#ifdef SHOW_PROGRESS_DETAIL
+            if ( global_speed_watcher != nullptr )
+            {
+                global_speed_watcher -> add( ret );
+            }
+#endif
+            EVP_DigestUpdate( ctx , ( char* ) buf , ret );
+        }
+        EVP_DigestFinal_ex( ctx , out , &out_len );
+        rFile.close();
+        EVP_MD_CTX_destroy( ctx );
 #ifdef SHOW_PROGRESS_DETAIL
         if ( global_speed_watcher != nullptr )
         {
-            global_speed_watcher -> add( ret );
+            global_speed_watcher -> finished_one();
         }
 #endif
-        EVP_DigestUpdate( ctx , ( char* ) buf , ret );
+        return dump_CHAR_to_HEX( out , out_len );
     }
-    EVP_DigestFinal_ex( ctx , out , &out_len );
-    rFile.close();
-    EVP_MD_CTX_destroy( ctx );
-    return dump_CHAR_to_HEX( out , out_len );
+    catch ( const std::exception& e )
+    {
+#ifdef SHOW_PROGRESS_DETAIL
+        if ( global_speed_watcher != nullptr )
+        {
+            global_speed_watcher -> finished_one();
+        }
+#endif
+        throw e;
+    } // call finish_one and rethrow exception
 }
 
 CPSTR rena::calc_file_md5( const std::filesystem::path& path ){
