@@ -156,10 +156,28 @@ hashup -sr -f testfile -m md5 --hash cdcc3d481ed7319c3fccec101126a75d
 
 HashUp allows short arguments to be grouped after a hyphen. Actually arguments like `-srf testfile` is also okay, but I personally don't recommend it.
 
+## Config File
+
+The config file should be named as `hashup.ini` and put under the same path as HashUp executable.
+
+The default config file is:
+
+```ini
+; This is a config file for HashUp
+; Please don't edit sections' and keys' names
+
+[default]
+mode=md5
+thread=8
+```
+
+You may change configs as you want.
+
 ## Third Party Components
 
 - [tanakh/cmdline](https://github.com/tanakh/cmdline)
 - [progschj/ThreadPool](https://github.com/progschj/ThreadPool)
+- [pulzed/mINI](https://github.com/pulzed/mINI)
 
 Sincere thanks to the developers of these projects.
 

@@ -156,10 +156,28 @@ hashup -sr -f testfile -m md5 --hash cdcc3d481ed7319c3fccec101126a75d
 
 HashUp允许在一个中划线后同时传入多个短参数。其实类似于 `-srf testfile` 的传入方法也是合法的，但我个人不推荐这么做。
 
+## 配置文件
+
+HashUp的配置文件的文件名应当为 `hashup.ini` 并且被保存在和HashUp的可执行文件同一文件夹下。
+
+默认的配置文件为：
+
+```ini
+; This is a config file for HashUp
+; Please don't edit sections' and keys' names
+
+[default]
+mode=md5
+thread=8
+```
+
+你可以自行调整配置文件内的默认值。
+
 ## 第三方组件
 
 - [tanakh/cmdline](https://github.com/tanakh/cmdline)
 - [progschj/ThreadPool](https://github.com/progschj/ThreadPool)
+- [pulzed/mINI](https://github.com/pulzed/mINI)
 
 在此对这些项目的开发者致以最诚挚的谢意。
 
