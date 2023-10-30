@@ -46,11 +46,11 @@ int main( int argc , char** argv ){
         }
         else
         {
-            if ( iniobj.has( "user" ) && iniobj["user"].has( "mode" ) && iniobj["user"].has( "thread" ) )
+            if ( iniobj.has( "default" ) && iniobj["default"].has( "mode" ) && iniobj["default"].has( "thread" ) )
             {
                 try {
-                    rena::CFG_MODE = iniobj["user"]["mode"];
-                    rena::CFG_THREAD = std::stoi( iniobj["user"]["thread"] );
+                    rena::CFG_MODE = iniobj["default"]["mode"];
+                    rena::CFG_THREAD = std::stoi( iniobj["default"]["thread"] );
                 }
                 catch ( const std::exception& e )
                 {
