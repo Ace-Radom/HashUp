@@ -13,6 +13,7 @@
 #include<cstring>
 #include<chrono>
 #include<mutex>
+#include<cerrno>
 
 #include"openssl/md5.h"
 #include"openssl/sha.h"
@@ -120,15 +121,18 @@ namespace rena {
     class speedwatcher {
         public:
             speedwatcher( std::chrono::steady_clock::time_point start_time_point ) 
-                : start_time( start_time_point ) , total_size( 0 ){};
+                : start_time( start_time_point ) , total_size( 0 ) , finished_num( 0 ){};
             ~speedwatcher(){};
 
             void add( size_t size );
+            void finished_one();
             size_t get_speed();
+            size_t get_finished();
 
         private:
             std::chrono::steady_clock::time_point start_time;
             size_t total_size;
+            size_t finished_num;
             std::mutex global_mutex;
     }; // class speedwatcher
 

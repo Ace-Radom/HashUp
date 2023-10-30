@@ -15,34 +15,52 @@ CPSTR dump_CHAR_to_HEX( const unsigned char* hash , int len ){
 #ifdef USE_OPENSSL_EVP
 
 CPSTR rena::calc_file_hash( const std::filesystem::path& path , const EVP_MD* algo ){
-    std::ifstream rFile( path , std::ios::binary );
-    if ( !rFile.is_open() )
-    {
-        throw std::runtime_error( "Open file failed" );
-    }
+    try {
+        std::ifstream rFile( path , std::ios::binary );
+        if ( !rFile.is_open() )
+        {
+            throw std::runtime_error( strerror( errno ) );
+        }
 
-    EVP_MD_CTX* ctx = EVP_MD_CTX_create();
-    EVP_DigestInit_ex( ctx , algo , NULL );
-    size_t ret;
-    char buf[RFILE_BLOCK_SIZE];
-    unsigned char out[EVP_MAX_MD_SIZE];
-    unsigned int out_len;
-    while ( !rFile.eof() )
-    {
-        rFile.read( buf , sizeof( buf ) );
-        ret = rFile.gcount();
+        EVP_MD_CTX* ctx = EVP_MD_CTX_create();
+        EVP_DigestInit_ex( ctx , algo , NULL );
+        size_t ret;
+        char buf[RFILE_BLOCK_SIZE];
+        unsigned char out[EVP_MAX_MD_SIZE];
+        unsigned int out_len;
+        while ( !rFile.eof() )
+        {
+            rFile.read( buf , sizeof( buf ) );
+            ret = rFile.gcount();
+#ifdef SHOW_PROGRESS_DETAIL
+            if ( global_speed_watcher != nullptr )
+            {
+                global_speed_watcher -> add( ret );
+            }
+#endif
+            EVP_DigestUpdate( ctx , ( char* ) buf , ret );
+        }
+        EVP_DigestFinal_ex( ctx , out , &out_len );
+        rFile.close();
+        EVP_MD_CTX_destroy( ctx );
 #ifdef SHOW_PROGRESS_DETAIL
         if ( global_speed_watcher != nullptr )
         {
-            global_speed_watcher -> add( ret );
+            global_speed_watcher -> finished_one();
         }
 #endif
-        EVP_DigestUpdate( ctx , ( char* ) buf , ret );
+        return dump_CHAR_to_HEX( out , out_len );
     }
-    EVP_DigestFinal_ex( ctx , out , &out_len );
-    rFile.close();
-    EVP_MD_CTX_destroy( ctx );
-    return dump_CHAR_to_HEX( out , out_len );
+    catch ( const std::exception& e )
+    {
+#ifdef SHOW_PROGRESS_DETAIL
+        if ( global_speed_watcher != nullptr )
+        {
+            global_speed_watcher -> finished_one();
+        }
+#endif
+        throw e;
+    } // call finish_one and rethrow exception
 }
 
 CPSTR rena::calc_file_md5( const std::filesystem::path& path ){
@@ -96,177 +114,286 @@ CPSTR rena::calc_file_shake256( const std::filesystem::path& path ){
 #else
 
 CPSTR rena::calc_file_md5( const std::filesystem::path& path ){
-    std::ifstream rFile( path , std::ios::binary );
-    if ( !rFile.is_open() )
-    {
-        throw std::runtime_error( "Open file failed" );
-    }
+    try {
+        std::ifstream rFile( path , std::ios::binary );
+        if ( !rFile.is_open() )
+        {
+            throw std::runtime_error( strerror( errno ) );
+        }
 
-    MD5_CTX ctx;
-    MD5_Init( &ctx );
-    size_t ret;
-    char buf[RFILE_BLOCK_SIZE];
-    unsigned char out[MD5_DIGEST_LENGTH];
-    while ( !rFile.eof() )
-    {
-        rFile.read( buf , sizeof( buf ) );
-        ret = rFile.gcount();
+        MD5_CTX ctx;
+        MD5_Init( &ctx );
+        size_t ret;
+        char buf[RFILE_BLOCK_SIZE];
+        unsigned char out[MD5_DIGEST_LENGTH];
+        while ( !rFile.eof() )
+        {
+            rFile.read( buf , sizeof( buf ) );
+            ret = rFile.gcount();
+#ifdef SHOW_PROGRESS_DETAIL
+            if ( global_speed_watcher != nullptr )
+            {
+                global_speed_watcher -> add( ret );
+            }
+#endif
+            MD5_Update( &ctx , buf , ret );
+        }
+        MD5_Final( out , &ctx );
+        rFile.close();
 #ifdef SHOW_PROGRESS_DETAIL
         if ( global_speed_watcher != nullptr )
         {
-            global_speed_watcher -> add( ret );
+            global_speed_watcher -> finished_one();
         }
 #endif
-        MD5_Update( &ctx , buf , ret );
+        return dump_CHAR_to_HEX( out , MD5_DIGEST_LENGTH );
     }
-    MD5_Final( out , &ctx );
-    rFile.close();
-    return dump_CHAR_to_HEX( out , MD5_DIGEST_LENGTH );
+    catch ( const std::exception& e )
+    {
+#ifdef SHOW_PROGRESS_DETAIL
+        if ( global_speed_watcher != nullptr )
+        {
+            global_speed_watcher -> finished_one();
+        }
+#endif
+        throw e;
+    } // call finish_one and rethrow exception
 }
 
 CPSTR rena::calc_file_sha1( const std::filesystem::path& path ){
-    std::ifstream rFile( path , std::ios::binary );
-    if ( !rFile.is_open() )
-    {
-        throw std::runtime_error( "Open file failed" );
-    }
+    try {
+        std::ifstream rFile( path , std::ios::binary );
+        if ( !rFile.is_open() )
+        {
+            throw std::runtime_error( strerror( errno ) );
+        }
 
-    SHA_CTX ctx;
-    SHA1_Init( &ctx );
-    size_t ret;
-    char buf[RFILE_BLOCK_SIZE];
-    unsigned char out[SHA_DIGEST_LENGTH];
-    while ( !rFile.eof() )
-    {
-        rFile.read( buf , sizeof( buf ) );
-        ret = rFile.gcount();
+        SHA_CTX ctx;
+        SHA1_Init( &ctx );
+        size_t ret;
+        char buf[RFILE_BLOCK_SIZE];
+        unsigned char out[SHA_DIGEST_LENGTH];
+        while ( !rFile.eof() )
+        {
+            rFile.read( buf , sizeof( buf ) );
+            ret = rFile.gcount();
+#ifdef SHOW_PROGRESS_DETAIL
+            if ( global_speed_watcher != nullptr )
+            {
+                global_speed_watcher -> add( ret );
+            }
+#endif
+            SHA1_Update( &ctx , ( char* ) buf , ret );
+        }
+        SHA1_Final( out , &ctx );
+        rFile.close();
 #ifdef SHOW_PROGRESS_DETAIL
         if ( global_speed_watcher != nullptr )
         {
-            global_speed_watcher -> add( ret );
+            global_speed_watcher -> finished_one();
         }
 #endif
-        SHA1_Update( &ctx , ( char* ) buf , ret );
+        return dump_CHAR_to_HEX( out , SHA_DIGEST_LENGTH );
     }
-    SHA1_Final( out , &ctx );
-    rFile.close();
-    return dump_CHAR_to_HEX( out , SHA_DIGEST_LENGTH );
+    catch ( const std::exception& e )
+    {
+#ifdef SHOW_PROGRESS_DETAIL
+        if ( global_speed_watcher != nullptr )
+        {
+            global_speed_watcher -> finished_one();
+        }
+#endif
+        throw e;
+    } // call finish_one and rethrow exception
 }
 
 CPSTR rena::calc_file_sha224( const std::filesystem::path& path ){
-    std::ifstream rFile( path , std::ios::binary );
-    if ( !rFile.is_open() )
-    {
-        throw std::runtime_error( "Open file failed" );
-    }
+    try {
+        std::ifstream rFile( path , std::ios::binary );
+        if ( !rFile.is_open() )
+        {
+            throw std::runtime_error( strerror( errno ) );
+        }
 
-    SHA256_CTX ctx;
-    SHA224_Init( &ctx );
-    size_t ret;
-    char buf[RFILE_BLOCK_SIZE];
-    unsigned char out[SHA224_DIGEST_LENGTH];
-    while ( !rFile.eof() )
-    {
-        rFile.read( buf , sizeof( buf ) );
-        ret = rFile.gcount();
+        SHA256_CTX ctx;
+        SHA224_Init( &ctx );
+        size_t ret;
+        char buf[RFILE_BLOCK_SIZE];
+        unsigned char out[SHA224_DIGEST_LENGTH];
+        while ( !rFile.eof() )
+        {
+            rFile.read( buf , sizeof( buf ) );
+            ret = rFile.gcount();
+#ifdef SHOW_PROGRESS_DETAIL
+            if ( global_speed_watcher != nullptr )
+            {
+                global_speed_watcher -> add( ret );
+            }
+#endif
+            SHA224_Update( &ctx , ( char* ) buf , ret );
+        }
+        SHA224_Final( out , &ctx );
+        rFile.close();
 #ifdef SHOW_PROGRESS_DETAIL
         if ( global_speed_watcher != nullptr )
         {
-            global_speed_watcher -> add( ret );
+            global_speed_watcher -> finished_one();
         }
 #endif
-        SHA224_Update( &ctx , ( char* ) buf , ret );
+        return dump_CHAR_to_HEX( out , SHA224_DIGEST_LENGTH );
     }
-    SHA224_Final( out , &ctx );
-    rFile.close();
-    return dump_CHAR_to_HEX( out , SHA224_DIGEST_LENGTH );
+    catch ( const std::exception& e )
+    {
+#ifdef SHOW_PROGRESS_DETAIL
+        if ( global_speed_watcher != nullptr )
+        {
+            global_speed_watcher -> finished_one();
+        }
+#endif
+        throw e;
+    } // call finish_one and rethrow exception
 }
 
 CPSTR rena::calc_file_sha256( const std::filesystem::path& path ){
-    std::ifstream rFile( path , std::ios::binary );
-    if ( !rFile.is_open() )
-    {
-        throw std::runtime_error( "Open file failed" );
-    }
+    try {
+        std::ifstream rFile( path , std::ios::binary );
+        if ( !rFile.is_open() )
+        {
+            throw std::runtime_error( strerror( errno ) );
+        }
 
-    SHA256_CTX ctx;
-    SHA256_Init( &ctx );
-    size_t ret;
-    char buf[RFILE_BLOCK_SIZE];
-    unsigned char out[SHA256_DIGEST_LENGTH];
-    while ( !rFile.eof() )
-    {
-        rFile.read( buf , sizeof( buf ) );
-        ret = rFile.gcount();
+        SHA256_CTX ctx;
+        SHA256_Init( &ctx );
+        size_t ret;
+        char buf[RFILE_BLOCK_SIZE];
+        unsigned char out[SHA256_DIGEST_LENGTH];
+        while ( !rFile.eof() )
+        {
+            rFile.read( buf , sizeof( buf ) );
+            ret = rFile.gcount();
+#ifdef SHOW_PROGRESS_DETAIL
+            if ( global_speed_watcher != nullptr )
+            {
+                global_speed_watcher -> add( ret );
+            }
+#endif
+            SHA256_Update( &ctx , ( char* ) buf , ret );
+        }
+        SHA256_Final( out , &ctx );
+        rFile.close();
 #ifdef SHOW_PROGRESS_DETAIL
         if ( global_speed_watcher != nullptr )
         {
-            global_speed_watcher -> add( ret );
+            global_speed_watcher -> finished_one();
         }
 #endif
-        SHA256_Update( &ctx , ( char* ) buf , ret );
+        return dump_CHAR_to_HEX( out , SHA256_DIGEST_LENGTH );
     }
-    SHA256_Final( out , &ctx );
-    rFile.close();
-    return dump_CHAR_to_HEX( out , SHA256_DIGEST_LENGTH );
+    catch ( const std::exception& e )
+    {
+#ifdef SHOW_PROGRESS_DETAIL
+        if ( global_speed_watcher != nullptr )
+        {
+            global_speed_watcher -> finished_one();
+        }
+#endif
+        throw e;
+    } // call finish_one and rethrow exception
 }
 
 CPSTR rena::calc_file_sha384( const std::filesystem::path& path ){
-    std::ifstream rFile( path , std::ios::binary );
-    if ( !rFile.is_open() )
-    {
-        throw std::runtime_error( "Open file failed" );
-    }
+    try {
+        std::ifstream rFile( path , std::ios::binary );
+        if ( !rFile.is_open() )
+        {
+            throw std::runtime_error( strerror( errno ) );
+        }
 
-    SHA512_CTX ctx;
-    SHA384_Init( &ctx );
-    size_t ret;
-    char buf[RFILE_BLOCK_SIZE];
-    unsigned char out[SHA384_DIGEST_LENGTH];
-    while ( !rFile.eof() )
+        SHA512_CTX ctx;
+        SHA384_Init( &ctx );
+        size_t ret;
+        char buf[RFILE_BLOCK_SIZE];
+        unsigned char out[SHA384_DIGEST_LENGTH];
+        while ( !rFile.eof() )
+        {
+            rFile.read( buf , sizeof( buf ) );
+            ret = rFile.gcount();
+#ifdef SHOW_PROGRESS_DETAIL
+            if ( global_speed_watcher != nullptr )
+            {
+                global_speed_watcher -> add( ret );
+            }
+#endif
+            SHA384_Update( &ctx , ( char* ) buf , ret );
+        
+            SHA384_Final( out , &ctx );
+            rFile.close();
+#ifdef SHOW_PROGRESS_DETAIL
+            if ( global_speed_watcher != nullptr )
+            {
+                global_speed_watcher -> finished_one();
+            }
+#endif
+            return dump_CHAR_to_HEX( out , SHA384_DIGEST_LENGTH );
+        }
+    }
+    catch ( const std::exception& e )
     {
-        rFile.read( buf , sizeof( buf ) );
-        ret = rFile.gcount();
 #ifdef SHOW_PROGRESS_DETAIL
         if ( global_speed_watcher != nullptr )
         {
-            global_speed_watcher -> add( ret );
+            global_speed_watcher -> finished_one();
         }
 #endif
-        SHA384_Update( &ctx , ( char* ) buf , ret );
-    }
-    SHA384_Final( out , &ctx );
-    rFile.close();
-    return dump_CHAR_to_HEX( out , SHA384_DIGEST_LENGTH );
+        throw e;
+    } // call finish_one and rethrow exception
 }
 
 CPSTR rena::calc_file_sha512( const std::filesystem::path& path ){
-    std::ifstream rFile( path , std::ios::binary );
-    if ( !rFile.is_open() )
-    {
-        throw std::runtime_error( "Open file failed" );
-    }
+    try {
+        std::ifstream rFile( path , std::ios::binary );
+        if ( !rFile.is_open() )
+        {
+            throw std::runtime_error( strerror( errno ) );
+        }
 
-    SHA512_CTX ctx;
-    SHA512_Init( &ctx );
-    size_t ret;
-    char buf[RFILE_BLOCK_SIZE];
-    unsigned char out[SHA512_DIGEST_LENGTH];
-    while ( !rFile.eof() )
-    {
-        rFile.read( buf , sizeof( buf ) );
-        ret = rFile.gcount();
+        SHA512_CTX ctx;
+        SHA512_Init( &ctx );
+        size_t ret;
+        char buf[RFILE_BLOCK_SIZE];
+        unsigned char out[SHA512_DIGEST_LENGTH];
+        while ( !rFile.eof() )
+        {
+            rFile.read( buf , sizeof( buf ) );
+            ret = rFile.gcount();
+#ifdef SHOW_PROGRESS_DETAIL
+            if ( global_speed_watcher != nullptr )
+            {
+                global_speed_watcher -> add( ret );
+            }
+#endif
+            SHA512_Update( &ctx , ( char* ) buf , ret );
+        }
+        SHA512_Final( out , &ctx );
+        rFile.close();
 #ifdef SHOW_PROGRESS_DETAIL
         if ( global_speed_watcher != nullptr )
         {
-            global_speed_watcher -> add( ret );
+            global_speed_watcher -> finished_one();
         }
 #endif
-        SHA512_Update( &ctx , ( char* ) buf , ret );
+        return dump_CHAR_to_HEX( out , SHA512_DIGEST_LENGTH );
     }
-    SHA512_Final( out , &ctx );
-    rFile.close();
-    return dump_CHAR_to_HEX( out , SHA512_DIGEST_LENGTH );
+    catch ( const std::exception& e )
+    {
+#ifdef SHOW_PROGRESS_DETAIL
+        if ( global_speed_watcher != nullptr )
+        {
+            global_speed_watcher -> finished_one();
+        }
+#endif
+        throw e;
+    } // call finish_one and rethrow exception
 }
 
 #endif
