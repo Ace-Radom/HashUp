@@ -6,7 +6,7 @@
 #endif
 
 #include"cmdline.h"
-#include"INIReader.h"
+#include"mini.h"
 #include"hashup.h"
 #include"utils.h"
 #include"build_config.h"
@@ -38,15 +38,31 @@ int main( int argc , char** argv ){
     std::filesystem::path cfg_path = hashup_exe_path.parent_path() / "hashup.ini";
     if ( std::filesystem::exists( cfg_path ) )
     {
-        INIReader rINI( CPWTOACONV( CPPATHTOSTR( cfg_path ) ) );
-        if ( rINI.ParseError() < 0 )
+        mINI::INIFile rINI( cfg_path );
+        mINI::INIStructure iniobj;
+        if ( !rINI.read( iniobj ) )
         {
             CPERR << "Load config file error, continue with default settings." << std::endl;
         }
         else
         {
-            rena::CFG_MODE = rINI.Get( "user" , "mode" , "md5" );
-            rena::CFG_THREAD = rINI.GetInteger( "user" , "thread" , 8 );
+            if ( iniobj.has( "user" ) && iniobj["user"].has( "mode" ) && iniobj["user"].has( "thread" ) )
+            {
+                try {
+                    rena::CFG_MODE = iniobj["user"]["mode"];
+                    rena::CFG_THREAD = std::stoi( iniobj["user"]["thread"] );
+                }
+                catch ( const std::exception& e )
+                {
+                    CPERR << "Parse config value error: " << e.what() << std::endl
+                          << "Continue with default settings." << std::endl;
+                }
+            }
+            else
+            {
+                CPERR << "Config file format error, continue with default settings." << std::endl;
+            }
+            
         }
     } // config file exists, parse and get settings
 

@@ -96,6 +96,7 @@
 #include <fstream>
 #include <sys/stat.h>
 #include <cctype>
+#include <filesystem>
 
 namespace mINI
 {
@@ -400,6 +401,13 @@ namespace mINI
 				lineData = std::make_shared<T_LineData>();
 			}
 		}
+        INIReader( const std::filesystem::path& filename , bool keepLineData = false ){
+            this -> fileReadStream.open( filename , std::ios::in | std::ios::binary );
+            if ( keepLineData )
+            {
+                this -> lineData = std::make_shared<T_LineData>();
+            }
+        }
 		~INIReader() { }
 
 		bool operator>>(INIStructure& data)
@@ -455,6 +463,9 @@ namespace mINI
 		{
 			fileWriteStream.open(filename, std::ios::out | std::ios::binary);
 		}
+        INIGenerator( const std::filesystem::path& filename ){
+            this -> fileWriteStream.open( filename , std::ios::out | std::ios::binary );
+        }
 		~INIGenerator() { }
 
 		bool operator<<(INIStructure const& data)
@@ -517,7 +528,8 @@ namespace mINI
 		using T_LineData = std::vector<std::string>;
 		using T_LineDataPtr = std::shared_ptr<T_LineData>;
 
-		std::string filename;
+		// std::string filename;
+        std::filesystem::path filename;
 
 		T_LineData getLazyOutput(T_LineDataPtr const& lineData, INIStructure& data, INIStructure& original)
 		{
@@ -682,12 +694,15 @@ namespace mINI
 		: filename(filename)
 		{
 		}
+        INIWriter( const std::filesystem::path& filename )
+        : filename( filename ){}
 		~INIWriter() { }
 
 		bool operator<<(INIStructure& data)
 		{
 			struct stat buf;
-			bool fileExists = (stat(filename.c_str(), &buf) == 0);
+			// bool fileExists = (stat(filename.c_str(), &buf) == 0);
+            bool fileExists = std::filesystem::exists( filename );
 			if (!fileExists)
 			{
 				INIGenerator generator(filename);
@@ -744,12 +759,15 @@ namespace mINI
 	class INIFile
 	{
 	private:
-		std::string filename;
+		// std::string filename;
+        std::filesystem::path filename;
 
 	public:
 		INIFile(std::string const& filename)
 		: filename(filename)
 		{ }
+        INIFile( const std::filesystem::path& filename )
+        : filename(filename){}
 
 		~INIFile() { }
 

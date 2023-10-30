@@ -73,7 +73,6 @@ add_subdirectory(src)
 add_executable(hashup main.cpp)
 target_link_libraries(hashup
     hashuplib
-    inireader
 )
 
 if(${MAKE_TEST})
