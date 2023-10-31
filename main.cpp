@@ -62,16 +62,22 @@ int main( int argc , char** argv ){
             {
                 CPERR << "Config file format error, continue with default settings." << std::endl;
             }
-            
         }
     } // config file exists, parse and get settings
+
+    if ( !( rena::is_supported_hash_mode( rena::CFG_MODE ) && in_range( rena::CFG_THREAD , 1 , 128 ) ) )
+    {
+        CPERR << "Illegal config values, continue with default settings." << std::endl;
+        rena::CFG_MODE = "md5";
+        rena::CFG_THREAD = 8;
+    } // illegal configs
 
     // if there's no config file, just skip and use default settings
 
 #pragma region create_cmd_parser
 
     cmdline::parser cmdparser;
-//               ------Type------ ----arg---- -abbr- ----------------------------------------------------describe----------------------------------------------------- --nes-- -----default------ ----------------------------------------------------------------------------possible option----------------------------------------------------------------------------
+//               ------Type------ ----arg---- -abbr- ----------------------------------------------------describe----------------------------------------------------- --nes-- -----default------ ------------------------possible option------------------------
     cmdparser.add                ( "help"    , '?'  , "Show this help page" );
     cmdparser.add                ( "create"  , 'w'  , "Create a hash list for a directory" );
     cmdparser.add                ( "overlay" , '\0' , "Overlay old hash list without asking" );
@@ -80,9 +86,9 @@ int main( int argc , char** argv ){
     cmdparser.add                ( "single"  , 's'  , "Use single file mode" );
     cmdparser.add<std::string>   ( "hash"    , '\0' , "File hash (only available by single file check)"                                                               , false );
 #ifdef USE_OPENSSL_EVP
-    cmdparser.add<std::string>   ( "mode"    , 'm'  , "Set hash mode (md5, sha1, sha224, sha256, sha512, sha3-224, sha3-256, sha3-384, sha3-512, shake128, shake256)" , false , rena::CFG_MODE   , cmdline::oneof<std::string>( "md5" , "sha1" , "sha224" , "sha256" , "sha384" , "sha512" , "sha3-224" , "sha3-256" , "sha3-384" , "sha3-512" , "shake128" , "shake256" ) );
+    cmdparser.add<std::string>   ( "mode"    , 'm'  , "Set hash mode (md5, sha1, sha224, sha256, sha512, sha3-224, sha3-256, sha3-384, sha3-512, shake128, shake256)" , false , rena::CFG_MODE   , cmdline::oneof<std::string>( rena::support_hash_modes ) );
 #else
-    cmdparser.add<std::string>   ( "mode"    , 'm'  , "Set hash mode (md5, sha1, sha224, sha256, sha512)"                                                             , false , rena::CFG_MODE   , cmdline::oneof<std::string>( "md5" , "sha1" , "sha224" , "sha256" , "sha384" , "sha512" ) );
+    cmdparser.add<std::string>   ( "mode"    , 'm'  , "Set hash mode (md5, sha1, sha224, sha256, sha512)"                                                             , false , rena::CFG_MODE   , cmdline::oneof<std::string>( rena::support_hash_modes ) );
 #endif
     cmdparser.add<std::string>   ( "ignore"  , 'i'  , "Set the path of the ignore file"                                                                               , false );
     cmdparser.add<unsigned short>( "thread"  , 'j'  , "Set the thread-number of multithreading acceleration"                                                          , false , rena::CFG_THREAD , cmdline::range<unsigned short>( 1 , 128 ) );

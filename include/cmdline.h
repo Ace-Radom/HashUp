@@ -213,6 +213,16 @@ oneof_reader<T> oneof( Args... args ){
   return ret;
 }
 
+template <class T>
+oneof_reader<T> oneof( std::vector<T> args ){
+  oneof_reader<T> ret;
+  for ( const auto& it : args )
+  {
+    ret.add( it );
+  }
+  return ret;
+}
+
 //-----
 
 class parser{

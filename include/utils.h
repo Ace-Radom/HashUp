@@ -2,6 +2,7 @@
 #define _UTILS_H_
 
 #include<iostream>
+#include<vector>
 #include<cstring>
 #ifdef _WIN32
 #include<Windows.h>
@@ -42,6 +43,8 @@
         } while ( 0 )
 #endif
 
+#define in_range( x , min , max ) ( x >= min && x <= max )
+
 namespace rena {
 
     typedef enum {
@@ -70,10 +73,13 @@ namespace rena {
 
     // utils for main function
 
+    bool is_supported_hash_mode( std::string mode );
+
     CPSTR get_hashup_exe_path();
 
     extern std::string    CFG_MODE;
     extern unsigned short CFG_THREAD;
+    extern std::vector<std::string> support_hash_modes; // all supported hash modes
 
 }; // namespace rena
 

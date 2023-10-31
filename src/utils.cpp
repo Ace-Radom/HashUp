@@ -21,6 +21,17 @@ start_confirm:
     }
 }
 
+bool rena::is_supported_hash_mode( std::string mode ){
+    for ( const auto& it : support_hash_modes )
+    {
+        if ( mode == it )
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 CPSTR rena::get_hashup_exe_path(){
     CPSTR hashup_exe_path;
     CPCHAR buf[1024];
@@ -46,3 +57,20 @@ CPSTR rena::get_hashup_exe_path(){
 
 std::string rena::CFG_MODE = "md5";
 unsigned short rena::CFG_THREAD = 8;
+std::vector<std::string> rena::support_hash_modes = {
+        "md5",
+        "sha1",
+        "sha224",
+        "sha256",
+        "sha384",
+        "sha512"
+#ifdef USE_OPENSSL_EVP
+        ,
+        "sha3-224",
+        "sha3-256",
+        "sha3-384",
+        "sha3-512",
+        "shake128",
+        "shake256"
+#endif
+};
