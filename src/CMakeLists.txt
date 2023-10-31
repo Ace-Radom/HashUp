@@ -1,4 +1,5 @@
 add_library(hashuplib STATIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/rich.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/calchash.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/hufo.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/utils.cpp

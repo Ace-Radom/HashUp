@@ -23,6 +23,7 @@
 #include"utils.h"
 #include"ThreadPool.h"
 #include"cppfignore.h"
+#include"rich.h"
 
 namespace rena {
 
