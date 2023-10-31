@@ -244,11 +244,11 @@ rena::HUFO::HUFOSTATUS rena::HUFO::_do_hashcalc( unsigned short threads ){
 
 #ifdef SHOW_PROGRESS_DETAIL
     do {
-        CPOUT << "Progress: " << global_speed_watcher -> get_finished() << "/" << this -> _hlist.size() << " "
+        CPOUT << rich::clear_line << "Progress: " << global_speed_watcher -> get_finished() << "/" << this -> _hlist.size() << " "
               << std::fixed << std::setprecision( 2 ) << global_speed_watcher -> get_speed() / 1048576.0 <<  "MB/s\r" << std::flush;
         std::this_thread::sleep_for( std::chrono::microseconds( 50 ) );
     } while ( !pool.is_terminated() );
-    CPOUT << "Progress: " << global_speed_watcher -> get_finished() << "/" << this -> _hlist.size() << " "
+    CPOUT << rich::clear_line << "Progress: " << global_speed_watcher -> get_finished() << "/" << this -> _hlist.size() << " "
           << std::fixed << std::setprecision( 2 ) << global_speed_watcher -> get_speed() / 1048576.0 <<  "MB/s" << std::endl;
     // last flush
 

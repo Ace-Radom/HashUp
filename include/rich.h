@@ -106,6 +106,9 @@ namespace rena {
         template <class _Elem , class _Traits>
         std::basic_ostream<_Elem,_Traits>& style_reset( std::basic_ostream<_Elem,_Traits>& __os );
 
+        template <class _Elem , class _Traits>
+        std::basic_ostream<_Elem,_Traits>& clear_line( std::basic_ostream<_Elem,_Traits>& __os );
+
         void rich_global_init();
 
     }; // namespace rich
@@ -200,6 +203,25 @@ std::basic_ostream<_Elem,_Traits>& rena::rich::style_reset( std::basic_ostream<_
 #else // using WIN API
     __os << "\033[0m" << std::flush;
 #endif // using ANSI
+
+    return __os;
+}
+
+template <class _Elem , class _Traits>
+std::basic_ostream<_Elem,_Traits>& rena::rich::clear_line( std::basic_ostream<_Elem,_Traits>& __os ){
+
+#if RICH_COLOR_TYPE == RC_WINAPI
+    win32u::_get_console_screen_buffer_info();
+    COORD cp; // cursor position
+    cp.X = 0;
+    cp.Y = win32u::_csbufinfo.dwCursorPosition.Y;
+    SetConsoleCursorPosition( win32u::_WIN_STDOUT_HANDLE , cp );
+    DWORD cw; // chars written
+    FillConsoleOutputCharacter( win32u::_WIN_STDOUT_HANDLE , ' ' , win32u::_csbufinfo.dwSize.X , cp , &cw );
+    SetConsoleCursorPosition( win32u::_WIN_STDOUT_HANDLE , cp );
+#else
+    __os << "\033[2K\r" << std::flush;
+#endif
 
     return __os;
 }
