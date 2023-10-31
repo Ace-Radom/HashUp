@@ -127,7 +127,7 @@ rena::HUFO::HUFOSTATUS rena::HUFO::do_create( unsigned short threads ){
     this -> _do_hashcalc( threads );
 
 #ifdef SHOW_PROGRESS_DETAIL
-    CPOUT << "Write hash list to file." << std::endl;
+    CPOUT << "Writing hash list to file." << std::endl;
 #endif
 
     for ( auto it : this -> _hlist )
@@ -137,7 +137,7 @@ rena::HUFO::HUFOSTATUS rena::HUFO::do_create( unsigned short threads ){
     }
 
 #ifdef SHOW_PROGRESS_DETAIL
-    CPOUT << "Create complete: " << this -> _ori_hlist_len << " files got in total; "
+    CPOUT << rich::FColor::GREEN << "Create complete: " << rich::style_reset << this -> _ori_hlist_len << " files got in total; "
           << this -> _hlist.size() << " created; "
           << this -> _ori_hlist_len - this -> _hlist.size() << " error."
           << std::endl; 
@@ -184,13 +184,13 @@ rena::HUFO::HUFOSTATUS rena::HUFO::do_check( unsigned short threads ){
         }
         else
         {
-            CPOUT << "File \"" << CPPATHTOSTR( it.fp ) << "\" Check Failed: got " << it.hash_readin << ", should be " << it.hash << "." << std::endl;
+            CPOUT << rich::FColor::RED << "File \"" << CPPATHTOSTR( it.fp ) << "\" Check Failed: " << rich::style_reset << "got " << it.hash_readin << ", should be " << it.hash << "." << std::endl;
             this -> _errhlist.push_back( it );
         }
     }
 
 #ifdef SHOW_PROGRESS_DETAIL
-    CPOUT << "Check complete: " << this -> _ori_hlist_len << " files got in total; " 
+    CPOUT << rich::FColor::GREEN << "Check complete: " << rich::style_reset << this -> _ori_hlist_len << " files got in total; " 
           << this -> _hlist.size() - this -> _errhlist.size() << " passed; " 
           << this -> _errhlist.size() << " failed; " 
           << this -> _ori_hlist_len - this -> _hlist.size() << " error." 
@@ -270,7 +270,7 @@ rena::HUFO::HUFOSTATUS rena::HUFO::_do_hashcalc( unsigned short threads ){
         }
         catch ( const std::exception& e )
         {
-            CPERR << "Operate file \"" << CPPATHTOSTR( it -> fp ) << "\" failed: " << e.what() << std::endl
+            CPERR << rich::FColor::RED << "Operate file \"" << CPPATHTOSTR( it -> fp ) << "\" failed: " << rich::style_reset << e.what() << std::endl
                   << "Skip." << std::endl;
             it = this -> _hlist.erase( it );
             continue;
@@ -330,7 +330,7 @@ void rena::HUFO::_read_huf_write_to_hlist(){
         temp.hash_readin = CPATOWCONV( buf.substr( buf.rfind( ' ' ) + 1 ) );
         if ( temp.hash_readin.size() != this -> _hlen )
         {
-            CPERR << "File \"" << CPPATHTOSTR( temp.fp ) << "\" wrong hash length: got " << temp.hash_readin.size() << ", should be " << this -> _hlen << "." << std::endl
+            CPERR << rich::FColor::RED << "File \"" << CPPATHTOSTR( temp.fp ) << "\" wrong hash length: " << rich::style_reset << "got " << temp.hash_readin.size() << ", should be " << this -> _hlen << "." << std::endl
                   << "Skip." << std::endl;
             this -> _ori_hlist_len++;
             // this file will not be written into _hlist, but it's still an error file
