@@ -14,6 +14,14 @@
 #include<chrono>
 #include<mutex>
 #include<cerrno>
+#include<thread>
+#include<unordered_map>
+#include<atomic>
+#ifdef _MSC_VER
+#include<conio.h>
+#else
+#include<termios.h>
+#endif
 
 #include"openssl/md5.h"
 #include"openssl/sha.h"
@@ -34,6 +42,8 @@ namespace rena {
 #ifndef RFILE_BLOCK_SIZE
 #define RFILE_BLOCK_SIZE 1024
 #endif
+
+    extern std::atomic<bool> pause_signal;
 
     CPSTR calc_file_md5( const std::filesystem::path& path );
     CPSTR calc_file_sha1( const std::filesystem::path& path );
@@ -122,19 +132,27 @@ namespace rena {
     class speedwatcher {
         public:
             speedwatcher( std::chrono::steady_clock::time_point start_time_point ) 
-                : start_time( start_time_point ) , total_size( 0 ) , finished_num( 0 ){};
+                : start_time( start_time_point ) , total_duration( 0 ) , total_size( 0 ) , finished_num( 0 ){};
             ~speedwatcher(){};
 
             void add( size_t size );
-            void finished_one();
+            void start_one( std::thread::id thread_id , std::filesystem::path path );
+            void finished_one( std::thread::id thread_id );
             size_t get_speed();
             size_t get_finished();
+            double get_duration_s();
+            std::vector<std::filesystem::path> get_files_in_process();
+            void pause_watch();
+            void resume_watch();
 
         private:
-            std::chrono::steady_clock::time_point start_time;
+            std::chrono::steady_clock::time_point start_time; // start time this timekeeping period
+            std::chrono::microseconds total_duration;
             size_t total_size;
             size_t finished_num;
             std::mutex global_mutex;
+            std::unordered_map<std::thread::id,std::filesystem::path> file_in_process;
+            void push_timekeeping_period();
     }; // class speedwatcher
 
     extern speedwatcher* global_speed_watcher;

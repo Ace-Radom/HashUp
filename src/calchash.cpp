@@ -1,5 +1,7 @@
 #include"hashup.h"
 
+std::atomic<bool> rena::pause_signal = false;
+
 CPSTR dump_CHAR_to_HEX( const unsigned char* hash , int len ){
     std::string out;
     for ( int i = 0 ; i < len ; i++ )
@@ -16,6 +18,13 @@ CPSTR dump_CHAR_to_HEX( const unsigned char* hash , int len ){
 
 CPSTR rena::calc_file_hash( const std::filesystem::path& path , const EVP_MD* algo ){
     try {
+#ifdef SHOW_PROGRESS_DETAIL
+        if ( global_speed_watcher != nullptr )
+        {
+            global_speed_watcher -> start_one( std::this_thread::get_id() , path );
+        } // tell global speed watcher what are you doing now
+#endif
+    
         std::ifstream rFile( path , std::ios::binary );
         if ( !rFile.is_open() )
         {
@@ -30,6 +39,7 @@ CPSTR rena::calc_file_hash( const std::filesystem::path& path , const EVP_MD* al
         unsigned int out_len;
         while ( !rFile.eof() )
         {
+            while ( pause_signal.load() ){ std::this_thread::sleep_for( std::chrono::milliseconds( 50 ) ); }
             rFile.read( buf , sizeof( buf ) );
             ret = rFile.gcount();
 #ifdef SHOW_PROGRESS_DETAIL
@@ -46,7 +56,7 @@ CPSTR rena::calc_file_hash( const std::filesystem::path& path , const EVP_MD* al
 #ifdef SHOW_PROGRESS_DETAIL
         if ( global_speed_watcher != nullptr )
         {
-            global_speed_watcher -> finished_one();
+            global_speed_watcher -> finished_one( std::this_thread::get_id() );
         }
 #endif
         return dump_CHAR_to_HEX( out , out_len );
@@ -56,7 +66,7 @@ CPSTR rena::calc_file_hash( const std::filesystem::path& path , const EVP_MD* al
 #ifdef SHOW_PROGRESS_DETAIL
         if ( global_speed_watcher != nullptr )
         {
-            global_speed_watcher -> finished_one();
+            global_speed_watcher -> finished_one( std::this_thread::get_id() );
         }
 #endif
         throw e;
@@ -115,6 +125,13 @@ CPSTR rena::calc_file_shake256( const std::filesystem::path& path ){
 
 CPSTR rena::calc_file_md5( const std::filesystem::path& path ){
     try {
+#ifdef SHOW_PROGRESS_DETAIL
+        if ( global_speed_watcher != nullptr )
+        {
+            global_speed_watcher -> start_one( std::this_thread::get_id() , path );
+        } // tell global speed watcher what are you doing now
+#endif
+
         std::ifstream rFile( path , std::ios::binary );
         if ( !rFile.is_open() )
         {
@@ -143,7 +160,7 @@ CPSTR rena::calc_file_md5( const std::filesystem::path& path ){
 #ifdef SHOW_PROGRESS_DETAIL
         if ( global_speed_watcher != nullptr )
         {
-            global_speed_watcher -> finished_one();
+            global_speed_watcher -> finished_one( std::this_thread::get_id() );
         }
 #endif
         return dump_CHAR_to_HEX( out , MD5_DIGEST_LENGTH );
@@ -153,7 +170,7 @@ CPSTR rena::calc_file_md5( const std::filesystem::path& path ){
 #ifdef SHOW_PROGRESS_DETAIL
         if ( global_speed_watcher != nullptr )
         {
-            global_speed_watcher -> finished_one();
+            global_speed_watcher -> finished_one( std::this_thread::get_id() );
         }
 #endif
         throw e;
@@ -162,6 +179,13 @@ CPSTR rena::calc_file_md5( const std::filesystem::path& path ){
 
 CPSTR rena::calc_file_sha1( const std::filesystem::path& path ){
     try {
+#ifdef SHOW_PROGRESS_DETAIL
+        if ( global_speed_watcher != nullptr )
+        {
+            global_speed_watcher -> start_one( std::this_thread::get_id() , path );
+        } // tell global speed watcher what are you doing now
+#endif
+
         std::ifstream rFile( path , std::ios::binary );
         if ( !rFile.is_open() )
         {
@@ -190,7 +214,7 @@ CPSTR rena::calc_file_sha1( const std::filesystem::path& path ){
 #ifdef SHOW_PROGRESS_DETAIL
         if ( global_speed_watcher != nullptr )
         {
-            global_speed_watcher -> finished_one();
+            global_speed_watcher -> finished_one( std::this_thread::get_id() );
         }
 #endif
         return dump_CHAR_to_HEX( out , SHA_DIGEST_LENGTH );
@@ -200,7 +224,7 @@ CPSTR rena::calc_file_sha1( const std::filesystem::path& path ){
 #ifdef SHOW_PROGRESS_DETAIL
         if ( global_speed_watcher != nullptr )
         {
-            global_speed_watcher -> finished_one();
+            global_speed_watcher -> finished_one( std::this_thread::get_id() );
         }
 #endif
         throw e;
@@ -209,6 +233,13 @@ CPSTR rena::calc_file_sha1( const std::filesystem::path& path ){
 
 CPSTR rena::calc_file_sha224( const std::filesystem::path& path ){
     try {
+#ifdef SHOW_PROGRESS_DETAIL
+        if ( global_speed_watcher != nullptr )
+        {
+            global_speed_watcher -> start_one( std::this_thread::get_id() , path );
+        } // tell global speed watcher what are you doing now
+#endif
+
         std::ifstream rFile( path , std::ios::binary );
         if ( !rFile.is_open() )
         {
@@ -237,7 +268,7 @@ CPSTR rena::calc_file_sha224( const std::filesystem::path& path ){
 #ifdef SHOW_PROGRESS_DETAIL
         if ( global_speed_watcher != nullptr )
         {
-            global_speed_watcher -> finished_one();
+            global_speed_watcher -> finished_one( std::this_thread::get_id() );
         }
 #endif
         return dump_CHAR_to_HEX( out , SHA224_DIGEST_LENGTH );
@@ -247,7 +278,7 @@ CPSTR rena::calc_file_sha224( const std::filesystem::path& path ){
 #ifdef SHOW_PROGRESS_DETAIL
         if ( global_speed_watcher != nullptr )
         {
-            global_speed_watcher -> finished_one();
+            global_speed_watcher -> finished_one( std::this_thread::get_id() );
         }
 #endif
         throw e;
@@ -256,6 +287,13 @@ CPSTR rena::calc_file_sha224( const std::filesystem::path& path ){
 
 CPSTR rena::calc_file_sha256( const std::filesystem::path& path ){
     try {
+#ifdef SHOW_PROGRESS_DETAIL
+        if ( global_speed_watcher != nullptr )
+        {
+            global_speed_watcher -> start_one( std::this_thread::get_id() , path );
+        } // tell global speed watcher what are you doing now
+#endif
+
         std::ifstream rFile( path , std::ios::binary );
         if ( !rFile.is_open() )
         {
@@ -284,7 +322,7 @@ CPSTR rena::calc_file_sha256( const std::filesystem::path& path ){
 #ifdef SHOW_PROGRESS_DETAIL
         if ( global_speed_watcher != nullptr )
         {
-            global_speed_watcher -> finished_one();
+            global_speed_watcher -> finished_one( std::this_thread::get_id() );
         }
 #endif
         return dump_CHAR_to_HEX( out , SHA256_DIGEST_LENGTH );
@@ -294,7 +332,7 @@ CPSTR rena::calc_file_sha256( const std::filesystem::path& path ){
 #ifdef SHOW_PROGRESS_DETAIL
         if ( global_speed_watcher != nullptr )
         {
-            global_speed_watcher -> finished_one();
+            global_speed_watcher -> finished_one( std::this_thread::get_id() );
         }
 #endif
         throw e;
@@ -303,6 +341,13 @@ CPSTR rena::calc_file_sha256( const std::filesystem::path& path ){
 
 CPSTR rena::calc_file_sha384( const std::filesystem::path& path ){
     try {
+#ifdef SHOW_PROGRESS_DETAIL
+        if ( global_speed_watcher != nullptr )
+        {
+            global_speed_watcher -> start_one( std::this_thread::get_id() , path );
+        } // tell global speed watcher what are you doing now
+#endif
+
         std::ifstream rFile( path , std::ios::binary );
         if ( !rFile.is_open() )
         {
@@ -331,7 +376,7 @@ CPSTR rena::calc_file_sha384( const std::filesystem::path& path ){
 #ifdef SHOW_PROGRESS_DETAIL
             if ( global_speed_watcher != nullptr )
             {
-                global_speed_watcher -> finished_one();
+                global_speed_watcher -> finished_one( std::this_thread::get_id() );
             }
 #endif
             return dump_CHAR_to_HEX( out , SHA384_DIGEST_LENGTH );
@@ -342,7 +387,7 @@ CPSTR rena::calc_file_sha384( const std::filesystem::path& path ){
 #ifdef SHOW_PROGRESS_DETAIL
         if ( global_speed_watcher != nullptr )
         {
-            global_speed_watcher -> finished_one();
+            global_speed_watcher -> finished_one( std::this_thread::get_id() );
         }
 #endif
         throw e;
@@ -351,6 +396,13 @@ CPSTR rena::calc_file_sha384( const std::filesystem::path& path ){
 
 CPSTR rena::calc_file_sha512( const std::filesystem::path& path ){
     try {
+#ifdef SHOW_PROGRESS_DETAIL
+        if ( global_speed_watcher != nullptr )
+        {
+            global_speed_watcher -> start_one( std::this_thread::get_id() , path );
+        } // tell global speed watcher what are you doing now
+#endif
+
         std::ifstream rFile( path , std::ios::binary );
         if ( !rFile.is_open() )
         {
@@ -379,7 +431,7 @@ CPSTR rena::calc_file_sha512( const std::filesystem::path& path ){
 #ifdef SHOW_PROGRESS_DETAIL
         if ( global_speed_watcher != nullptr )
         {
-            global_speed_watcher -> finished_one();
+            global_speed_watcher -> finished_one( std::this_thread::get_id() );
         }
 #endif
         return dump_CHAR_to_HEX( out , SHA512_DIGEST_LENGTH );
@@ -389,7 +441,7 @@ CPSTR rena::calc_file_sha512( const std::filesystem::path& path ){
 #ifdef SHOW_PROGRESS_DETAIL
         if ( global_speed_watcher != nullptr )
         {
-            global_speed_watcher -> finished_one();
+            global_speed_watcher -> finished_one( std::this_thread::get_id() );
         }
 #endif
         throw e;
