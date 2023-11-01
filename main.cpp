@@ -1,6 +1,6 @@
 #include<iostream>
 #include<filesystem>
-#ifdef _MSC_VER
+#ifdef WIN32
 #include<io.h>
 #include<fcntl.h>
 #endif
@@ -11,7 +11,7 @@
 #include"utils.h"
 #include"build_config.h"
 
-#ifdef _MSC_VER
+#ifdef WIN32
 #define FREE_ARGV delete[] argv;
 #else
 #define FREE_ARGV ;
@@ -19,7 +19,7 @@
 
 void print_hufo_err( rena::HUFO::HUFOSTATUS tag );
 
-#ifdef _MSC_VER
+#ifdef WIN32
 int wmain( int argc , wchar_t** wargv ){
     _setmode( _fileno( stdout ) , _O_WTEXT );
     _setmode( _fileno( stderr ) , _O_WTEXT );
