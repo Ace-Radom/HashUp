@@ -331,6 +331,8 @@ void rena::HUFO::_traversal_dir_write_to_hlist( const std::filesystem::path& dir
                     continue;
                 } // should be ignored
             } // using file ignore, do ignore check
+            temp.fsize = std::filesystem::file_size( this -> _pdpath / temp.fp );
+            this -> _tfsize += temp.fsize;
             this -> _hlist.push_back( temp );
         } // write relative path to _hlist
     }
@@ -348,6 +350,20 @@ void rena::HUFO::_read_huf_write_to_hlist(){
         HASHOBJ temp;
         temp.fp = CPATOWCONV( buf.substr( 0 , buf.rfind( ' ' ) ) );
         temp.hash_readin = CPATOWCONV( buf.substr( buf.rfind( ' ' ) + 1 ) );
+        std::filesystem::path ptemp = temp.fp; // path temp (for file exist check and size get)
+        if ( ptemp.is_relative() )
+        {
+            ptemp = this -> _pdpath / temp.fp;
+        } // relative path, make absolute temp path for file exist check and size get
+        if ( !std::filesystem::exists( ptemp ) )
+        {
+            CPERR << rich::FColor::RED << "File \"" << CPPATHTOSTR( temp.fp ) << "\" doesn't not exist." << rich::style_reset << std::endl
+                  << "Skip." << std::endl;
+            this -> _ori_hlist_len++;
+            continue;
+        } // file in huf not exists
+        temp.fsize = std::filesystem::file_size( ptemp );
+        this -> _tfsize += temp.fsize;
         if ( temp.hash_readin.size() != this -> _hlen )
         {
             CPERR << rich::FColor::RED << "File \"" << CPPATHTOSTR( temp.fp ) << "\" wrong hash length: " << rich::style_reset << "got " << temp.hash_readin.size() << ", should be " << this -> _hlen << "." << std::endl

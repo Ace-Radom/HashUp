@@ -47,10 +47,11 @@ void rena::watch_kb_signal( const rena::HUFO* hufoobj ){
         {
             CPOUT << rich::clear_line
                   << "==================================================" << std::endl
-                  << rich::FColor::YELLOW << "Time:\t\t"             << rich::style_reset << CPATOWCONV( get_time_str_now() ) << std::endl
-                  << rich::FColor::YELLOW << "Finished:\t"           << rich::style_reset << global_speed_watcher -> get_finished() << " Files" << std::endl
-                  << rich::FColor::YELLOW << "Total:\t\t"            << rich::style_reset << hufoobj -> _hlist.size() << " Files" << std::endl
-                  << rich::FColor::YELLOW << "Avg. Speed:\t"         << rich::style_reset << std::fixed << std::setprecision( 2 ) << global_speed_watcher -> get_speed() / 1048576.0 << "MB/s" << std::endl
+                  << rich::FColor::YELLOW << "Time:\t\t\t"             << rich::style_reset << CPATOWCONV( get_time_str_now() ) << std::endl
+                  << rich::FColor::YELLOW << "Finished:\t\t"           << rich::style_reset << global_speed_watcher -> get_finished() << " Files" << std::endl
+                  << rich::FColor::YELLOW << "Total:\t\t\t"            << rich::style_reset << hufoobj -> _hlist.size() << " Files" << std::endl
+                  << rich::FColor::YELLOW << "Avg. Speed:\t\t"         << rich::style_reset << std::fixed << std::setprecision( 2 ) << global_speed_watcher -> get_speed() / 1048576.0 << "MB/s" << std::endl
+                  << rich::FColor::YELLOW << "Exp. Time Left:\t\t"     << rich::style_reset << global_speed_watcher -> get_expected_time_left( hufoobj ) << std::endl
                   << rich::FColor::YELLOW << "Files in process now:" << rich::style_reset << std::endl;
             std::vector<std::filesystem::path> files_in_process = global_speed_watcher -> get_files_in_process();
             for ( int i = 0 ; i < files_in_process.size() ; i++ )

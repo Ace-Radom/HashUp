@@ -41,6 +41,24 @@ size_t rena::speedwatcher::get_finished(){
     return this -> finished_num;
 }
 
+CPSTR rena::speedwatcher::get_expected_time_left( const HUFO* hufoobj ){
+    std::lock_guard<std::mutex> lock( this -> global_mutex );
+    this -> push_timekeeping_period();
+    if ( this -> total_duration.count() == 0 )
+    {
+        return CPATOWCONV( "unlimited" );
+    }
+    size_t speed_per_second = this -> total_size / this -> total_duration.count() * 1000000;
+    double excepted_time_left_second = ( double ) ( hufoobj -> _tfsize - this -> total_size ) / speed_per_second;
+    std::ostringstream oss;
+    if ( excepted_time_left_second > 60 )
+    {
+        oss << excepted_time_left_second / 60 << "min ";
+    }
+    oss << std::fixed << std::setprecision( 2 ) << fmod( excepted_time_left_second , 60.0 ) << "s";
+    return CPATOWCONV( oss.str() );
+}
+
 double rena::speedwatcher::get_duration_s(){
     std::lock_guard<std::mutex> lock( this -> global_mutex );
     return this -> total_duration.count() / 1000000.0;

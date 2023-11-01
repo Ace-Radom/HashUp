@@ -17,6 +17,8 @@
 #include<thread>
 #include<unordered_map>
 #include<atomic>
+#include<sstream>
+#include<cmath>
 #ifdef SHOW_PROGRESS_DETAIL
 #ifdef WIN32
 #include<conio.h>
@@ -103,10 +105,12 @@ namespace rena {
             HUFOSTATUS do_create( unsigned short threads );
             HUFOSTATUS do_check( unsigned short threads );
             friend void watch_kb_signal( const HUFO* hufoobj );
+            friend class speedwatcher;
 
         private:
             typedef struct {
                 std::filesystem::path       fp;
+                size_t                      fsize;         // file size
                 std::shared_future<CPSTR>   hash_future;
                 CPSTR                       hash;
                 CPSTR                       hash_readin;   // read in hash (only be used when checking)
@@ -127,6 +131,7 @@ namespace rena {
             HASHMODE                _hmode;             // hash mode
             HASHFUNCTIONHOOK        _hf = nullptr;      // hash function
             unsigned short          _hlen;              // hash length
+            size_t                  _tfsize = 0;        // total file size
             HASHPURPOSE             _hpurpose;          // hash purpose
             HASHLIST                _hlist;             // hash list
             size_t                  _ori_hlist_len = 0; // hash list length at very first step
@@ -163,6 +168,7 @@ namespace rena {
             void finished_one( std::thread::id thread_id );
             size_t get_speed();
             size_t get_finished();
+            CPSTR get_expected_time_left( const HUFO* hufoobj );
             double get_duration_s();
             std::vector<std::filesystem::path> get_files_in_process();
             void pause_watch();
@@ -171,7 +177,7 @@ namespace rena {
         private:
             std::chrono::steady_clock::time_point start_time; // start time this timekeeping period
             std::chrono::microseconds total_duration;
-            size_t total_size;
+            size_t total_size;      // total size processed
             size_t finished_num;
             std::mutex global_mutex;
             std::unordered_map<std::thread::id,std::filesystem::path> file_in_process;
