@@ -4,6 +4,9 @@
 #include<iostream>
 #include<vector>
 #include<cstring>
+#include<chrono>
+#include<ctime>
+#include<sstream>
 #ifdef _WIN32
 #include<Windows.h>
 #elif defined( __linux__ )
@@ -70,6 +73,8 @@ namespace rena {
     } HASHPURPOSE;
 
     bool confirm_interrupt( const CPSTR& msg , char y , char n );
+
+    std::string get_time_str_now();
 
     // utils for main function
 

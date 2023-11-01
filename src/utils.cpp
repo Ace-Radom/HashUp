@@ -21,6 +21,19 @@ start_confirm:
     }
 }
 
+std::string rena::get_time_str_now(){
+    auto now = std::chrono::system_clock::now();
+    time_t current_time = std::chrono::system_clock::to_time_t( now );
+    tm time_info = *localtime( &current_time );
+    char time_str[256];
+    strftime( time_str , sizeof( time_str ) , "%Y-%m-%d %H:%M:%S" , &time_info );
+    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>( now.time_since_epoch() ) % 1000;
+
+    std::ostringstream ostr;
+    ostr << time_str << "." << ms.count();
+    return ostr.str();
+}
+
 bool rena::is_supported_hash_mode( std::string mode ){
     for ( const auto& it : support_hash_modes )
     {
