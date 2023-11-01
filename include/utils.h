@@ -79,6 +79,8 @@ namespace rena {
 
     void noecho();
     void echo();
+    void nocursor();
+    void showcursor();
 
     // utils for main function
 

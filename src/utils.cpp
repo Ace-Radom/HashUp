@@ -35,28 +35,60 @@ std::string rena::get_time_str_now(){
 }
 
 void rena::noecho(){
-
 #ifdef WIN32
+    HANDLE hConsole = GetStdHandle( STD_OUTPUT_HANDLE );
+    DWORD hmode;
+    GetConsoleMode( hConsole , &hmode );
+    hmode &= ~ENABLE_ECHO_INPUT;
+    SetConsoleMode( hConsole , hmode );
 #elif defined( __linux__ )
     struct termios attr;
     tcgetattr( STDIN_FILENO , &attr );
     attr.c_lflag &= ~ECHO;
     tcsetattr( STDIN_FILENO , TCSANOW , &attr );
 #endif
-
     return;
 }
 
 void rena::echo(){
-
 #ifdef WIN32
+    HANDLE hConsole = GetStdHandle( STD_OUTPUT_HANDLE );
+    DWORD hmode;
+    GetConsoleMode( hConsole , &hmode );
+    hmode |= ENABLE_ECHO_INPUT;
+    SetConsoleMode( hConsole , hmode );
 #elif defined( __linux__ )
     struct termios attr;
     tcgetattr( STDIN_FILENO , &attr );
     attr.c_lflag |= ECHO;
     tcsetattr( STDIN_FILENO , TCSANOW , &attr );
 #endif
+    return;
+}
 
+void rena::nocursor(){
+#ifdef WIN32
+    HANDLE hConsole = GetStdHandle( STD_OUTPUT_HANDLE );
+    CONSOLE_CURSOR_INFO cinfo; // cursor info
+    GetConsoleCursorInfo( hConsole , &cinfo );
+    cinfo.bVisible = false;
+    SetConsoleCursorInfo( hConsole , &cinfo );
+#elif defined( __linux__ )
+    CPOUT << "\033[?25l" << std::flush;
+#endif
+    return;
+}
+
+void rena::showcursor(){
+#ifdef WIN32
+    HANDLE hConsole = GetStdHandle( STD_OUTPUT_HANDLE );
+    CONSOLE_CURSOR_INFO cinfo; // cursor info
+    GetConsoleCursorInfo( hConsole , &cinfo );
+    cinfo.bVisible = true;
+    SetConsoleCursorInfo( hConsole , &cinfo );
+#elif defined( __linux__ )
+    CPOUT << "\033[?25h" << std::flush;
+#endif
     return;
 }
 
