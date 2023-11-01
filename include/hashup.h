@@ -17,10 +17,22 @@
 #include<thread>
 #include<unordered_map>
 #include<atomic>
-#ifdef _MSC_VER
+#ifdef SHOW_PROGRESS_DETAIL
+#ifdef WIN32
 #include<conio.h>
-#else
+#define kbhit _kbhit
+#define getch _getch
+#elif defined( __linux__ )
 #include<termios.h>
+#include<unistd.h>
+#include<sys/select.h>
+#include<sys/ioctl.h>
+#define kbhit rena::_kbhit
+#define getch rena::_getch
+#else
+#define kbhit
+#define getch
+#endif
 #endif
 
 #include"openssl/md5.h"
@@ -90,6 +102,7 @@ namespace rena {
             HUFOSTATUS start( unsigned short threads );
             HUFOSTATUS do_create( unsigned short threads );
             HUFOSTATUS do_check( unsigned short threads );
+            friend void watch_kb_signal( const HUFO* hufoobj );
 
         private:
             typedef struct {
@@ -124,6 +137,16 @@ namespace rena {
     }; // class HUFO (HashUp File Object)
 
 #ifdef SHOW_PROGRESS_DETAIL
+
+////////////////////////////////////////////////////////////
+//                        kbs.cpp                         //
+////////////////////////////////////////////////////////////
+
+#ifdef __linux__
+    int _kbhit();
+    char _getch();
+#endif
+    void watch_kb_signal( const HUFO* hufoobj );
 
 ////////////////////////////////////////////////////////////
 //                     speedwatch.cpp                     //

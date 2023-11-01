@@ -34,6 +34,32 @@ std::string rena::get_time_str_now(){
     return ostr.str();
 }
 
+void rena::noecho(){
+
+#ifdef WIN32
+#elif defined( __linux__ )
+    struct termios attr;
+    tcgetattr( STDIN_FILENO , &attr );
+    attr.c_lflag &= ~ECHO;
+    tcsetattr( STDIN_FILENO , TCSANOW , &attr );
+#endif
+
+    return;
+}
+
+void rena::echo(){
+
+#ifdef WIN32
+#elif defined( __linux__ )
+    struct termios attr;
+    tcgetattr( STDIN_FILENO , &attr );
+    attr.c_lflag |= ECHO;
+    tcsetattr( STDIN_FILENO , TCSANOW , &attr );
+#endif
+
+    return;
+}
+
 bool rena::is_supported_hash_mode( std::string mode ){
     for ( const auto& it : support_hash_modes )
     {

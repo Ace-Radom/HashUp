@@ -12,11 +12,13 @@
 #elif defined( __linux__ )
 #include<unistd.h>
 #include<limits.h>
+#include<termios.h>
 #elif defined( __APPLE__ )
 #include<mach-o/dyld.h>
 #endif
+#include"rich.h"
 
-#ifdef _MSC_VER
+#ifdef WIN32
 #include<codecvt>
 #define CPOUT  std::wcout
 #define CPERR  std::wcerr
@@ -73,13 +75,14 @@ namespace rena {
     } HASHPURPOSE;
 
     bool confirm_interrupt( const CPSTR& msg , char y , char n );
-
     std::string get_time_str_now();
+
+    void noecho();
+    void echo();
 
     // utils for main function
 
     bool is_supported_hash_mode( std::string mode );
-
     CPSTR get_hashup_exe_path();
 
     extern std::string    CFG_MODE;

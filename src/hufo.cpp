@@ -35,7 +35,7 @@ rena::HUFO::HUFOSTATUS rena::HUFO::open( const std::filesystem::path& path , ren
     {
         if ( std::filesystem::exists( path ) && !_ol_no_ask )
         {
-#ifdef _MSC_VER
+#ifdef WIN32
             if ( !confirm_interrupt( L"This file \"" + CPPATHTOSTR( path ) + L"\" already exist. Are you sure to overwrite it?" , 'y' , 'N' ) )
 #else
             if ( !confirm_interrupt( "This file \"" + CPPATHTOSTR( path ) + "\" already exist. Are you sure to overwrite it?" , 'y' , 'N' ) )
@@ -242,48 +242,28 @@ rena::HUFO::HUFOSTATUS rena::HUFO::_do_hashcalc( unsigned short threads ){
         ++it;
     } // iterate _hlist, start tasks
 
-    CPOUT << "Press: " << rich::FColor::YELLOW << "[S]" << rich::style_reset << "tatus: Detailed Progress\t" 
-                       << rich::FColor::YELLOW << "[P]" << rich::style_reset << "ause: Suspend the Process" << std::endl;
-
 #ifdef SHOW_PROGRESS_DETAIL
 
+#if defined( WIN32 ) || defined( __linux__ )
+
+    CPOUT << rich::FColor::YELLOW << "[S]" << rich::style_reset << "tatus: Detailed Progress\t" 
+          << rich::FColor::YELLOW << "[P]" << rich::style_reset << "ause: Suspend the Process" << std::endl;
+    // keyboard signals are only available under windows and linux
+
+#endif
+
 #pragma region show_dynamic_progress
+
+    noecho();
 
     do {
         CPOUT << rich::clear_line << "Progress: " << global_speed_watcher -> get_finished() << "/" << this -> _hlist.size() << " "
               << std::fixed << std::setprecision( 2 ) << global_speed_watcher -> get_speed() / 1048576.0 << "MB/s\r" << std::flush;
-        if ( _kbhit() )
-        {
-            char c = _getch();
-            if ( c == 's' )
-            {
-                CPOUT << rich::clear_line
-                      << "==================================================" << std::endl
-                      << rich::FColor::YELLOW << "Time:\t\t"             << rich::style_reset << CPATOWCONV( get_time_str_now() ) << std::endl
-                      << rich::FColor::YELLOW << "Finished:\t"           << rich::style_reset << global_speed_watcher -> get_finished() << " Files" << std::endl
-                      << rich::FColor::YELLOW << "Total:\t\t"            << rich::style_reset << this -> _hlist.size() << " Files" << std::endl
-                      << rich::FColor::YELLOW << "Avg. Speed:\t"         << rich::style_reset << std::fixed << std::setprecision( 2 ) << global_speed_watcher -> get_speed() / 1048576.0 << "MB/s" << std::endl
-                      << rich::FColor::YELLOW << "Files in process now:" << rich::style_reset << std::endl;
-                std::vector<std::filesystem::path> files_in_process = global_speed_watcher -> get_files_in_process();
-                for ( int i = 0 ; i < files_in_process.size() ; i++ )
-                {
-                    CPOUT << "\t- " << rich::FColor::YELLOW << "thread " << i << ": " << rich::style_reset << CPPATHTOSTR( files_in_process[i] ) << std::endl;
-                }
-                CPOUT << "==================================================" << std::endl;
-            } // status
-            else if ( c == 'p' )
-            {
-                pause_signal.store( true );
-                global_speed_watcher -> pause_watch();
-                CPOUT << rich::clear_line
-                      << "Process has been paused, press " << rich::FColor::YELLOW << "[P]" << rich::style_reset << " to resume." << std::endl;
-                while ( _getch() != 'p' );
-                pause_signal.store( false );
-                global_speed_watcher -> resume_watch();
-            } // pause
-        }
+        watch_kb_signal( this );
         std::this_thread::sleep_for( std::chrono::microseconds( 50 ) );
     } while ( !pool.is_terminated() );
+
+    echo();
 
 #pragma endregion show_dynamic_progress
 
@@ -291,13 +271,12 @@ rena::HUFO::HUFOSTATUS rena::HUFO::_do_hashcalc( unsigned short threads ){
           << std::fixed << std::setprecision( 2 ) << global_speed_watcher -> get_speed() / 1048576.0 <<  "MB/s" << std::endl;
     // last flush
 
-
     CPOUT << "Total time spent on hash calculations: " << std::setprecision( 2 ) << global_speed_watcher -> get_duration_s() << "s." << std::endl;
     delete global_speed_watcher;
     global_speed_watcher = nullptr;
     // free global_speed_watcher
     CPOUT << "Getting results." << std::endl;
-#else
+#else // SHOW_PROGRESS_DETAIL
     while ( !pool.is_terminated() );
 #endif
 
