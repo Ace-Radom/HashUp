@@ -53,7 +53,7 @@ CPSTR rena::speedwatcher::get_expected_time_left( const HUFO* hufoobj ){
     std::ostringstream oss;
     if ( excepted_time_left_second > 60 )
     {
-        oss << excepted_time_left_second / 60 << "min ";
+        oss << ( int ) excepted_time_left_second / 60 << "min ";
     }
     oss << std::fixed << std::setprecision( 2 ) << fmod( excepted_time_left_second , 60.0 ) << "s";
     return CPATOWCONV( oss.str() );

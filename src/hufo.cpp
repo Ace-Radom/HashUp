@@ -331,7 +331,13 @@ void rena::HUFO::_traversal_dir_write_to_hlist( const std::filesystem::path& dir
                     continue;
                 } // should be ignored
             } // using file ignore, do ignore check
-            temp.fsize = std::filesystem::file_size( this -> _pdpath / temp.fp );
+            try {
+                temp.fsize = std::filesystem::file_size( fp );
+            }
+            catch ( const std::exception& e )
+            {
+                CPERR << rich::FColor::RED << "Get file size failed by \"" << CPPATHTOSTR( temp.fp ) << "\": " << rich::style_reset << e.what() << std::endl;
+            }
             this -> _tfsize += temp.fsize;
             this -> _hlist.push_back( temp );
         } // write relative path to _hlist
@@ -362,7 +368,13 @@ void rena::HUFO::_read_huf_write_to_hlist(){
             this -> _ori_hlist_len++;
             continue;
         } // file in huf not exists
-        temp.fsize = std::filesystem::file_size( ptemp );
+        try {
+            temp.fsize = std::filesystem::file_size( ptemp );
+        }
+        catch ( const std::exception& e )
+        {
+            CPERR << rich::FColor::RED << "Get file size failed by \"" << CPPATHTOSTR( temp.fp ) << "\": " << rich::style_reset << e.what() << std::endl;
+        }
         this -> _tfsize += temp.fsize;
         if ( temp.hash_readin.size() != this -> _hlen )
         {
