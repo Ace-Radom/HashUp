@@ -37,7 +37,7 @@ char rena::_getch(){
 
 void rena::watch_kb_signal( const rena::HUFO* hufoobj ){
 
-#if defined( WIN32 ) || defined( __linux__ )
+// #if defined( WIN32 ) || defined( __linux__ )
 
     if ( kbhit() )
     {
@@ -75,7 +75,7 @@ wait_for_resume:
         } // pause
     }
 
-#endif
+// #endif
 
     return;
 }

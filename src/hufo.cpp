@@ -244,14 +244,14 @@ rena::HUFO::HUFOSTATUS rena::HUFO::_do_hashcalc( unsigned short threads ){
 
 #ifdef SHOW_PROGRESS_DETAIL
 
-#if defined( WIN32 ) || defined( __linux__ )
+// #if defined( WIN32 ) || defined( __linux__ )
 
     CPOUT << "Press: "
           << rich::FColor::YELLOW << "[S]" << rich::style_reset << "tatus: Detailed Progress\t" 
           << rich::FColor::YELLOW << "[P]" << rich::style_reset << "ause: Suspend the Process" << std::endl;
     // keyboard signals are only available under windows and linux
 
-#endif
+// #endif
 
 #pragma region show_dynamic_progress
 
