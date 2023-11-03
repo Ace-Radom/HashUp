@@ -3,7 +3,7 @@
 [![English badge](https://img.shields.io/badge/%E8%8B%B1%E6%96%87-English-blue)](./README.md)
 [![简体中文 badge](https://img.shields.io/badge/%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87-Simplified%20Chinese-blue)](./README.zh_CN.md)
 
-<img src="https://img.shields.io/github/actions/workflow/status/Ace-Radom/HashUp/CMAKE_LINUX.yml?label=Build%20Linux" /> <img src="https://img.shields.io/github/actions/workflow/status/Ace-Radom/HashUp/CMAKE_WIN.yml?label=Build%20Windows" /> <img src="https://img.shields.io/badge/Platform-Windows&Linux-green" /> <img src="https://img.shields.io/github/license/Ace-Radom/HashUp">
+<img src="https://img.shields.io/github/actions/workflow/status/Ace-Radom/HashUp/CMAKE_LINUX.yml?label=Build%20Linux" /> <img src="https://img.shields.io/github/actions/workflow/status/Ace-Radom/HashUp/CMAKE_WIN.yml?label=Build%20Windows" /> <img src="https://img.shields.io/badge/Platform-Windows&Linux&MacOS-green" /> <img src="https://img.shields.io/github/license/Ace-Radom/HashUp">
 
 HashUp is a lightweight cross-platform command-line file hash generation and checking tool, supports `MD5`, `SHA1`, `SHA256` and `SHA512`, and also supports multi-threaded acceleration.
 
@@ -25,7 +25,7 @@ cmake --build . --config Release
 
 You should find `hashup.exe` under `HashUp\build\Release` (because using `cmake --install .` doesn't really make sense under Windows, it won't make things any easier).
 
-### Linux
+### Linux / Mac
 
 ```sh
 mkdir build && cd build
@@ -38,6 +38,12 @@ If you want to build tests, do CMake like:
 
 ```sh
 cmake .. -DCMAKE_BUILD_TYPE=Release -DMAKE_TEST=ON
+```
+
+After build run tests with:
+
+```sh
+ctest -C RELEASE
 ```
 
 Be sure that you need python3 on your computer to run tests.
@@ -100,6 +106,15 @@ Because of the limitations of OpenSSL, the output of the `SHAKE128` function is 
 | `-m, --mode MODE` | Set hash function | Default as `md5` |
 | `-i, --ignore FILE` | Set ignore file path | Only available by hash list creation |
 | `-j, --thread NUM` | Set the thread-number of multithreading acceleration | Default as `8` |
+
+### Keyboard Signals (Not available under MacOS)
+
+You can send keyboard signals by pressing specific keys during hash calculation.
+
+These keyboard signals are supported now:
+
+- Press `S` to get the number of finished files, total files, average processing speed, expected remaining time and files in process now.
+- Press `P` to pause current process, press `R` to resume process.
 
 ### Ignore File
 
