@@ -24,16 +24,13 @@
 #include<conio.h>
 #define kbhit _kbhit
 #define getch _getch
-#elif defined( __linux__ )
+#else // __linux__ || __APPLE__
 #include<termios.h>
 #include<unistd.h>
 #include<sys/select.h>
 #include<sys/ioctl.h>
 #define kbhit rena::_kbhit
 #define getch rena::_getch
-#else
-#define kbhit
-#define getch
 #endif
 #endif
 

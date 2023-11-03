@@ -1,6 +1,6 @@
 #include"hashup.h"
 
-#ifdef __linux__
+#if defined( __linux__ ) || defined( __APPLE__ )
 
 /**
  * based on the program from: https://www.flipcode.com/archives/_kbhit_for_Linux.shtml
@@ -36,9 +36,6 @@ char rena::_getch(){
 #endif
 
 void rena::watch_kb_signal( const rena::HUFO* hufoobj ){
-
-#if defined( WIN32 ) || defined( __linux__ )
-
     if ( kbhit() )
     {
         char c = getch();
@@ -74,8 +71,5 @@ wait_for_resume:
             global_speed_watcher -> resume_watch();
         } // pause
     }
-
-#endif
-
     return;
 }

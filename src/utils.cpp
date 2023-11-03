@@ -41,7 +41,7 @@ void rena::noecho(){
     GetConsoleMode( hConsole , &hmode );
     hmode &= ~ENABLE_ECHO_INPUT;
     SetConsoleMode( hConsole , hmode );
-#elif defined( __linux__ )
+#else
     struct termios attr;
     tcgetattr( STDIN_FILENO , &attr );
     attr.c_lflag &= ~ECHO;
@@ -57,7 +57,7 @@ void rena::echo(){
     GetConsoleMode( hConsole , &hmode );
     hmode |= ENABLE_ECHO_INPUT;
     SetConsoleMode( hConsole , hmode );
-#elif defined( __linux__ )
+#else
     struct termios attr;
     tcgetattr( STDIN_FILENO , &attr );
     attr.c_lflag |= ECHO;
@@ -73,7 +73,7 @@ void rena::nocursor(){
     GetConsoleCursorInfo( hConsole , &cinfo );
     cinfo.bVisible = false;
     SetConsoleCursorInfo( hConsole , &cinfo );
-#elif defined( __linux__ )
+#else
     CPOUT << "\033[?25l" << std::flush;
 #endif
     return;
@@ -86,7 +86,7 @@ void rena::showcursor(){
     GetConsoleCursorInfo( hConsole , &cinfo );
     cinfo.bVisible = true;
     SetConsoleCursorInfo( hConsole , &cinfo );
-#elif defined( __linux__ )
+#else
     CPOUT << "\033[?25h" << std::flush;
 #endif
     return;
