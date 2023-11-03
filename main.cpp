@@ -1,6 +1,6 @@
 #include<iostream>
 #include<filesystem>
-#ifdef _MSC_VER
+#ifdef WIN32
 #include<io.h>
 #include<fcntl.h>
 #endif
@@ -11,7 +11,7 @@
 #include"utils.h"
 #include"build_config.h"
 
-#ifdef _MSC_VER
+#ifdef WIN32
 #define FREE_ARGV delete[] argv;
 #else
 #define FREE_ARGV ;
@@ -19,7 +19,7 @@
 
 void print_hufo_err( rena::HUFO::HUFOSTATUS tag );
 
-#ifdef _MSC_VER
+#ifdef WIN32
 int wmain( int argc , wchar_t** wargv ){
     _setmode( _fileno( stdout ) , _O_WTEXT );
     _setmode( _fileno( stderr ) , _O_WTEXT );
@@ -34,6 +34,8 @@ int wmain( int argc , wchar_t** wargv ){
 int main( int argc , char** argv ){
 #endif
 
+    rena::rich::rich_global_init();
+
     std::filesystem::path hashup_exe_path( rena::get_hashup_exe_path() );
     std::filesystem::path cfg_path = hashup_exe_path.parent_path() / "hashup.ini";
     if ( std::filesystem::exists( cfg_path ) )
@@ -42,7 +44,8 @@ int main( int argc , char** argv ){
         mINI::INIStructure iniobj;
         if ( !rINI.read( iniobj ) )
         {
-            CPERR << "Load config file error, continue with default settings." << std::endl;
+            CPERR << rena::rich::FColor::RED << "Load config file error." << rena::rich::style_reset << std::endl
+                  << "Continue with default settings." << std::endl;
         }
         else
         {
@@ -54,24 +57,32 @@ int main( int argc , char** argv ){
                 }
                 catch ( const std::exception& e )
                 {
-                    CPERR << "Parse config value error: " << e.what() << std::endl
+                    CPERR << rena::rich::FColor::RED << "Parse config value error: " << rena::rich::style_reset << e.what() << std::endl
                           << "Continue with default settings." << std::endl;
                 }
             }
             else
             {
-                CPERR << "Config file format error, continue with default settings." << std::endl;
+                CPERR << rena::rich::FColor::RED << "Config file format error." << rena::rich::style_reset << std::endl
+                      << "Continue with default settings." << std::endl;
             }
-            
         }
     } // config file exists, parse and get settings
+
+    if ( !( rena::is_supported_hash_mode( rena::CFG_MODE ) && in_range( rena::CFG_THREAD , 1 , 128 ) ) )
+    {
+        CPERR << rena::rich::FColor::RED << "Illegal config values." << rena::rich::style_reset << std::endl
+              << "Continue with default settings." << std::endl;
+        rena::CFG_MODE = "md5";
+        rena::CFG_THREAD = 8;
+    } // illegal configs
 
     // if there's no config file, just skip and use default settings
 
 #pragma region create_cmd_parser
 
     cmdline::parser cmdparser;
-//               ------Type------ ----arg---- -abbr- ----------------------------------------------------describe----------------------------------------------------- --nes-- -----default------ ----------------------------------------------------------------------------possible option----------------------------------------------------------------------------
+//               ------Type------ ----arg---- -abbr- ----------------------------------------------------describe----------------------------------------------------- --nes-- -----default------ ------------------------possible option------------------------
     cmdparser.add                ( "help"    , '?'  , "Show this help page" );
     cmdparser.add                ( "create"  , 'w'  , "Create a hash list for a directory" );
     cmdparser.add                ( "overlay" , '\0' , "Overlay old hash list without asking" );
@@ -80,9 +91,9 @@ int main( int argc , char** argv ){
     cmdparser.add                ( "single"  , 's'  , "Use single file mode" );
     cmdparser.add<std::string>   ( "hash"    , '\0' , "File hash (only available by single file check)"                                                               , false );
 #ifdef USE_OPENSSL_EVP
-    cmdparser.add<std::string>   ( "mode"    , 'm'  , "Set hash mode (md5, sha1, sha224, sha256, sha512, sha3-224, sha3-256, sha3-384, sha3-512, shake128, shake256)" , false , rena::CFG_MODE   , cmdline::oneof<std::string>( "md5" , "sha1" , "sha224" , "sha256" , "sha384" , "sha512" , "sha3-224" , "sha3-256" , "sha3-384" , "sha3-512" , "shake128" , "shake256" ) );
+    cmdparser.add<std::string>   ( "mode"    , 'm'  , "Set hash mode (md5, sha1, sha224, sha256, sha512, sha3-224, sha3-256, sha3-384, sha3-512, shake128, shake256)" , false , rena::CFG_MODE   , cmdline::oneof<std::string>( rena::support_hash_modes ) );
 #else
-    cmdparser.add<std::string>   ( "mode"    , 'm'  , "Set hash mode (md5, sha1, sha224, sha256, sha512)"                                                             , false , rena::CFG_MODE   , cmdline::oneof<std::string>( "md5" , "sha1" , "sha224" , "sha256" , "sha384" , "sha512" ) );
+    cmdparser.add<std::string>   ( "mode"    , 'm'  , "Set hash mode (md5, sha1, sha224, sha256, sha512)"                                                             , false , rena::CFG_MODE   , cmdline::oneof<std::string>( rena::support_hash_modes ) );
 #endif
     cmdparser.add<std::string>   ( "ignore"  , 'i'  , "Set the path of the ignore file"                                                                               , false );
     cmdparser.add<unsigned short>( "thread"  , 'j'  , "Set the thread-number of multithreading acceleration"                                                          , false , rena::CFG_THREAD , cmdline::range<unsigned short>( 1 , 128 ) );
@@ -96,7 +107,8 @@ int main( int argc , char** argv ){
     {
         if ( !cmdparser.exist( "help" ) && !cmdparser.exist( "version" ) )
         {
-            CPOUT << CPATOWCONV( cmdparser.error() ) << std::endl << CPATOWCONV( cmdparser.usage() ) << std::endl;
+            CPOUT << rena::rich::FColor::RED << CPATOWCONV( cmdparser.error() ) << rena::rich::style_reset << std::endl
+                  << CPATOWCONV( cmdparser.usage() ) << std::endl;
             FREE_ARGV;
             return 128;
         } // show help
@@ -117,7 +129,7 @@ int main( int argc , char** argv ){
     rena::HASHPURPOSE p;
     if ( cmdparser.exist( "create" ) && cmdparser.exist( "check" ) )
     {
-        CPERR << "Cannot create hash list and do hash check at the same time, exit." << std::endl;
+        CPERR << rena::rich::FColor::RED << "Cannot create hash list and do hash check at the same time, exit." << rena::rich::style_reset << std::endl;
         FREE_ARGV;
         return 128;
     } // do create and check at the same time
@@ -137,7 +149,7 @@ int main( int argc , char** argv ){
     {
         if ( p == rena::HASHPURPOSE::CHECK && !cmdparser.exist( "hash" ) )
         {
-            CPERR << "Doing single file hash check but file hash not given, exit." << std::endl;
+            CPERR << rena::rich::FColor::RED << "Doing single file hash check but file hash not given, exit." << rena::rich::style_reset << std::endl;
             FREE_ARGV;
             return 128;
         }
@@ -164,7 +176,7 @@ int main( int argc , char** argv ){
         }
         catch ( const std::exception& e )
         {
-            CPERR << "Operate file \"" << CPPATHTOSTR( fp ) << "\" failed: " << e.what() << std::endl
+            CPERR << rena::rich::FColor::RED << "Operate file \"" << CPPATHTOSTR( fp ) << "\" failed: " << rena::rich::style_reset << e.what() << std::endl
                   << "Exit." << std::endl;
             FREE_ARGV;
             return 128;
@@ -187,11 +199,11 @@ int main( int argc , char** argv ){
 
             if ( hash == hash_get )
             {
-                CPOUT << "Passed." << std::endl;
+                CPOUT << rena::rich::FColor::GREEN << "Passed." << rena::rich::style_reset << std::endl;
             }
             else
             {
-                CPOUT << "Failed: got " << hash_get << ", should be " << hash << "." << std::endl;
+                CPOUT << rena::rich::FColor::RED << "Failed: " << rena::rich::style_reset << "got " << hash_get << ", should be " << hash << "." << std::endl;
             }
         }
         FREE_ARGV;
@@ -264,6 +276,7 @@ int main( int argc , char** argv ){
 }
 
 void print_hufo_err( rena::HUFO::HUFOSTATUS tag ){
+    CPERR << rena::rich::FColor::RED;
     switch ( tag ){
         case rena::HUFO::HUFOSTATUS::OPENFILEERR:
             CPERR << "Open target hash list failed, exit." << std::endl; break;
@@ -284,5 +297,6 @@ void print_hufo_err( rena::HUFO::HUFOSTATUS tag ){
         case rena::HUFO::HUFOSTATUS::HASCHECKFAILEDF:
             break;
     };
+    CPERR << rena::rich::style_reset;
     return;
 }

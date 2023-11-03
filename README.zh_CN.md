@@ -3,7 +3,7 @@
 [![English badge](https://img.shields.io/badge/%E8%8B%B1%E6%96%87-English-blue)](./README.md)
 [![简体中文 badge](https://img.shields.io/badge/%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87-Simplified%20Chinese-blue)](./README.zh_CN.md)
 
-<img src="https://img.shields.io/github/actions/workflow/status/Ace-Radom/HashUp/CMAKE_LINUX.yml?label=Build%20Linux" /> <img src="https://img.shields.io/github/actions/workflow/status/Ace-Radom/HashUp/CMAKE_WIN.yml?label=Build%20Windows" /> <img src="https://img.shields.io/badge/Platform-Windows&Linux-green" /> <img src="https://img.shields.io/github/license/Ace-Radom/HashUp">
+<img src="https://img.shields.io/github/actions/workflow/status/Ace-Radom/HashUp/CMAKE_LINUX.yml?label=Build%20Linux" /> <img src="https://img.shields.io/github/actions/workflow/status/Ace-Radom/HashUp/CMAKE_WIN.yml?label=Build%20Windows" /> <img src="https://img.shields.io/badge/Platform-Windows&Linux&MacOS-green" /> <img src="https://img.shields.io/github/license/Ace-Radom/HashUp">
 
 HashUp是一个轻量级的，跨平台的命令行文件哈希批量生成和校验工具，支持 `MD5`，`SHA1`，`SHA256` 和 `SHA512` 哈希算法，并也支持多线程加速。
 
@@ -38,6 +38,12 @@ sudo make install
 
 ```sh
 cmake .. -DCMAKE_BUILD_TYPE=Release -DMAKE_TEST=ON
+```
+
+在完成构建后如此启动测试：
+
+```sh
+ctest -C RELEASE
 ```
 
 请注意你需要在你的电脑上安装Python3以运行测试。
@@ -100,6 +106,16 @@ HashUp支持 `MD5`，`SHA1` 和所有 `SHA2` 系列函数。
 | `-m, --mode MODE` | 设置哈希函数（`md5`，`sha1`，`sha256`，`sha512`）| 默认为 `md5` |
 | `-i, --ignore FILE` | 设置忽略文件路径 | 只在进行哈希表生成时可用 |
 | `-j, --thread NUM` | 设置多线程加速的线程数量 | 默认为 `8` |
+
+### 键盘信号
+
+你可以在HashUp在进行哈希计算时按下键盘上的特定键以向HashUp发送键盘信号。
+
+目前支持的键盘信号有：
+
+- 按下 `S` 查看当前完成处理的文件数量、总文件数量、平均处理速度、预计剩余时间和当前正在处理的文件。
+
+- 按下 `P` 暂停当前任务。在暂停过程中按下 `R` 恢复任务。
 
 ### 忽略文件
 

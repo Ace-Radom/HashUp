@@ -2,17 +2,24 @@
 #define _UTILS_H_
 
 #include<iostream>
+#include<vector>
 #include<cstring>
+#include<chrono>
+#include<ctime>
+#include<sstream>
 #ifdef _WIN32
 #include<Windows.h>
 #elif defined( __linux__ )
 #include<unistd.h>
-#include<limits.h>
+#include<termios.h>
 #elif defined( __APPLE__ )
+#include<unistd.h>
+#include<termios.h>
 #include<mach-o/dyld.h>
 #endif
+#include"rich.h"
 
-#ifdef _MSC_VER
+#ifdef WIN32
 #include<codecvt>
 #define CPOUT  std::wcout
 #define CPERR  std::wcerr
@@ -42,6 +49,8 @@
         } while ( 0 )
 #endif
 
+#define in_range( x , min , max ) ( x >= min && x <= max )
+
 namespace rena {
 
     typedef enum {
@@ -67,13 +76,21 @@ namespace rena {
     } HASHPURPOSE;
 
     bool confirm_interrupt( const CPSTR& msg , char y , char n );
+    std::string get_time_str_now();
+
+    void noecho();
+    void echo();
+    void nocursor();
+    void showcursor();
 
     // utils for main function
 
+    bool is_supported_hash_mode( std::string mode );
     CPSTR get_hashup_exe_path();
 
     extern std::string    CFG_MODE;
     extern unsigned short CFG_THREAD;
+    extern std::vector<std::string> support_hash_modes; // all supported hash modes
 
 }; // namespace rena
 

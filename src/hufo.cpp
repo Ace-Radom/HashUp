@@ -35,7 +35,7 @@ rena::HUFO::HUFOSTATUS rena::HUFO::open( const std::filesystem::path& path , ren
     {
         if ( std::filesystem::exists( path ) && !_ol_no_ask )
         {
-#ifdef _MSC_VER
+#ifdef WIN32
             if ( !confirm_interrupt( L"This file \"" + CPPATHTOSTR( path ) + L"\" already exist. Are you sure to overwrite it?" , 'y' , 'N' ) )
 #else
             if ( !confirm_interrupt( "This file \"" + CPPATHTOSTR( path ) + "\" already exist. Are you sure to overwrite it?" , 'y' , 'N' ) )
@@ -127,7 +127,7 @@ rena::HUFO::HUFOSTATUS rena::HUFO::do_create( unsigned short threads ){
     this -> _do_hashcalc( threads );
 
 #ifdef SHOW_PROGRESS_DETAIL
-    CPOUT << "Write hash list to file." << std::endl;
+    CPOUT << "Writing hash list to file." << std::endl;
 #endif
 
     for ( auto it : this -> _hlist )
@@ -137,7 +137,7 @@ rena::HUFO::HUFOSTATUS rena::HUFO::do_create( unsigned short threads ){
     }
 
 #ifdef SHOW_PROGRESS_DETAIL
-    CPOUT << "Create complete: " << this -> _ori_hlist_len << " files got in total; "
+    CPOUT << rich::FColor::GREEN << "Create complete: " << rich::style_reset << this -> _ori_hlist_len << " files got in total; "
           << this -> _hlist.size() << " created; "
           << this -> _ori_hlist_len - this -> _hlist.size() << " error."
           << std::endl; 
@@ -184,13 +184,13 @@ rena::HUFO::HUFOSTATUS rena::HUFO::do_check( unsigned short threads ){
         }
         else
         {
-            CPOUT << "File \"" << CPPATHTOSTR( it.fp ) << "\" Check Failed: got " << it.hash_readin << ", should be " << it.hash << "." << std::endl;
+            CPOUT << rich::FColor::RED << "File \"" << CPPATHTOSTR( it.fp ) << "\" Check Failed: " << rich::style_reset << "got " << it.hash_readin << ", should be " << it.hash << "." << std::endl;
             this -> _errhlist.push_back( it );
         }
     }
 
 #ifdef SHOW_PROGRESS_DETAIL
-    CPOUT << "Check complete: " << this -> _ori_hlist_len << " files got in total; " 
+    CPOUT << rich::FColor::GREEN << "Check complete: " << rich::style_reset << this -> _ori_hlist_len << " files got in total; " 
           << this -> _hlist.size() - this -> _errhlist.size() << " passed; " 
           << this -> _errhlist.size() << " failed; " 
           << this -> _ori_hlist_len - this -> _hlist.size() << " error." 
@@ -243,23 +243,39 @@ rena::HUFO::HUFOSTATUS rena::HUFO::_do_hashcalc( unsigned short threads ){
     } // iterate _hlist, start tasks
 
 #ifdef SHOW_PROGRESS_DETAIL
+
+    CPOUT << "Press: "
+          << rich::FColor::YELLOW << "[S]" << rich::style_reset << "tatus: Detailed Progress\t" 
+          << rich::FColor::YELLOW << "[P]" << rich::style_reset << "ause: Suspend the Process" << std::endl;
+    // keyboard signals are only available under windows and linux
+
+#pragma region show_dynamic_progress
+
+    noecho();
+    nocursor();
+
     do {
-        CPOUT << "Progress: " << global_speed_watcher -> get_finished() << "/" << this -> _hlist.size() << " "
-              << std::fixed << std::setprecision( 2 ) << global_speed_watcher -> get_speed() / 1048576.0 <<  "MB/s\r" << std::flush;
+        CPOUT << rich::clear_line << "Progress: " << global_speed_watcher -> get_finished() << "/" << this -> _hlist.size() << " "
+              << std::fixed << std::setprecision( 2 ) << global_speed_watcher -> get_speed() / 1048576.0 << "MB/s\r" << std::flush;
+        watch_kb_signal( this );
         std::this_thread::sleep_for( std::chrono::microseconds( 50 ) );
     } while ( !pool.is_terminated() );
-    CPOUT << "Progress: " << global_speed_watcher -> get_finished() << "/" << this -> _hlist.size() << " "
+
+    echo();
+    showcursor();
+
+#pragma endregion show_dynamic_progress
+
+    CPOUT << rich::clear_line << "Progress: " << global_speed_watcher -> get_finished() << "/" << this -> _hlist.size() << " "
           << std::fixed << std::setprecision( 2 ) << global_speed_watcher -> get_speed() / 1048576.0 <<  "MB/s" << std::endl;
     // last flush
 
-    auto calc_hash_end_time = std::chrono::steady_clock::now();
-    auto calc_hash_duration = std::chrono::duration_cast<std::chrono::milliseconds>( calc_hash_end_time - calc_hash_start_time );
-    CPOUT << "Total time spent on hash calculations: " << calc_hash_duration.count() / 1000.0 << "s." << std::endl;
+    CPOUT << "Total time spent on hash calculations: " << std::setprecision( 2 ) << global_speed_watcher -> get_duration_s() << "s." << std::endl;
     delete global_speed_watcher;
     global_speed_watcher = nullptr;
     // free global_speed_watcher
     CPOUT << "Getting results." << std::endl;
-#else
+#else // SHOW_PROGRESS_DETAIL
     while ( !pool.is_terminated() );
 #endif
 
@@ -270,7 +286,7 @@ rena::HUFO::HUFOSTATUS rena::HUFO::_do_hashcalc( unsigned short threads ){
         }
         catch ( const std::exception& e )
         {
-            CPERR << "Operate file \"" << CPPATHTOSTR( it -> fp ) << "\" failed: " << e.what() << std::endl
+            CPERR << rich::FColor::RED << "Operate file \"" << CPPATHTOSTR( it -> fp ) << "\" failed: " << rich::style_reset << e.what() << std::endl
                   << "Skip." << std::endl;
             it = this -> _hlist.erase( it );
             continue;
@@ -311,6 +327,14 @@ void rena::HUFO::_traversal_dir_write_to_hlist( const std::filesystem::path& dir
                     continue;
                 } // should be ignored
             } // using file ignore, do ignore check
+            try {
+                temp.fsize = std::filesystem::file_size( fp );
+            }
+            catch ( const std::exception& e )
+            {
+                CPERR << rich::FColor::RED << "Get file size failed by \"" << CPPATHTOSTR( temp.fp ) << "\": " << rich::style_reset << e.what() << std::endl;
+            }
+            this -> _tfsize += temp.fsize;
             this -> _hlist.push_back( temp );
         } // write relative path to _hlist
     }
@@ -328,9 +352,29 @@ void rena::HUFO::_read_huf_write_to_hlist(){
         HASHOBJ temp;
         temp.fp = CPATOWCONV( buf.substr( 0 , buf.rfind( ' ' ) ) );
         temp.hash_readin = CPATOWCONV( buf.substr( buf.rfind( ' ' ) + 1 ) );
+        std::filesystem::path ptemp = temp.fp; // path temp (for file exist check and size get)
+        if ( ptemp.is_relative() )
+        {
+            ptemp = this -> _pdpath / temp.fp;
+        } // relative path, make absolute temp path for file exist check and size get
+        if ( !std::filesystem::exists( ptemp ) )
+        {
+            CPERR << rich::FColor::RED << "File \"" << CPPATHTOSTR( temp.fp ) << "\" doesn't not exist." << rich::style_reset << std::endl
+                  << "Skip." << std::endl;
+            this -> _ori_hlist_len++;
+            continue;
+        } // file in huf not exists
+        try {
+            temp.fsize = std::filesystem::file_size( ptemp );
+        }
+        catch ( const std::exception& e )
+        {
+            CPERR << rich::FColor::RED << "Get file size failed by \"" << CPPATHTOSTR( temp.fp ) << "\": " << rich::style_reset << e.what() << std::endl;
+        }
+        this -> _tfsize += temp.fsize;
         if ( temp.hash_readin.size() != this -> _hlen )
         {
-            CPERR << "File \"" << CPPATHTOSTR( temp.fp ) << "\" wrong hash length: got " << temp.hash_readin.size() << ", should be " << this -> _hlen << "." << std::endl
+            CPERR << rich::FColor::RED << "File \"" << CPPATHTOSTR( temp.fp ) << "\" wrong hash length: " << rich::style_reset << "got " << temp.hash_readin.size() << ", should be " << this -> _hlen << "." << std::endl
                   << "Skip." << std::endl;
             this -> _ori_hlist_len++;
             // this file will not be written into _hlist, but it's still an error file
