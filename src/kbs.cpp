@@ -1,6 +1,6 @@
 #include"hashup.h"
 
-#ifdef __linux__
+// #ifdef __linux__
 
 /**
  * based on the program from: https://www.flipcode.com/archives/_kbhit_for_Linux.shtml
@@ -33,7 +33,7 @@ char rena::_getch(){
     return c;
 }
 
-#endif
+// #endif
 
 void rena::watch_kb_signal( const rena::HUFO* hufoobj ){
 
