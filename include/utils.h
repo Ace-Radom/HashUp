@@ -24,6 +24,7 @@
 #define CPERR  std::wcerr
 #define CPSTR  std::wstring
 #define CPCHAR wchar_t
+#define CPTEXT( str )       L##str
 #define CPATOWCONV( str )   std::wstring_convert<std::codecvt_utf8<wchar_t>>{}.from_bytes( str )    // cp str to wstr convert
 #define CPWTOACONV( str )   std::wstring_convert<std::codecvt_utf8<wchar_t>>{}.to_bytes( str )      // cp wstr to str convert
 #define CPPATHTOSTR( path ) ( path ).wstring()                                                      // cp path to str
@@ -32,6 +33,7 @@
 #define CPERR  std::cerr
 #define CPSTR  std::string
 #define CPCHAR char
+#define CPTEXT( str )       ( str )
 #define CPATOWCONV( str )   ( str )
 #define CPWTOACONV( str )   ( str )
 #define CPPATHTOSTR( path ) ( path ).string()
