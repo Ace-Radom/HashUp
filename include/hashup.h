@@ -144,7 +144,7 @@ namespace rena {
 //                        kbs.cpp                         //
 ////////////////////////////////////////////////////////////
 
-#ifdef __linux__
+#if defined( __linux__ ) || defined( __APPLE__ )
     int _kbhit();
     char _getch();
 #endif
