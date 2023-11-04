@@ -19,6 +19,7 @@
 #include<atomic>
 #include<sstream>
 #include<cmath>
+#include<csignal>
 #ifdef SHOW_PROGRESS_DETAIL
 #ifdef WIN32
 #include<conio.h>
@@ -55,6 +56,7 @@ namespace rena {
 #endif
 
     extern std::atomic<bool> pause_signal;
+    extern std::atomic<bool> quit_signal;
 
     CPSTR calc_file_md5( const std::filesystem::path& path );
     CPSTR calc_file_sha1( const std::filesystem::path& path );
@@ -80,16 +82,17 @@ namespace rena {
 
         public:
             typedef enum {
-                OK,             // success
-                OPENFILEERR,    // open file error
-                OPENIGFERR,     // open ignore file error
-                PARSEIGFERR,    // parse ignore file error
-                FILENOTEXIST,   // file doesn't exist (mainly when doing hash check)
-                INTERRUPT,      // function interrupted
-                NOWORKINGDIR,   // no parent dir path
-                HUFNOTOPEN,     // HashUp File isn't opened and ready to read/write
-                HMODENOTSET,    // hash mode not set (by hash check)
-                HASCHECKFAILEDF // hash hash check failed files
+                OK,                 // success
+                OPENFILEERR,        // open file error
+                OPENIGFERR,         // open ignore file error
+                PARSEIGFERR,        // parse ignore file error
+                FILENOTEXIST,       // file doesn't exist (mainly when doing hash check)
+                INTERRUPT,          // function interrupted
+                NOWORKINGDIR,       // no parent dir path
+                HUFNOTOPEN,         // HashUp File isn't opened and ready to read/write
+                HMODENOTSET,        // hash mode not set (by hash check)
+                HASCHECKFAILEDF,    // hash hash check failed files
+                CALLQUIT
             } HUFOSTATUS;
 
         public:
@@ -149,6 +152,7 @@ namespace rena {
     char _getch();
 #endif
     void watch_kb_signal( const HUFO* hufoobj );
+    void handle_syssig( int signum );
 
 ////////////////////////////////////////////////////////////
 //                     speedwatch.cpp                     //

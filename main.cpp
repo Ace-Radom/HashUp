@@ -36,6 +36,8 @@ int main( int argc , char** argv ){
 
     rena::rich::rich_global_init();
 
+    signal( SIGINT , rena::handle_syssig );
+
     std::filesystem::path hashup_exe_path( rena::get_hashup_exe_path() );
     std::filesystem::path cfg_path = hashup_exe_path.parent_path() / "hashup.ini";
     if ( std::filesystem::exists( cfg_path ) )
@@ -181,6 +183,13 @@ int main( int argc , char** argv ){
             FREE_ARGV;
             return 128;
         }
+
+        if ( rena::quit_signal.load() )
+        {
+            CPOUT << "Stop." << std::endl;
+            FREE_ARGV;
+            return 0;
+        } // called quit
         
         if ( p == rena::HASHPURPOSE::CREATE )
         {
@@ -260,11 +269,17 @@ int main( int argc , char** argv ){
     } // set hash mode
 
     rena::HUFO::HUFOSTATUS do_operate_status = hufo.start( cmdparser.get<unsigned short>( "thread" ) );
-    if ( do_operate_status != rena::HUFO::HUFOSTATUS::OK && do_operate_status != rena::HUFO::HUFOSTATUS::HASCHECKFAILEDF )
+    if ( do_operate_status != rena::HUFO::HUFOSTATUS::OK &&
+         do_operate_status != rena::HUFO::HUFOSTATUS::HASCHECKFAILEDF &&
+         do_operate_status != rena::HUFO::HUFOSTATUS::CALLQUIT )
     {
         print_hufo_err( do_operate_status );
         FREE_ARGV;
         return do_operate_status;
+    }
+    else if ( do_operate_status == rena::HUFO::HUFOSTATUS::CALLQUIT )
+    {
+        CPOUT << "Stop." << std::endl;
     }
     else
     {
