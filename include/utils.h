@@ -11,9 +11,10 @@
 #include<Windows.h>
 #elif defined( __linux__ )
 #include<unistd.h>
-#include<limits.h>
 #include<termios.h>
 #elif defined( __APPLE__ )
+#include<unistd.h>
+#include<termios.h>
 #include<mach-o/dyld.h>
 #endif
 #include"rich.h"

@@ -107,7 +107,7 @@ Because of the limitations of OpenSSL, the output of the `SHAKE128` function is 
 | `-i, --ignore FILE` | Set ignore file path | Only available by hash list creation |
 | `-j, --thread NUM` | Set the thread-number of multithreading acceleration | Default as `8` |
 
-### Keyboard Signals (Not available under MacOS)
+### Keyboard Signals
 
 You can send keyboard signals by pressing specific keys during hash calculation.
 
