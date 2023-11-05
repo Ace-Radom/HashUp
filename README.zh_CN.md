@@ -158,6 +158,8 @@ test*
 
 如果你想进行单文件哈希校验，你应当通过 `--hash` 开关传入文件哈希值。
 
+**自v1.4.2起**无需再在使用单文件模式时指定 `-r, --check` 或 `-w, --create` 参数。当传入 `--hash` 开关时HashUp会自动进行哈希校验；反之则会进行哈希生成。
+
 ### 示例
 
 ```sh
@@ -165,12 +167,12 @@ hashup -w -f test.md5
 
 hashup -r -f ~/test/test.sha512 -m sha512 -j 16
 
-hashup -sw -f testfile -m md5
+hashup -s -f testfile -m md5
 
-hashup -sr -f testfile -m md5 --hash cdcc3d481ed7319c3fccec101126a75d
+hashup -s -f testfile -m md5 --hash cdcc3d481ed7319c3fccec101126a75d
 ```
 
-HashUp允许在一个中划线后同时传入多个短参数。其实类似于 `-srf testfile` 的传入方法也是合法的，但我个人不推荐这么做。
+HashUp允许在一个中划线后同时传入多个短参数。其实类似于 `-sf testfile` 的传入方法也是合法的，但我个人不推荐这么做。
 
 ## 配置文件
 

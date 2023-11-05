@@ -73,6 +73,7 @@ namespace rena {
     } HASHMODE;
 
     typedef enum {
+        NOSET,
         CREATE,
         CHECK
     } HASHPURPOSE;

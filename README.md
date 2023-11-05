@@ -157,6 +157,8 @@ You can use `-s, --single` argument to enable it.
 
 If you want to do single file hash check, you should give in the file hash with `--hash` argument.
 
+**After v1.4.2**, there's no need to set `-r, --check` or `-w, --create` by single file mode. If you set `--hash` argument HashUp will automatically do single file hash check. Otherwise it will do hash create.
+
 ### Examples
 
 ```sh
@@ -164,12 +166,12 @@ hashup -w -f test.md5
 
 hashup -r -f ~/test/test.sha512 -m sha512 -j 16
 
-hashup -sw -f testfile -m md5
+hashup -s -f testfile -m md5
 
-hashup -sr -f testfile -m md5 --hash cdcc3d481ed7319c3fccec101126a75d
+hashup -s -f testfile -m md5 --hash cdcc3d481ed7319c3fccec101126a75d
 ```
 
-HashUp allows short arguments to be grouped after a hyphen. Actually arguments like `-srf testfile` is also okay, but I personally don't recommend it.
+HashUp allows short arguments to be grouped after a hyphen. Actually arguments like `-sf testfile` is also okay, but I personally don't recommend it.
 
 ## Config File
 

@@ -128,7 +128,7 @@ int main( int argc , char** argv ){
         } // show version
     } // arg error
 
-    rena::HASHPURPOSE p;
+    rena::HASHPURPOSE p = rena::HASHPURPOSE::NOSET;
     if ( cmdparser.exist( "create" ) && cmdparser.exist( "check" ) )
     {
         CPERR << rena::rich::FColor::RED << "Cannot create hash list and do hash check at the same time, exit." << rena::rich::style_reset << std::endl;
@@ -149,11 +149,18 @@ int main( int argc , char** argv ){
 
     if ( cmdparser.exist( "single" ) )
     {
-        if ( p == rena::HASHPURPOSE::CHECK && !cmdparser.exist( "hash" ) )
+        if ( p != rena::HASHPURPOSE::NOSET )
         {
-            CPERR << rena::rich::FColor::RED << "Doing single file hash check but file hash not given, exit." << rena::rich::style_reset << std::endl;
-            FREE_ARGV;
-            return 128;
+            CPOUT << rena::rich::FColor::YELLOW << "Using '-r, --check' or '-w, --create' args by single file mode is not necessary." << rena::rich::style_reset << std::endl
+                  << "Continue." << std::endl;
+        }
+        if ( cmdparser.exist( "hash" ) )
+        {
+            p = rena::HASHPURPOSE::CHECK;
+        }
+        else
+        {
+            p = rena::HASHPURPOSE::CREATE;
         }
 
         std::filesystem::path fp( CPATOWCONV( cmdparser.get<std::string>( "file" ) ) );
