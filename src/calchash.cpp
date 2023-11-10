@@ -1,7 +1,5 @@
 #include"hashup.h"
 
-#define CPCONSTCHARP L
-
 std::atomic<bool> rena::pause_signal = false;
 std::atomic<bool> rena::quit_signal = false;
 
@@ -154,7 +152,7 @@ CPSTR rena::calc_file_md5( const std::filesystem::path& path ){
         while ( !rFile.eof() )
         {
             while ( pause_signal.load() ){ std::this_thread::sleep_for( std::chrono::milliseconds( 50 ) ); }
-            if ( quit_signal.load() )    { EVP_MD_CTX_destroy( ctx ); return CPTEXT( "" ); }
+            if ( quit_signal.load() )    { return CPTEXT( "" ); }
             rFile.read( buf , sizeof( buf ) );
             ret = rFile.gcount();
 #ifdef SHOW_PROGRESS_DETAIL
@@ -212,7 +210,7 @@ CPSTR rena::calc_file_sha1( const std::filesystem::path& path ){
         while ( !rFile.eof() )
         {
             while ( pause_signal.load() ){ std::this_thread::sleep_for( std::chrono::milliseconds( 50 ) ); }
-            if ( quit_signal.load() )    { EVP_MD_CTX_destroy( ctx ); return CPTEXT( "" ); }
+            if ( quit_signal.load() )    { return CPTEXT( "" ); }
             rFile.read( buf , sizeof( buf ) );
             ret = rFile.gcount();
 #ifdef SHOW_PROGRESS_DETAIL
@@ -270,7 +268,7 @@ CPSTR rena::calc_file_sha224( const std::filesystem::path& path ){
         while ( !rFile.eof() )
         {
             while ( pause_signal.load() ){ std::this_thread::sleep_for( std::chrono::milliseconds( 50 ) ); }
-            if ( quit_signal.load() )    { EVP_MD_CTX_destroy( ctx ); return CPTEXT( "" ); }
+            if ( quit_signal.load() )    { return CPTEXT( "" ); }
             rFile.read( buf , sizeof( buf ) );
             ret = rFile.gcount();
 #ifdef SHOW_PROGRESS_DETAIL
@@ -328,7 +326,7 @@ CPSTR rena::calc_file_sha256( const std::filesystem::path& path ){
         while ( !rFile.eof() )
         {
             while ( pause_signal.load() ){ std::this_thread::sleep_for( std::chrono::milliseconds( 50 ) ); }
-            if ( quit_signal.load() )    { EVP_MD_CTX_destroy( ctx ); return CPTEXT( "" ); }
+            if ( quit_signal.load() )    { return CPTEXT( "" ); }
             rFile.read( buf , sizeof( buf ) );
             ret = rFile.gcount();
 #ifdef SHOW_PROGRESS_DETAIL
@@ -386,7 +384,7 @@ CPSTR rena::calc_file_sha384( const std::filesystem::path& path ){
         while ( !rFile.eof() )
         {
             while ( pause_signal.load() ){ std::this_thread::sleep_for( std::chrono::milliseconds( 50 ) ); }
-            if ( quit_signal.load() )    { EVP_MD_CTX_destroy( ctx ); return CPTEXT( "" ); }
+            if ( quit_signal.load() )    { return CPTEXT( "" ); }
             rFile.read( buf , sizeof( buf ) );
             ret = rFile.gcount();
 #ifdef SHOW_PROGRESS_DETAIL
@@ -445,7 +443,7 @@ CPSTR rena::calc_file_sha512( const std::filesystem::path& path ){
         while ( !rFile.eof() )
         {
             while ( pause_signal.load() ){ std::this_thread::sleep_for( std::chrono::milliseconds( 50 ) ); }
-            if ( quit_signal.load() )    { EVP_MD_CTX_destroy( ctx ); return CPTEXT( "" ); }
+            if ( quit_signal.load() )    { return CPTEXT( "" ); }
             rFile.read( buf , sizeof( buf ) );
             ret = rFile.gcount();
 #ifdef SHOW_PROGRESS_DETAIL
