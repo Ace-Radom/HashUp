@@ -36,6 +36,8 @@ int main( int argc , char** argv ){
 
     rena::rich::rich_global_init();
 
+    signal( SIGINT , rena::handle_syssig );
+
     std::filesystem::path hashup_exe_path( rena::get_hashup_exe_path() );
     std::filesystem::path cfg_path = hashup_exe_path.parent_path() / "hashup.ini";
     if ( std::filesystem::exists( cfg_path ) )
@@ -126,7 +128,7 @@ int main( int argc , char** argv ){
         } // show version
     } // arg error
 
-    rena::HASHPURPOSE p;
+    rena::HASHPURPOSE p = rena::HASHPURPOSE::NOSET;
     if ( cmdparser.exist( "create" ) && cmdparser.exist( "check" ) )
     {
         CPERR << rena::rich::FColor::RED << "Cannot create hash list and do hash check at the same time, exit." << rena::rich::style_reset << std::endl;
@@ -147,11 +149,18 @@ int main( int argc , char** argv ){
 
     if ( cmdparser.exist( "single" ) )
     {
-        if ( p == rena::HASHPURPOSE::CHECK && !cmdparser.exist( "hash" ) )
+        if ( p != rena::HASHPURPOSE::NOSET )
         {
-            CPERR << rena::rich::FColor::RED << "Doing single file hash check but file hash not given, exit." << rena::rich::style_reset << std::endl;
-            FREE_ARGV;
-            return 128;
+            CPOUT << rena::rich::FColor::YELLOW << "Using '-r, --check' or '-w, --create' args by single file mode is not necessary." << rena::rich::style_reset << std::endl
+                  << "Continue." << std::endl;
+        }
+        if ( cmdparser.exist( "hash" ) )
+        {
+            p = rena::HASHPURPOSE::CHECK;
+        }
+        else
+        {
+            p = rena::HASHPURPOSE::CREATE;
         }
 
         std::filesystem::path fp( CPATOWCONV( cmdparser.get<std::string>( "file" ) ) );
@@ -181,6 +190,13 @@ int main( int argc , char** argv ){
             FREE_ARGV;
             return 128;
         }
+
+        if ( rena::quit_signal.load() )
+        {
+            CPOUT << "Stop." << std::endl;
+            FREE_ARGV;
+            return 0;
+        } // called quit
         
         if ( p == rena::HASHPURPOSE::CREATE )
         {
@@ -260,11 +276,17 @@ int main( int argc , char** argv ){
     } // set hash mode
 
     rena::HUFO::HUFOSTATUS do_operate_status = hufo.start( cmdparser.get<unsigned short>( "thread" ) );
-    if ( do_operate_status != rena::HUFO::HUFOSTATUS::OK && do_operate_status != rena::HUFO::HUFOSTATUS::HASCHECKFAILEDF )
+    if ( do_operate_status != rena::HUFO::HUFOSTATUS::OK &&
+         do_operate_status != rena::HUFO::HUFOSTATUS::HASCHECKFAILEDF &&
+         do_operate_status != rena::HUFO::HUFOSTATUS::CALLQUIT )
     {
         print_hufo_err( do_operate_status );
         FREE_ARGV;
         return do_operate_status;
+    }
+    else if ( do_operate_status == rena::HUFO::HUFOSTATUS::CALLQUIT )
+    {
+        CPOUT << "Stop." << std::endl;
     }
     else
     {

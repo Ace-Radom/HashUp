@@ -124,7 +124,11 @@ rena::HUFO::HUFOSTATUS rena::HUFO::do_create( unsigned short threads ){
     this -> _hlist.clear();
     this -> _traversal_dir_write_to_hlist( this -> _pdpath );
 
-    this -> _do_hashcalc( threads );
+    HUFOSTATUS ret = this -> _do_hashcalc( threads );
+    if ( ret == HUFOSTATUS::CALLQUIT )
+    {
+        return HUFOSTATUS::CALLQUIT;
+    }
 
 #ifdef SHOW_PROGRESS_DETAIL
     CPOUT << "Writing hash list to file." << std::endl;
@@ -170,7 +174,11 @@ rena::HUFO::HUFOSTATUS rena::HUFO::do_check( unsigned short threads ){
 
     this -> _read_huf_write_to_hlist();
 
-    this -> _do_hashcalc( threads );
+    HUFOSTATUS ret = this -> _do_hashcalc( threads );
+    if ( ret == HUFOSTATUS::CALLQUIT )
+    {
+        return HUFOSTATUS::CALLQUIT;
+    }
 
 #ifdef SHOW_PROGRESS_DETAIL
     CPOUT << "Checking." << std::endl;
@@ -246,7 +254,8 @@ rena::HUFO::HUFOSTATUS rena::HUFO::_do_hashcalc( unsigned short threads ){
 
     CPOUT << "Press: "
           << rich::FColor::YELLOW << "[S]" << rich::style_reset << "tatus: Detailed Progress\t" 
-          << rich::FColor::YELLOW << "[P]" << rich::style_reset << "ause: Suspend the Process" << std::endl;
+          << rich::FColor::YELLOW << "[P]" << rich::style_reset << "ause: Suspend the Process\t"
+          << rich::FColor::YELLOW << "[Q]" << rich::style_reset << "uit: Quit current process" << std::endl;
     // keyboard signals are only available under windows and linux
 
 #pragma region show_dynamic_progress
@@ -263,6 +272,14 @@ rena::HUFO::HUFOSTATUS rena::HUFO::_do_hashcalc( unsigned short threads ){
 
     echo();
     showcursor();
+
+    if ( quit_signal.load() )
+    {
+        CPOUT << rich::clear_line << "Cleaningup and exiting..." << std::endl;
+        delete global_speed_watcher;
+        global_speed_watcher = nullptr;
+        return HUFOSTATUS::CALLQUIT;
+    } // call quit
 
 #pragma endregion show_dynamic_progress
 

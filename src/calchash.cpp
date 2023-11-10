@@ -1,6 +1,7 @@
 #include"hashup.h"
 
 std::atomic<bool> rena::pause_signal = false;
+std::atomic<bool> rena::quit_signal = false;
 
 CPSTR dump_CHAR_to_HEX( const unsigned char* hash , int len ){
     std::string out;
@@ -17,6 +18,8 @@ CPSTR dump_CHAR_to_HEX( const unsigned char* hash , int len ){
 #ifdef USE_OPENSSL_EVP
 
 CPSTR rena::calc_file_hash( const std::filesystem::path& path , const EVP_MD* algo ){
+    if ( quit_signal.load() ) { return CPTEXT( "" ); } // already called quit
+
     try {
 #ifdef SHOW_PROGRESS_DETAIL
         if ( global_speed_watcher != nullptr )
@@ -40,6 +43,7 @@ CPSTR rena::calc_file_hash( const std::filesystem::path& path , const EVP_MD* al
         while ( !rFile.eof() )
         {
             while ( pause_signal.load() ){ std::this_thread::sleep_for( std::chrono::milliseconds( 50 ) ); }
+            if ( quit_signal.load() )    { EVP_MD_CTX_destroy( ctx ); return CPTEXT( "" ); }
             rFile.read( buf , sizeof( buf ) );
             ret = rFile.gcount();
 #ifdef SHOW_PROGRESS_DETAIL
@@ -124,6 +128,8 @@ CPSTR rena::calc_file_shake256( const std::filesystem::path& path ){
 #else
 
 CPSTR rena::calc_file_md5( const std::filesystem::path& path ){
+    if ( quit_signal.load() ) { return CPTEXT( "" ); } // already called quit
+
     try {
 #ifdef SHOW_PROGRESS_DETAIL
         if ( global_speed_watcher != nullptr )
@@ -145,6 +151,8 @@ CPSTR rena::calc_file_md5( const std::filesystem::path& path ){
         unsigned char out[MD5_DIGEST_LENGTH];
         while ( !rFile.eof() )
         {
+            while ( pause_signal.load() ){ std::this_thread::sleep_for( std::chrono::milliseconds( 50 ) ); }
+            if ( quit_signal.load() )    { return CPTEXT( "" ); }
             rFile.read( buf , sizeof( buf ) );
             ret = rFile.gcount();
 #ifdef SHOW_PROGRESS_DETAIL
@@ -178,6 +186,8 @@ CPSTR rena::calc_file_md5( const std::filesystem::path& path ){
 }
 
 CPSTR rena::calc_file_sha1( const std::filesystem::path& path ){
+    if ( quit_signal.load() ) { return CPTEXT( "" ); } // already called quit
+
     try {
 #ifdef SHOW_PROGRESS_DETAIL
         if ( global_speed_watcher != nullptr )
@@ -199,6 +209,8 @@ CPSTR rena::calc_file_sha1( const std::filesystem::path& path ){
         unsigned char out[SHA_DIGEST_LENGTH];
         while ( !rFile.eof() )
         {
+            while ( pause_signal.load() ){ std::this_thread::sleep_for( std::chrono::milliseconds( 50 ) ); }
+            if ( quit_signal.load() )    { return CPTEXT( "" ); }
             rFile.read( buf , sizeof( buf ) );
             ret = rFile.gcount();
 #ifdef SHOW_PROGRESS_DETAIL
@@ -232,6 +244,8 @@ CPSTR rena::calc_file_sha1( const std::filesystem::path& path ){
 }
 
 CPSTR rena::calc_file_sha224( const std::filesystem::path& path ){
+    if ( quit_signal.load() ) { return CPTEXT( "" ); } // already called quit
+
     try {
 #ifdef SHOW_PROGRESS_DETAIL
         if ( global_speed_watcher != nullptr )
@@ -253,6 +267,8 @@ CPSTR rena::calc_file_sha224( const std::filesystem::path& path ){
         unsigned char out[SHA224_DIGEST_LENGTH];
         while ( !rFile.eof() )
         {
+            while ( pause_signal.load() ){ std::this_thread::sleep_for( std::chrono::milliseconds( 50 ) ); }
+            if ( quit_signal.load() )    { return CPTEXT( "" ); }
             rFile.read( buf , sizeof( buf ) );
             ret = rFile.gcount();
 #ifdef SHOW_PROGRESS_DETAIL
@@ -286,6 +302,8 @@ CPSTR rena::calc_file_sha224( const std::filesystem::path& path ){
 }
 
 CPSTR rena::calc_file_sha256( const std::filesystem::path& path ){
+    if ( quit_signal.load() ) { return CPTEXT( "" ); } // already called quit
+
     try {
 #ifdef SHOW_PROGRESS_DETAIL
         if ( global_speed_watcher != nullptr )
@@ -307,6 +325,8 @@ CPSTR rena::calc_file_sha256( const std::filesystem::path& path ){
         unsigned char out[SHA256_DIGEST_LENGTH];
         while ( !rFile.eof() )
         {
+            while ( pause_signal.load() ){ std::this_thread::sleep_for( std::chrono::milliseconds( 50 ) ); }
+            if ( quit_signal.load() )    { return CPTEXT( "" ); }
             rFile.read( buf , sizeof( buf ) );
             ret = rFile.gcount();
 #ifdef SHOW_PROGRESS_DETAIL
@@ -340,6 +360,8 @@ CPSTR rena::calc_file_sha256( const std::filesystem::path& path ){
 }
 
 CPSTR rena::calc_file_sha384( const std::filesystem::path& path ){
+    if ( quit_signal.load() ) { return CPTEXT( "" ); } // already called quit
+
     try {
 #ifdef SHOW_PROGRESS_DETAIL
         if ( global_speed_watcher != nullptr )
@@ -361,6 +383,8 @@ CPSTR rena::calc_file_sha384( const std::filesystem::path& path ){
         unsigned char out[SHA384_DIGEST_LENGTH];
         while ( !rFile.eof() )
         {
+            while ( pause_signal.load() ){ std::this_thread::sleep_for( std::chrono::milliseconds( 50 ) ); }
+            if ( quit_signal.load() )    { return CPTEXT( "" ); }
             rFile.read( buf , sizeof( buf ) );
             ret = rFile.gcount();
 #ifdef SHOW_PROGRESS_DETAIL
@@ -395,6 +419,8 @@ CPSTR rena::calc_file_sha384( const std::filesystem::path& path ){
 }
 
 CPSTR rena::calc_file_sha512( const std::filesystem::path& path ){
+    if ( quit_signal.load() ) { return CPTEXT( "" ); } // already called quit
+    
     try {
 #ifdef SHOW_PROGRESS_DETAIL
         if ( global_speed_watcher != nullptr )
@@ -416,6 +442,8 @@ CPSTR rena::calc_file_sha512( const std::filesystem::path& path ){
         unsigned char out[SHA512_DIGEST_LENGTH];
         while ( !rFile.eof() )
         {
+            while ( pause_signal.load() ){ std::this_thread::sleep_for( std::chrono::milliseconds( 50 ) ); }
+            if ( quit_signal.load() )    { return CPTEXT( "" ); }
             rFile.read( buf , sizeof( buf ) );
             ret = rFile.gcount();
 #ifdef SHOW_PROGRESS_DETAIL

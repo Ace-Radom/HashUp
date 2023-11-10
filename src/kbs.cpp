@@ -70,6 +70,18 @@ wait_for_resume:
             pause_signal.store( false );
             global_speed_watcher -> resume_watch();
         } // pause
+        else if ( c == 'q' )
+        {
+            raise( SIGINT );
+        } // quit
     }
+    return;
+}
+
+void rena::handle_syssig( int signum ){
+    if ( signum == SIGINT )
+    {
+        quit_signal.store( true );
+    } // actually useless
     return;
 }

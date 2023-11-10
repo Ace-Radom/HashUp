@@ -46,7 +46,7 @@ CPSTR rena::speedwatcher::get_expected_time_left( const HUFO* hufoobj ){
     this -> push_timekeeping_period();
     if ( this -> total_duration.count() == 0 )
     {
-        return CPATOWCONV( "unlimited" );
+        return CPTEXT( "unlimited" );
     }
     size_t speed_per_second = this -> total_size / this -> total_duration.count() * 1000000;
     double excepted_time_left_second = ( double ) ( hufoobj -> _tfsize - this -> total_size ) / speed_per_second;
