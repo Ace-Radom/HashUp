@@ -25,6 +25,7 @@
     rena::__global_logger__ -> lock();                                                                      \
     rena::__global_logger__ -> dump_logline_begin( rena::renalog::RENALOGSEVERITY::INFO , "loghost" );      \
     *rena::__global_logger__ << "Logger inited and start." << "\n";                                         \
+    rena::__global_logger__ -> flush();                                                                     \
     rena::__global_logger__ -> release();
 
 #define RENALOG_FREE()                                                                                      \
@@ -35,6 +36,7 @@
         rena::__global_logger__ -> lock();                                                                  \
         rena::__global_logger__ -> dump_logline_begin( rena::renalog::RENALOGSEVERITY::severity , #host );  \
         *rena::__global_logger__ << data << "\n";                                                           \
+        rena::__global_logger__ -> flush();                                                                 \
         rena::__global_logger__ -> release();                                                               \
     }
 
@@ -74,6 +76,10 @@ namespace rena {
             };
             RENALOGSTATUS init();
             void dump_logline_begin( RENALOGSEVERITY severity , std::string host );
+            inline void flush(){
+                this -> _rwF.flush();
+                return;
+            }
 
             template <typename T>
             friend inline renalog& operator<<( renalog& rg , const T& data );
