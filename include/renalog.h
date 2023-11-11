@@ -18,7 +18,15 @@
                                                  olfmaxnum ,                                                \
                                                  min_severity                                               \
                                                 );                                                          \
-    rena::__global_logger__ -> init();
+    if ( rena::__global_logger__ -> init() != rena::renalog::RENALOGSTATUS::OK )                            \
+    {                                                                                                       \
+        throw std::runtime_error( "Failed to init global logger" );                                         \
+    }                                                                                                       \
+    rena::__global_logger__ -> lock();                                                                      \
+    rena::__global_logger__ -> dump_logline_begin( rena::renalog::RENALOGSEVERITY::INFO , "loghost" );      \
+    *rena::__global_logger__ << "Logger inited and start." << "\n";                                         \
+    rena::__global_logger__ -> release();
+
 #define RENALOG_FREE()                                                                                      \
     delete rena::__global_logger__
 #define LOG( severity , host , data )                                                                       \
@@ -56,7 +64,14 @@ namespace rena {
                   _nametag( nametag ) ,
                   _old_log_file_max_num( old_log_file_max_num ) ,
                   _min_severity( severity ){};
-            inline ~renalog(){};
+            inline ~renalog(){
+                if ( this -> _rwF.is_open() )
+                {
+                    this -> dump_logline_begin( RENALOGSEVERITY::INFO , "loghost" );
+                    this -> _rwF << "Logger stoped." << "\n";
+                    this -> _rwF.close();
+                }
+            };
             RENALOGSTATUS init();
             void dump_logline_begin( RENALOGSEVERITY severity , std::string host );
 
