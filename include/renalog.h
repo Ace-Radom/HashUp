@@ -16,7 +16,7 @@
     rena::__global_logger__ = new rena::renalog( logdir ,                                                   \
                                                  nametag ,                                                  \
                                                  olfmaxnum ,                                                \
-                                                 rena::renalog::RENALOGSEVERITY::min_severity               \
+                                                 min_severity                                               \
                                                 );                                                          \
     rena::__global_logger__ -> init();
 #define RENALOG_FREE()                                                                                      \
@@ -42,6 +42,7 @@ namespace rena {
             } RENALOGSTATUS;
 
             typedef enum {
+                DEBUG,
                 INFO,
                 WARNING,
                 ERROR,
@@ -71,7 +72,7 @@ namespace rena {
                 return;
             }
 
-            inline void set_logdir( std::filesystem::path logdir) noexcept {
+            inline void set_logdir( const std::filesystem::path& logdir ) noexcept {
                 this -> _logdir = logdir;
                 return;
             }
@@ -113,6 +114,8 @@ namespace rena {
         rg._rwF << data;
         return rg;
     }
+
+    renalog::RENALOGSEVERITY parse_str_to_severity( const std::string& str );
 
     extern renalog* __global_logger__;
 

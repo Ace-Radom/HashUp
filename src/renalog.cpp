@@ -56,6 +56,7 @@ void rena::renalog::dump_logline_begin( rena::renalog::RENALOGSEVERITY severity 
 std::ostream& rena::operator<<( std::ostream& os , rena::renalog::RENALOGSEVERITY severity ){
     switch ( severity )
     {
+        case renalog::RENALOGSEVERITY::DEBUG:   os << "DEBUG";   break;
         case renalog::RENALOGSEVERITY::INFO:    os << "INFO";    break;
         case renalog::RENALOGSEVERITY::WARNING: os << "WARNING"; break;
         case renalog::RENALOGSEVERITY::ERROR:   os << "ERROR";   break;
@@ -63,4 +64,15 @@ std::ostream& rena::operator<<( std::ostream& os , rena::renalog::RENALOGSEVERIT
         case renalog::RENALOGSEVERITY::UNKNOWN: os << "UNKNOWN"; break;
     }
     return os;
+}
+
+rena::renalog::RENALOGSEVERITY rena::parse_str_to_severity( const std::string& str ){
+    if      ( str == "DEBUG" )   return renalog::RENALOGSEVERITY::DEBUG;
+    else if ( str == "INFO" )    return renalog::RENALOGSEVERITY::INFO;
+    else if ( str == "WARNING" ) return renalog::RENALOGSEVERITY::WARNING;
+    else if ( str == "ERROR" )   return renalog::RENALOGSEVERITY::ERROR;
+    else if ( str == "FATAL" )   return renalog::RENALOGSEVERITY::FATAL;
+    else if ( str == "UNKNOWN" ) return renalog::RENALOGSEVERITY::UNKNOWN;
+    else                         return renalog::RENALOGSEVERITY::INFO;
+    // cannot recognize, return default INFO
 }
