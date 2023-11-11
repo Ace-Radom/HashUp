@@ -12,6 +12,25 @@
 #include"rich.h"
 #include"utils.h"
 
+#ifdef DEBUG
+#undef DEBUG
+#endif
+#ifdef INFO
+#undef INFO
+#endif
+#ifdef WARNING
+#undef WARNING
+#endif
+#ifdef ERROR
+#undef ERROR
+#endif
+#ifdef FATAL
+#undef FATAL
+#endif
+#ifdef UNKNOWN
+#undef UNKNOWN
+#endif
+
 #define RENALOG_INIT( logdir , nametag , olfmaxnum , min_severity )                                         \
     rena::__global_logger__ = new rena::renalog( logdir ,                                                   \
                                                  nametag ,                                                  \
