@@ -134,7 +134,7 @@ int main( int argc , char** argv ){
     {
         if ( !cmdparser.exist( "help" ) && !cmdparser.exist( "version" ) )
         {
-            LOG( ERROR , master ,
+            LOG( FATAL , master ,
                 "Argument error -> " << cmdparser.error()
             );
             CPOUT << rena::rich::FColor::RED << CPATOWCONV( cmdparser.error() ) << rena::rich::style_reset << std::endl
@@ -162,7 +162,7 @@ int main( int argc , char** argv ){
     rena::HASHPURPOSE p = rena::HASHPURPOSE::NOSET;
     if ( cmdparser.exist( "create" ) && cmdparser.exist( "check" ) )
     {
-        LOG( ERROR , master ,
+        LOG( FATAL , master ,
             "Argument error -> do hash check and create at the same time"
         );
         CPERR << rena::rich::FColor::RED << "Cannot create hash list and do hash check at the same time, exit." << rena::rich::style_reset << std::endl;
@@ -233,7 +233,7 @@ int main( int argc , char** argv ){
         catch ( const std::exception& e )
         {
             LOG( ERROR , master ,
-                "Failure -> file: \"" << CPWTOACONV( CPPATHTOSTR( fp ) ) << "\" what: " << e.what()
+                "Result -> error. file: \"" << CPWTOACONV( CPPATHTOSTR( fp ) ) << "\" what: " << e.what()
             );
             CPERR << rena::rich::FColor::RED << "Operate file \"" << CPPATHTOSTR( fp ) << "\" failed: " << rena::rich::style_reset << e.what() << std::endl
                   << "Exit." << std::endl;
