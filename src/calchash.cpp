@@ -73,7 +73,7 @@ CPSTR rena::calc_file_hash( const std::filesystem::path& path , const EVP_MD* al
             global_speed_watcher -> finished_one( std::this_thread::get_id() );
         }
 #endif
-        throw e;
+        throw;
     } // call finish_one and rethrow exception
 }
 
@@ -181,7 +181,7 @@ CPSTR rena::calc_file_md5( const std::filesystem::path& path ){
             global_speed_watcher -> finished_one( std::this_thread::get_id() );
         }
 #endif
-        throw e;
+        throw;
     } // call finish_one and rethrow exception
 }
 
@@ -239,7 +239,7 @@ CPSTR rena::calc_file_sha1( const std::filesystem::path& path ){
             global_speed_watcher -> finished_one( std::this_thread::get_id() );
         }
 #endif
-        throw e;
+        throw;
     } // call finish_one and rethrow exception
 }
 
@@ -297,7 +297,7 @@ CPSTR rena::calc_file_sha224( const std::filesystem::path& path ){
             global_speed_watcher -> finished_one( std::this_thread::get_id() );
         }
 #endif
-        throw e;
+        throw;
     } // call finish_one and rethrow exception
 }
 
@@ -355,7 +355,7 @@ CPSTR rena::calc_file_sha256( const std::filesystem::path& path ){
             global_speed_watcher -> finished_one( std::this_thread::get_id() );
         }
 #endif
-        throw e;
+        throw;
     } // call finish_one and rethrow exception
 }
 
@@ -414,7 +414,7 @@ CPSTR rena::calc_file_sha384( const std::filesystem::path& path ){
             global_speed_watcher -> finished_one( std::this_thread::get_id() );
         }
 #endif
-        throw e;
+        throw;
     } // call finish_one and rethrow exception
 }
 
@@ -472,7 +472,7 @@ CPSTR rena::calc_file_sha512( const std::filesystem::path& path ){
             global_speed_watcher -> finished_one( std::this_thread::get_id() );
         }
 #endif
-        throw e;
+        throw;
     } // call finish_one and rethrow exception
 }
 
