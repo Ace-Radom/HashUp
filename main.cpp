@@ -8,6 +8,7 @@
 #include"cmdline.h"
 #include"mini.h"
 #include"hashup.h"
+#include"renalog.h"
 #include"utils.h"
 #include"build_config.h"
 
@@ -51,11 +52,15 @@ int main( int argc , char** argv ){
         }
         else
         {
-            if ( iniobj.has( "default" ) && iniobj["default"].has( "mode" ) && iniobj["default"].has( "thread" ) )
+            if ( iniobj.has( "default" ) && iniobj["default"].has( "mode" ) && iniobj["default"].has( "thread" )
+                 &&
+                 iniobj.has( "renalog" ) && iniobj["renalog"].has( "min_log_severity" ) && iniobj["renalog"].has( "max_old_log_files" ) )
             {
                 try {
                     rena::CFG_MODE = iniobj["default"]["mode"];
                     rena::CFG_THREAD = std::stoi( iniobj["default"]["thread"] );
+                    rena::CFG_MIN_LOG_SEVERITY = iniobj["renalog"]["min_log_severity"];
+                    rena::CFG_MAX_OLD_LOG_FILES = std::stoi( iniobj["renalog"]["max_old_log_files"] );
                 }
                 catch ( const std::exception& e )
                 {
@@ -71,8 +76,28 @@ int main( int argc , char** argv ){
         }
     } // config file exists, parse and get settings
 
+    RENALOG_INIT(
+        hashup_exe_path.parent_path() ,
+        CPTEXT( "hashup" ) ,
+        rena::CFG_MAX_OLD_LOG_FILES ,
+        rena::parse_str_to_severity( rena::CFG_MIN_LOG_SEVERITY )
+    );
+
+    LOG( INFO , master ,
+        "Version -> " << "HashUp " << HASHUP_VERSION
+                      << " (branch/" << BUILD_GIT_BRANCH
+                      << ":" << BUILD_GIT_COMMIT
+                      << ", " << BUILD_TIME
+                      << ") [" << CXX_COMPILER_ID
+                      << " " << CXX_COMPILER_VERSION
+                      << "] on " << BUILD_SYS_NAME
+    );
+
     if ( !( rena::is_supported_hash_mode( rena::CFG_MODE ) && in_range( rena::CFG_THREAD , 1 , 128 ) ) )
     {
+        LOG( WARNING , master ,
+            "Found illegal config values under key \"default\": mode -> \"" << rena::CFG_MODE << "\" thread -> " << rena::CFG_THREAD
+        );
         CPERR << rena::rich::FColor::RED << "Illegal config values." << rena::rich::style_reset << std::endl
               << "Continue with default settings." << std::endl;
         rena::CFG_MODE = "md5";
@@ -109,21 +134,27 @@ int main( int argc , char** argv ){
     {
         if ( !cmdparser.exist( "help" ) && !cmdparser.exist( "version" ) )
         {
+            LOG( ERROR , master ,
+                "Argument error -> " << cmdparser.error()
+            );
             CPOUT << rena::rich::FColor::RED << CPATOWCONV( cmdparser.error() ) << rena::rich::style_reset << std::endl
                   << CPATOWCONV( cmdparser.usage() ) << std::endl;
             FREE_ARGV;
+            RENALOG_FREE();
             return 128;
         } // show help
         else if ( cmdparser.exist( "help" ) )
         {
             CPOUT << CPATOWCONV( cmdparser.usage() ) << std::endl;
             FREE_ARGV;
+            RENALOG_FREE();
             return 0;
         } // show help page
         else
         {
             CPOUT << "HashUp " << HASHUP_VERSION << " (branch/" << BUILD_GIT_BRANCH << ":" << BUILD_GIT_COMMIT << ", " << BUILD_TIME << ") [" << CXX_COMPILER_ID << " " << CXX_COMPILER_VERSION << "] on " << BUILD_SYS_NAME << std::endl;
             FREE_ARGV;
+            RENALOG_FREE();
             return 0;
         } // show version
     } // arg error
@@ -131,8 +162,12 @@ int main( int argc , char** argv ){
     rena::HASHPURPOSE p = rena::HASHPURPOSE::NOSET;
     if ( cmdparser.exist( "create" ) && cmdparser.exist( "check" ) )
     {
+        LOG( ERROR , master ,
+            "Argument error -> do hash check and create at the same time"
+        );
         CPERR << rena::rich::FColor::RED << "Cannot create hash list and do hash check at the same time, exit." << rena::rich::style_reset << std::endl;
         FREE_ARGV;
+        RENALOG_FREE();
         return 128;
     } // do create and check at the same time
     else if ( cmdparser.exist( "create" ) )
@@ -149,6 +184,9 @@ int main( int argc , char** argv ){
 
     if ( cmdparser.exist( "single" ) )
     {
+        LOG( INFO , master ,
+            "Mode -> single file"
+        );
         if ( p != rena::HASHPURPOSE::NOSET )
         {
             CPOUT << rena::rich::FColor::YELLOW << "Using '-r, --check' or '-w, --create' args by single file mode is not necessary." << rena::rich::style_reset << std::endl
@@ -156,16 +194,25 @@ int main( int argc , char** argv ){
         }
         if ( cmdparser.exist( "hash" ) )
         {
+            LOG( INFO , master ,
+                "Mode -> hash check"
+            );
             p = rena::HASHPURPOSE::CHECK;
         }
         else
         {
+            LOG( INFO , master ,
+                "Mode -> hash create"
+            );
             p = rena::HASHPURPOSE::CREATE;
         }
 
         std::filesystem::path fp( CPATOWCONV( cmdparser.get<std::string>( "file" ) ) );
         CPSTR hash;
         std::string mode = cmdparser.get<std::string>( "mode" );
+        LOG( INFO , master ,
+            "Hash Mode -> " << mode
+        );
         DEBUG_MSG( "Set Hash Mode: " << CPATOWCONV( mode ) );
         try {
             if ( mode == "md5" )            hash = rena::calc_file_md5( fp );
@@ -185,9 +232,13 @@ int main( int argc , char** argv ){
         }
         catch ( const std::exception& e )
         {
+            LOG( ERROR , master ,
+                "Failure -> file: \"" << CPWTOACONV( CPPATHTOSTR( fp ) ) << "\" what: " << e.what()
+            );
             CPERR << rena::rich::FColor::RED << "Operate file \"" << CPPATHTOSTR( fp ) << "\" failed: " << rena::rich::style_reset << e.what() << std::endl
                   << "Exit." << std::endl;
             FREE_ARGV;
+            RENALOG_FREE();
             return 128;
         }
 
@@ -195,11 +246,15 @@ int main( int argc , char** argv ){
         {
             CPOUT << "Stop." << std::endl;
             FREE_ARGV;
+            RENALOG_FREE();
             return 0;
         } // called quit
         
         if ( p == rena::HASHPURPOSE::CREATE )
         {
+            LOG( INFO , master ,
+                "Result -> passed. file: \"" << CPWTOACONV( CPPATHTOSTR( fp ) ) << "\" hash calced: " << CPWTOACONV( hash )
+            );
             CPOUT << hash << std::endl;
         }
         else if ( p == rena::HASHPURPOSE::CHECK )
@@ -215,16 +270,27 @@ int main( int argc , char** argv ){
 
             if ( hash == hash_get )
             {
+                LOG( INFO , master ,
+                    "Result -> passed. file: \"" << CPWTOACONV( CPPATHTOSTR( fp ) ) << "\" hash got: " << CPWTOACONV( hash_get ) << " hash calced: " << CPWTOACONV( hash )
+                )
                 CPOUT << rena::rich::FColor::GREEN << "Passed." << rena::rich::style_reset << std::endl;
             }
             else
             {
+                LOG( INFO , master ,
+                    "Result -> failed. file: \"" << CPWTOACONV( CPPATHTOSTR( fp ) ) << "\" hash got: " << CPWTOACONV( hash_get ) << " hash calced: " << CPWTOACONV( hash )
+                )
                 CPOUT << rena::rich::FColor::RED << "Failed: " << rena::rich::style_reset << "got " << hash_get << ", should be " << hash << "." << std::endl;
             }
         }
         FREE_ARGV;
+        RENALOG_FREE();
         return 0;
     } // single file mode
+
+    LOG( INFO , master ,
+        "Mode -> basic hash list"
+    );
 
     rena::HUFO hufo;
     rena::HUFO::HUFOSTATUS open_status;
@@ -234,14 +300,23 @@ int main( int argc , char** argv ){
     {
         huf_path_get = std::filesystem::current_path() / huf_path_get;
     } // relative huf path
+    LOG( INFO , master ,
+        "HUF -> path: \"" << CPWTOACONV( CPPATHTOSTR( huf_path_get ) ) << "\""
+    );
 
     if ( cmdparser.exist( "ignore" ) )
     {
+        LOG( INFO , master ,
+            "Using file ignore function"
+        );
         std::filesystem::path fig_path_get = CPATOWCONV( cmdparser.get<std::string>( "ignore" ) );
         if ( fig_path_get.is_relative() )
         {
             fig_path_get = std::filesystem::current_path() / fig_path_get;
         }
+        LOG( INFO , master ,
+            "IGF -> path: \"" << CPWTOACONV( CPPATHTOSTR( huf_path_get ) ) << "\""
+        );
         open_status = hufo.open( huf_path_get , p , cmdparser.exist( "overlay" ) ? true : false , fig_path_get );
     }
     else
@@ -250,14 +325,21 @@ int main( int argc , char** argv ){
     }
     if ( open_status != rena::HUFO::HUFOSTATUS::OK )
     {
+        LOG( ERROR , master ,
+            "Result -> open HUF failed: HUFO.open() exit with " << static_cast<int>( open_status )
+        );
         print_hufo_err( open_status );
         FREE_ARGV;
+        RENALOG_FREE();
         return open_status;
     } // open failed
 
     if ( cmdparser.exist( "mode" ) )
     {
         std::string mode = cmdparser.get<std::string>( "mode" );
+        LOG( INFO , master ,
+            "Hash Mode -> " << mode
+        );
         DEBUG_MSG( "Set Hash Mode: " << CPATOWCONV( mode ) );
         if ( mode == "md5" )            hufo.set_mode( rena::HASHMODE::MD5 );
         else if ( mode == "sha1" )      hufo.set_mode( rena::HASHMODE::SHA1 );
@@ -275,25 +357,39 @@ int main( int argc , char** argv ){
 #endif
     } // set hash mode
 
+    LOG( INFO , master ,
+        "Start hash calculation process"
+    );
     rena::HUFO::HUFOSTATUS do_operate_status = hufo.start( cmdparser.get<unsigned short>( "thread" ) );
     if ( do_operate_status != rena::HUFO::HUFOSTATUS::OK &&
          do_operate_status != rena::HUFO::HUFOSTATUS::HASCHECKFAILEDF &&
          do_operate_status != rena::HUFO::HUFOSTATUS::CALLQUIT )
     {
+        LOG( ERROR , master ,
+            "Result -> do operate failed: HUFO.start() exit with " << static_cast<int>( do_operate_status )
+        );
         print_hufo_err( do_operate_status );
         FREE_ARGV;
+        RENALOG_FREE();
         return do_operate_status;
     }
     else if ( do_operate_status == rena::HUFO::HUFOSTATUS::CALLQUIT )
     {
+        LOG( INFO , master ,
+            "Result -> global stop called (SIGINT / KBS_Q)"
+        );
         CPOUT << "Stop." << std::endl;
     }
     else
     {
+        LOG( INFO , master ,
+            "Result -> work done and success"
+        );
         CPOUT << "Work done and success." << std::endl;
     }
 
     FREE_ARGV;
+    RENALOG_FREE();
     return 0;
 }
 

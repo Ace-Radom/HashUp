@@ -95,6 +95,8 @@ namespace rena {
 
     extern std::string    CFG_MODE;
     extern unsigned short CFG_THREAD;
+    extern std::string    CFG_MIN_LOG_SEVERITY;
+    extern unsigned short CFG_MAX_OLD_LOG_FILES;
     extern std::vector<std::string> support_hash_modes; // all supported hash modes
 
 }; // namespace rena
