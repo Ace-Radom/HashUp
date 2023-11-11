@@ -27,6 +27,10 @@ CPSTR rena::calc_file_hash( const std::filesystem::path& path , const EVP_MD* al
             global_speed_watcher -> start_one( std::this_thread::get_id() , path );
         } // tell global speed watcher what are you doing now
 #endif
+
+        LOG( INFO , calchash ,
+            "Start calc file \"" << CPWTOACONV( CPPATHTOSTR( path ) ) << "\" [tid: " << std::this_thread::get_id() << "]"
+        );
     
         std::ifstream rFile( path , std::ios::binary );
         if ( !rFile.is_open() )
@@ -63,10 +67,17 @@ CPSTR rena::calc_file_hash( const std::filesystem::path& path , const EVP_MD* al
             global_speed_watcher -> finished_one( std::this_thread::get_id() );
         }
 #endif
-        return dump_CHAR_to_HEX( out , out_len );
+        CPSTR hex_out = dump_CHAR_to_HEX( out , out_len );
+        LOG( INFO , calchash ,
+            "Finish calc file: \"" << CPWTOACONV( CPPATHTOSTR( path ) ) << "\" hash: " << CPWTOACONV( hex_out ) << " [tid: " << std::this_thread::get_id() << "]"
+        );
+        return hex_out;
     }
     catch ( const std::exception& e )
     {
+        LOG( ERROR , calchash ,
+            "Calc failed: file: \"" << CPWTOACONV( CPPATHTOSTR( path ) ) << "\" what: " << e.what() << " [tid: " << std::this_thread::get_id() << "]"
+        );
 #ifdef SHOW_PROGRESS_DETAIL
         if ( global_speed_watcher != nullptr )
         {
@@ -138,6 +149,10 @@ CPSTR rena::calc_file_md5( const std::filesystem::path& path ){
         } // tell global speed watcher what are you doing now
 #endif
 
+        LOG( INFO , calchash ,
+            "Start calc file \"" << CPWTOACONV( CPPATHTOSTR( path ) ) << "\" [tid: " << std::this_thread::get_id() << "]"
+        );
+
         std::ifstream rFile( path , std::ios::binary );
         if ( !rFile.is_open() )
         {
@@ -171,10 +186,17 @@ CPSTR rena::calc_file_md5( const std::filesystem::path& path ){
             global_speed_watcher -> finished_one( std::this_thread::get_id() );
         }
 #endif
-        return dump_CHAR_to_HEX( out , MD5_DIGEST_LENGTH );
+        CPSTR hex_out = dump_CHAR_to_HEX( out , MD5_DIGEST_LENGTH );
+        LOG( INFO , calchash ,
+            "Finish calc file: \"" << CPWTOACONV( CPPATHTOSTR( path ) ) << "\" hash: " << CPWTOACONV( hex_out ) << " [tid: " << std::this_thread::get_id() << "]"
+        );
+        return hex_out;
     }
     catch ( const std::exception& e )
     {
+        LOG( ERROR , calchash ,
+            "Calc failed: file: \"" << CPWTOACONV( CPPATHTOSTR( path ) ) << "\" what: " << e.what() << " [tid: " << std::this_thread::get_id() << "]"
+        );
 #ifdef SHOW_PROGRESS_DETAIL
         if ( global_speed_watcher != nullptr )
         {
@@ -195,6 +217,10 @@ CPSTR rena::calc_file_sha1( const std::filesystem::path& path ){
             global_speed_watcher -> start_one( std::this_thread::get_id() , path );
         } // tell global speed watcher what are you doing now
 #endif
+
+        LOG( INFO , calchash ,
+            "Start calc file \"" << CPWTOACONV( CPPATHTOSTR( path ) ) << "\" [tid: " << std::this_thread::get_id() << "]"
+        );
 
         std::ifstream rFile( path , std::ios::binary );
         if ( !rFile.is_open() )
@@ -229,10 +255,17 @@ CPSTR rena::calc_file_sha1( const std::filesystem::path& path ){
             global_speed_watcher -> finished_one( std::this_thread::get_id() );
         }
 #endif
-        return dump_CHAR_to_HEX( out , SHA_DIGEST_LENGTH );
+        CPSTR hex_out = dump_CHAR_to_HEX( out , SHA_DIGEST_LENGTH );
+        LOG( INFO , calchash ,
+            "Finish calc file: \"" << CPWTOACONV( CPPATHTOSTR( path ) ) << "\" hash: " << CPWTOACONV( hex_out ) << " [tid: " << std::this_thread::get_id() << "]"
+        );
+        return hex_out;
     }
     catch ( const std::exception& e )
     {
+        LOG( ERROR , calchash ,
+            "Calc failed: file: \"" << CPWTOACONV( CPPATHTOSTR( path ) ) << "\" what: " << e.what() << " [tid: " << std::this_thread::get_id() << "]"
+        );
 #ifdef SHOW_PROGRESS_DETAIL
         if ( global_speed_watcher != nullptr )
         {
@@ -253,6 +286,10 @@ CPSTR rena::calc_file_sha224( const std::filesystem::path& path ){
             global_speed_watcher -> start_one( std::this_thread::get_id() , path );
         } // tell global speed watcher what are you doing now
 #endif
+
+        LOG( INFO , calchash ,
+            "Start calc file \"" << CPWTOACONV( CPPATHTOSTR( path ) ) << "\" [tid: " << std::this_thread::get_id() << "]"
+        );
 
         std::ifstream rFile( path , std::ios::binary );
         if ( !rFile.is_open() )
@@ -287,10 +324,17 @@ CPSTR rena::calc_file_sha224( const std::filesystem::path& path ){
             global_speed_watcher -> finished_one( std::this_thread::get_id() );
         }
 #endif
-        return dump_CHAR_to_HEX( out , SHA224_DIGEST_LENGTH );
+        CPSTR hex_out = dump_CHAR_to_HEX( out , SHA224_DIGEST_LENGTH );
+        LOG( INFO , calchash ,
+            "Finish calc file: \"" << CPWTOACONV( CPPATHTOSTR( path ) ) << "\" hash: " << CPWTOACONV( hex_out ) << " [tid: " << std::this_thread::get_id() << "]"
+        );
+        return hex_out;
     }
     catch ( const std::exception& e )
     {
+        LOG( ERROR , calchash ,
+            "Calc failed: file: \"" << CPWTOACONV( CPPATHTOSTR( path ) ) << "\" what: " << e.what() << " [tid: " << std::this_thread::get_id() << "]"
+        );
 #ifdef SHOW_PROGRESS_DETAIL
         if ( global_speed_watcher != nullptr )
         {
@@ -311,6 +355,10 @@ CPSTR rena::calc_file_sha256( const std::filesystem::path& path ){
             global_speed_watcher -> start_one( std::this_thread::get_id() , path );
         } // tell global speed watcher what are you doing now
 #endif
+
+        LOG( INFO , calchash ,
+            "Start calc file \"" << CPWTOACONV( CPPATHTOSTR( path ) ) << "\" [tid: " << std::this_thread::get_id() << "]"
+        );
 
         std::ifstream rFile( path , std::ios::binary );
         if ( !rFile.is_open() )
@@ -345,10 +393,17 @@ CPSTR rena::calc_file_sha256( const std::filesystem::path& path ){
             global_speed_watcher -> finished_one( std::this_thread::get_id() );
         }
 #endif
-        return dump_CHAR_to_HEX( out , SHA256_DIGEST_LENGTH );
+        CPSTR hex_out = dump_CHAR_to_HEX( out , SHA256_DIGEST_LENGTH );
+        LOG( INFO , calchash ,
+            "Finish calc file: \"" << CPWTOACONV( CPPATHTOSTR( path ) ) << "\" hash: " << CPWTOACONV( hex_out ) << " [tid: " << std::this_thread::get_id() << "]"
+        );
+        return hex_out;
     }
     catch ( const std::exception& e )
     {
+        LOG( ERROR , calchash ,
+            "Calc failed: file: \"" << CPWTOACONV( CPPATHTOSTR( path ) ) << "\" what: " << e.what() << " [tid: " << std::this_thread::get_id() << "]"
+        );
 #ifdef SHOW_PROGRESS_DETAIL
         if ( global_speed_watcher != nullptr )
         {
@@ -369,6 +424,10 @@ CPSTR rena::calc_file_sha384( const std::filesystem::path& path ){
             global_speed_watcher -> start_one( std::this_thread::get_id() , path );
         } // tell global speed watcher what are you doing now
 #endif
+
+        LOG( INFO , calchash ,
+            "Start calc file \"" << CPWTOACONV( CPPATHTOSTR( path ) ) << "\" [tid: " << std::this_thread::get_id() << "]"
+        );
 
         std::ifstream rFile( path , std::ios::binary );
         if ( !rFile.is_open() )
@@ -394,20 +453,26 @@ CPSTR rena::calc_file_sha384( const std::filesystem::path& path ){
             }
 #endif
             SHA384_Update( &ctx , ( char* ) buf , ret );
-        
-            SHA384_Final( out , &ctx );
-            rFile.close();
-#ifdef SHOW_PROGRESS_DETAIL
-            if ( global_speed_watcher != nullptr )
-            {
-                global_speed_watcher -> finished_one( std::this_thread::get_id() );
-            }
-#endif
-            return dump_CHAR_to_HEX( out , SHA384_DIGEST_LENGTH );
         }
+        SHA384_Final( out , &ctx );
+        rFile.close();
+#ifdef SHOW_PROGRESS_DETAIL
+        if ( global_speed_watcher != nullptr )
+        {
+            global_speed_watcher -> finished_one( std::this_thread::get_id() );
+        }
+#endif
+        CPSTR hex_out = dump_CHAR_to_HEX( out , SHA384_DIGEST_LENGTH );
+        LOG( INFO , calchash ,
+            "Finish calc file: \"" << CPWTOACONV( CPPATHTOSTR( path ) ) << "\" hash: " << CPWTOACONV( hex_out ) << " [tid: " << std::this_thread::get_id() << "]"
+        );
+        return hex_out;
     }
     catch ( const std::exception& e )
     {
+        LOG( ERROR , calchash ,
+            "Calc failed: file: \"" << CPWTOACONV( CPPATHTOSTR( path ) ) << "\" what: " << e.what() << " [tid: " << std::this_thread::get_id() << "]"
+        );
 #ifdef SHOW_PROGRESS_DETAIL
         if ( global_speed_watcher != nullptr )
         {
@@ -428,6 +493,10 @@ CPSTR rena::calc_file_sha512( const std::filesystem::path& path ){
             global_speed_watcher -> start_one( std::this_thread::get_id() , path );
         } // tell global speed watcher what are you doing now
 #endif
+
+        LOG( INFO , calchash ,
+            "Start calc file \"" << CPWTOACONV( CPPATHTOSTR( path ) ) << "\" [tid: " << std::this_thread::get_id() << "]"
+        );
 
         std::ifstream rFile( path , std::ios::binary );
         if ( !rFile.is_open() )
@@ -462,10 +531,17 @@ CPSTR rena::calc_file_sha512( const std::filesystem::path& path ){
             global_speed_watcher -> finished_one( std::this_thread::get_id() );
         }
 #endif
-        return dump_CHAR_to_HEX( out , SHA512_DIGEST_LENGTH );
+        CPSTR hex_out = dump_CHAR_to_HEX( out , SHA512_DIGEST_LENGTH );
+        LOG( INFO , calchash ,
+            "Finish calc file: \"" << CPWTOACONV( CPPATHTOSTR( path ) ) << "\" hash: " << CPWTOACONV( hex_out ) << " [tid: " << std::this_thread::get_id() << "]"
+        );
+        return hex_out;
     }
     catch ( const std::exception& e )
     {
+        LOG( ERROR , calchash ,
+            "Calc failed: file: \"" << CPWTOACONV( CPPATHTOSTR( path ) ) << "\" what: " << e.what() << " [tid: " << std::this_thread::get_id() << "]"
+        );
 #ifdef SHOW_PROGRESS_DETAIL
         if ( global_speed_watcher != nullptr )
         {
