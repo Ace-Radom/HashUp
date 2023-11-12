@@ -49,7 +49,7 @@ void rena::renalog::dump_logline_begin( rena::renalog::RENALOGSEVERITY severity 
     auto ms = std::chrono::duration_cast<std::chrono::milliseconds>( time_now.time_since_epoch() ) % 1000; // current time ms part
     char timestr[128];
     strftime( timestr , sizeof( timestr ) , "%Y-%m-%d %H:%M:%S" , localtime( &time_t_now ) );
-    this -> _rwF << "[" << timestr << "." << std::setw( 3 ) << std::setfill( '0' ) << ms.count() << "] " << host << ":\t" << severity << "\t";
+    this -> _rwF << "[" << timestr << "." << std::setw( 3 ) << std::setfill( '0' ) << ms.count() << "] " << std::setw( 10 ) << std::setfill( ' ' ) << std::left << host + ":" << severity << "\t";
     return;
 }
 
