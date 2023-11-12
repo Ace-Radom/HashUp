@@ -106,6 +106,10 @@ int main( int argc , char** argv ){
 
     // if there's no config file, just skip and use default settings
 
+    LOG( INFO , master , 
+        "CFG -> MODE: " << rena::CFG_MODE << " THREAD: " << rena::CFG_THREAD << " MIN_LOG_SEVERITY: " << rena::CFG_MIN_LOG_SEVERITY << " MAX_OLD_LOG_FILES: " << rena::CFG_MAX_OLD_LOG_FILES
+    );
+
 #pragma region create_cmd_parser
 
     cmdline::parser cmdparser;
@@ -334,7 +338,7 @@ int main( int argc , char** argv ){
         return open_status;
     } // open failed
 
-    if ( cmdparser.exist( "mode" ) )
+    if ( cmdparser.exist( "mode" ) || p == rena::HASHPURPOSE::CREATE )
     {
         std::string mode = cmdparser.get<std::string>( "mode" );
         LOG( INFO , master ,
