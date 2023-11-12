@@ -17,16 +17,25 @@ rena::HUFO::HUFOSTATUS rena::HUFO::open( const std::filesystem::path& path , ren
     {
         if ( !std::filesystem::exists( path ) )
         {
+            LOG( FATAL , hufo ,
+                "Target HUFO doesn't exist: path: \"" << CPWTOACONV( CPPATHTOSTR( path ) ) << "\""
+            );
             return HUFOSTATUS::FILENOTEXIST;
-        } // .hpf list doesn't exist
+        } // HUF list doesn't exist
         else if ( !std::filesystem::is_regular_file( path ) )
         {
+            LOG( FATAL , hufo ,
+                "Target HUFO is not regular file: path: \"" << CPWTOACONV( CPPATHTOSTR( path ) ) << "\""
+            );
             return HUFOSTATUS::OPENFILEERR;
         }
         this -> _pdpath = std::filesystem::path( path ).parent_path();
         this -> _rwF.open( path , std::ios::in | std::ios::out );
         if ( !( this -> _rwF.is_open() ) )
         {
+            LOG( FATAL , hufo ,
+                "Open target HUFO failed: path: \"" << CPWTOACONV( CPPATHTOSTR( path ) ) << "\" what: " << strerror( errno )
+            )
             this -> _pdpath.clear();
             return HUFOSTATUS::OPENFILEERR;
         } // open failed
@@ -35,12 +44,14 @@ rena::HUFO::HUFOSTATUS rena::HUFO::open( const std::filesystem::path& path , ren
     {
         if ( std::filesystem::exists( path ) && !_ol_no_ask )
         {
-#ifdef WIN32
-            if ( !confirm_interrupt( L"This file \"" + CPPATHTOSTR( path ) + L"\" already exist. Are you sure to overwrite it?" , 'y' , 'N' ) )
-#else
-            if ( !confirm_interrupt( "This file \"" + CPPATHTOSTR( path ) + "\" already exist. Are you sure to overwrite it?" , 'y' , 'N' ) )
-#endif
+            LOG( DEBUG , hufo ,
+                "Asking overlay comfirm"
+            );
+            if ( !confirm_interrupt( CPTEXT( "This file \"" ) + CPPATHTOSTR( path ) + CPTEXT( "\" already exist. Are you sure to overwrite it?" ) , 'y' , 'N' ) )
             {
+                LOG( INFO , hufo ,
+                    "Comfirm interrupt"
+                )
                 return HUFOSTATUS::INTERRUPT;
             }
         } // given file already exists
@@ -48,15 +59,24 @@ rena::HUFO::HUFOSTATUS rena::HUFO::open( const std::filesystem::path& path , ren
         this -> _rwF.open( path , std::ios::in | std::ios::out | std::ios::trunc );
         if ( !( this -> _rwF.is_open() ) )
         {
+            LOG( FATAL , hufo ,
+                "Open target HUFO failed: path: \"" << CPWTOACONV( CPPATHTOSTR( path ) ) << "\" what: " << strerror( errno )
+            );
             this -> _pdpath.clear();
             return HUFOSTATUS::OPENFILEERR;
         } // open failed
     } // doing hash create
     this -> _hufopath = path;
+    LOG( INFO , hufo ,
+        "Open target HUFO OK"
+    );
     return HUFOSTATUS::OK;
 }
 
 rena::HUFO::HUFOSTATUS rena::HUFO::open( const std::filesystem::path& path , rena::HASHPURPOSE p , bool _ol_no_ask , const std::filesystem::path& ignore_file_path ){
+    LOG( INFO , hufo ,
+        "Opening IGF and parsing"
+    );
     if ( this -> _figobj.open( ignore_file_path ) != 0 )
     {
         return HUFOSTATUS::OPENIGFERR;
@@ -108,18 +128,33 @@ rena::HUFO::HUFOSTATUS rena::HUFO::do_create( unsigned short threads ){
     CPOUT << "Doing hash list create." << std::endl;
 #endif
 
+    LOG( INFO , hufo ,
+        "Starting hash list create"
+    );
+
     if ( this -> _pdpath.empty() )
     {
+        LOG( ERROR , hufo ,
+            "Calling hash list create with empty _pdpath"
+        );
         return HUFOSTATUS::NOWORKINGDIR;
     } // create root dir (_pdpath) not set
     if ( !( this -> _rwF.is_open() ) )
     {
+        LOG( ERROR , hufo ,
+            "Calling hash list create with closed _rwF"
+        );
         return HUFOSTATUS::HUFNOTOPEN;
     } // _rwF isn't open
     if ( _hf == nullptr )
     {
+        LOG( WARNING , hufo ,
+            "Hook _hf points to nullptr, set hash mode to default md5"
+        );
         this -> set_mode( HASHMODE::MD5 );
     } // hash mode not set, use default (MD5)
+
+    // these three if clauses should actually not be called: these errors should have already been handled
 
     this -> _hlist.clear();
     this -> _traversal_dir_write_to_hlist( this -> _pdpath );
@@ -136,11 +171,19 @@ rena::HUFO::HUFOSTATUS rena::HUFO::do_create( unsigned short threads ){
 
     for ( auto it : this -> _hlist )
     {
+        LOG( DEBUG , hufo ,
+            "File \"" << CPWTOACONV( CPPATHTOSTR( it.fp ) ) << "\" hash: " << CPWTOACONV( it.hash ) << ", write"
+        );
         DEBUG_MSG( it.fp << " " << it.hash );
         this -> _rwF << CPWTOACONV( CPPATHTOSTR( "." / it.fp ) ) << " " << CPWTOACONV( it.hash ) << std::endl;
     }
 
 #ifdef SHOW_PROGRESS_DETAIL
+    LOG( INFO , hufo ,
+        "Hash list create complete, " << this -> _ori_hlist_len << " files got in total, " 
+                                      << this -> _hlist.size() << " created, "
+                                      << this -> _ori_hlist_len - this -> _hlist.size() << " error"
+    );
     CPOUT << rich::FColor::GREEN << "Create complete: " << rich::style_reset << this -> _ori_hlist_len << " files got in total; "
           << this -> _hlist.size() << " created; "
           << this -> _ori_hlist_len - this -> _hlist.size() << " error."
@@ -156,16 +199,29 @@ rena::HUFO::HUFOSTATUS rena::HUFO::do_check( unsigned short threads ){
     CPOUT << "Doing hash check." << std::endl;
 #endif
 
+    LOG( INFO , hufo ,
+        "Starting hash list check"
+    );
+
     if ( this -> _pdpath.empty() )
     {
+        LOG( ERROR , hufo ,
+            "Calling hash list check with empty _pdpath"
+        );
         return HUFOSTATUS::NOWORKINGDIR;
     } // check root dir (_pdpath) not set
     if ( !( this -> _rwF.is_open() ) )
     {
+        LOG( ERROR , hufo ,
+            "Calling hash list check with closed _rwF"
+        );
         return HUFOSTATUS::HUFNOTOPEN;
     } // _rwF isn't open
     if ( _hf == nullptr )
     {
+        LOG( ERROR , hufo ,
+            "Calling hash list check with hook _hf points to nullptr"
+        );
         return HUFOSTATUS::HMODENOTSET;
     } // hash mode not set
 
@@ -188,16 +244,28 @@ rena::HUFO::HUFOSTATUS rena::HUFO::do_check( unsigned short threads ){
     {
         if ( it.hash == it.hash_readin )
         {
+            LOG( DEBUG , hufo ,
+                "File \"" << CPWTOACONV( CPPATHTOSTR( it.fp ) ) << "\" check passed: hash got and calced: " << CPWTOACONV( it.hash )
+            );
             DEBUG_MSG( it.fp << " Checked" );
         }
         else
         {
+            LOG( WARNING , hufo ,
+                "File \"" << CPWTOACONV( CPPATHTOSTR( it.fp ) ) << "\" check failed: hash got: " << CPWTOACONV( it.hash_readin ) << " hash calced: " << CPWTOACONV( it.hash )
+            );
             CPOUT << rich::FColor::RED << "File \"" << CPPATHTOSTR( it.fp ) << "\" Check Failed: " << rich::style_reset << "got " << it.hash_readin << ", should be " << it.hash << "." << std::endl;
             this -> _errhlist.push_back( it );
         }
     }
 
 #ifdef SHOW_PROGRESS_DETAIL
+    LOG( INFO , hufo ,
+        "Hash list check completed, " << this -> _ori_hlist_len << "files got in total, "
+                                      << this -> _hlist.size() - this -> _errhlist.size() << "passed, "
+                                      << this -> _errhlist.size() << " failed, "
+                                      << this -> _ori_hlist_len - this -> _hlist.size() << " error"
+    );
     CPOUT << rich::FColor::GREEN << "Check complete: " << rich::style_reset << this -> _ori_hlist_len << " files got in total; " 
           << this -> _hlist.size() - this -> _errhlist.size() << " passed; " 
           << this -> _errhlist.size() << " failed; " 
@@ -217,11 +285,17 @@ rena::HUFO::HUFOSTATUS rena::HUFO::_do_hashcalc( unsigned short threads ){
     CPOUT << "Found " << this -> _ori_hlist_len << " files in total";
     if ( this -> _ori_hlist_len == this -> _hlist.size() )
     {
+        LOG( INFO , hufo ,
+            "Found " << this -> _ori_hlist_len << " files in total, no error before hashcalc"
+        );
         CPOUT << "." << std::endl;
     } // no files have error and have already been erased before hashcalc
     else
     {
         size_t err_before_hashcalc_num = this -> _ori_hlist_len - this -> _hlist.size();
+        LOG( INFO , hufo ,
+            "Found " << this -> _ori_hlist_len << " files in total, " << err_before_hashcalc_num << " error(s) before hashcalc"
+        );
         CPOUT << ", " << err_before_hashcalc_num << " file" << ( ( err_before_hashcalc_num == 1 ) ? " " : "s " ) << "had error and skipped." << std::endl;
     }
 #endif
@@ -275,6 +349,9 @@ rena::HUFO::HUFOSTATUS rena::HUFO::_do_hashcalc( unsigned short threads ){
 
     if ( quit_signal.load() )
     {
+        LOG( INFO , hufo ,
+            "global stop called (SIGINT / KBS_Q), stop hashcalc"
+        );
         CPOUT << rich::clear_line << "Cleaningup and exiting..." << std::endl;
         delete global_speed_watcher;
         global_speed_watcher = nullptr;
@@ -287,6 +364,10 @@ rena::HUFO::HUFOSTATUS rena::HUFO::_do_hashcalc( unsigned short threads ){
           << std::fixed << std::setprecision( 2 ) << global_speed_watcher -> get_speed() / 1048576.0 <<  "MB/s" << std::endl;
     // last flush
 
+    LOG( INFO , hufo ,
+        "All calc jobs finished, speed: " << global_speed_watcher -> get_speed() / 1048576.0 << "MB/s duration: " << global_speed_watcher -> get_duration_s() << "s"
+    );
+
     CPOUT << "Total time spent on hash calculations: " << std::setprecision( 2 ) << global_speed_watcher -> get_duration_s() << "s." << std::endl;
     delete global_speed_watcher;
     global_speed_watcher = nullptr;
@@ -296,13 +377,23 @@ rena::HUFO::HUFOSTATUS rena::HUFO::_do_hashcalc( unsigned short threads ){
     while ( !pool.is_terminated() );
 #endif
 
+    LOG( INFO , hufo ,
+        "Start getting results"
+    );
+
     for ( auto it = this -> _hlist.begin() ; it != this -> _hlist.end() ; )
     {
         try {
             it -> hash = it -> hash_future.get();
+            LOG( DEBUG , hufo ,
+                "File \"" << CPWTOACONV( CPPATHTOSTR( it -> fp ) ) << "\" future got successfully"
+            );
         }
         catch ( const std::exception& e )
         {
+            LOG( WARNING , hufo ,
+                "File \"" << CPWTOACONV( CPPATHTOSTR( it -> fp ) ) << "\" future got failed: what: " << e.what()
+            );
             CPERR << rich::FColor::RED << "Operate file \"" << CPPATHTOSTR( it -> fp ) << "\" failed: " << rich::style_reset << e.what() << std::endl
                   << "Skip." << std::endl;
             it = this -> _hlist.erase( it );
@@ -315,6 +406,10 @@ rena::HUFO::HUFOSTATUS rena::HUFO::_do_hashcalc( unsigned short threads ){
 }
 
 void rena::HUFO::_traversal_dir_write_to_hlist( const std::filesystem::path& dir ){
+    LOG( INFO , hufo ,
+        "Traversing directory \"" << CPWTOACONV( CPPATHTOSTR( dir ) ) << "\""
+    )
+
     for ( auto it : std::filesystem::directory_iterator( dir ) )
     {
         auto fp = it.path(); // file path
@@ -349,6 +444,9 @@ void rena::HUFO::_traversal_dir_write_to_hlist( const std::filesystem::path& dir
             }
             catch ( const std::exception& e )
             {
+                LOG( WARNING , hufo ,
+                    "Failed to get file size: file: \"" << CPWTOACONV( CPPATHTOSTR( temp.fp ) ) << "\" what: " << e.what()
+                );
                 CPERR << rich::FColor::RED << "Get file size failed by \"" << CPPATHTOSTR( temp.fp ) << "\": " << rich::style_reset << e.what() << std::endl;
             }
             this -> _tfsize += temp.fsize;
@@ -363,6 +461,10 @@ void rena::HUFO::_traversal_dir_write_to_hlist( const std::filesystem::path& dir
 }
 
 void rena::HUFO::_read_huf_write_to_hlist(){
+    LOG( INFO , hufo ,
+        "Reading HUF \"" << CPWTOACONV( CPPATHTOSTR( this -> _hufopath ) ) << "\""
+    )
+
     std::string buf;
     while ( std::getline( this -> _rwF , buf ) )
     {
@@ -376,6 +478,9 @@ void rena::HUFO::_read_huf_write_to_hlist(){
         } // relative path, make absolute temp path for file exist check and size get
         if ( !std::filesystem::exists( ptemp ) )
         {
+            LOG( WARNING , hufo ,
+                "File in HUF does not exist: file: \"" << CPWTOACONV( CPPATHTOSTR( temp.fp ) ) << "\""
+            );
             CPERR << rich::FColor::RED << "File \"" << CPPATHTOSTR( temp.fp ) << "\" doesn't not exist." << rich::style_reset << std::endl
                   << "Skip." << std::endl;
             this -> _ori_hlist_len++;
@@ -386,11 +491,17 @@ void rena::HUFO::_read_huf_write_to_hlist(){
         }
         catch ( const std::exception& e )
         {
+            LOG( WARNING , hufo ,
+                "Failed to get file size: file: \"" << CPWTOACONV( CPPATHTOSTR( temp.fp ) ) << "\" what: " << e.what()
+            );
             CPERR << rich::FColor::RED << "Get file size failed by \"" << CPPATHTOSTR( temp.fp ) << "\": " << rich::style_reset << e.what() << std::endl;
         }
         this -> _tfsize += temp.fsize;
         if ( temp.hash_readin.size() != this -> _hlen )
         {
+            LOG( WARNING , hufo ,
+                "Wrong hash len in HUF: file: \"" << CPWTOACONV( CPPATHTOSTR( temp.fp ) ) << "\" got " << temp.hash_readin.size() << " should be " << this -> _hlen
+            );
             CPERR << rich::FColor::RED << "File \"" << CPPATHTOSTR( temp.fp ) << "\" wrong hash length: " << rich::style_reset << "got " << temp.hash_readin.size() << ", should be " << this -> _hlen << "." << std::endl
                   << "Skip." << std::endl;
             this -> _ori_hlist_len++;

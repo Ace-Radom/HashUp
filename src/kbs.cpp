@@ -42,6 +42,9 @@ void rena::watch_kb_signal( const rena::HUFO* hufoobj ){
             
         if ( c == 's' )
         {
+            LOG( INFO , kbs ,
+                "KBS_S triggered"
+            );
             CPOUT << rich::clear_line
                   << "==================================================" << std::endl
                   << rich::FColor::YELLOW << "Time:\t\t\t"             << rich::style_reset << CPATOWCONV( get_time_str_now() ) << std::endl
@@ -59,6 +62,9 @@ void rena::watch_kb_signal( const rena::HUFO* hufoobj ){
         } // status
         else if ( c == 'p' )
         {
+            LOG( INFO , kbs ,
+                "KBS_P triggered, raise pause signal"
+            );
             pause_signal.store( true );
             global_speed_watcher -> pause_watch();
             CPOUT << rich::clear_line
@@ -67,11 +73,17 @@ wait_for_resume:
             while ( !kbhit() );
             if ( getch() != 'r' )
                 goto wait_for_resume;
+            LOG( INFO , kbs ,
+                "KBS_P_R triggered, raise resume signal"
+            );
             pause_signal.store( false );
             global_speed_watcher -> resume_watch();
         } // pause
         else if ( c == 'q' )
         {
+            LOG( INFO , kbs ,
+                "KBS_Q triggered, raise SIGINT"
+            );
             raise( SIGINT );
         } // quit
     }
@@ -81,6 +93,9 @@ wait_for_resume:
 void rena::handle_syssig( int signum ){
     if ( signum == SIGINT )
     {
+        LOG( INFO , syssig ,
+            "Catch SIGINT, raise global stop signal"
+        );
         quit_signal.store( true );
     } // actually useless
     return;

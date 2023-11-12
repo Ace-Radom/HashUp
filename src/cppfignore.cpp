@@ -22,6 +22,9 @@ int rena::cppfignore::open( std::filesystem::path ifp ){
     this -> _rwFile.open( ifp , std::ios::in );
     if ( !( this -> _rwFile.is_open() ) )
     {
+        LOG( ERROR , fignore ,
+            "Open IGF failed: path: \"" << CPWTOACONV( CPPATHTOSTR( ifp ) ) << "\" what: " << strerror( errno )
+        );
         return 1;
     }
     this -> _ifp = ifp;
@@ -100,10 +103,16 @@ int rena::cppfignore::parse(){
         DEBUG_MSG( CPATOWCONV( regex_temp_str ) );
         try {
             std::regex regex_temp( regex_temp_str );
-            this -> _rlist.push_back( regex_temp );
+            this -> _rlist.push_back( std::make_pair( regex_temp , regex_temp_str ) );
+            LOG( INFO , fignore ,
+                "Push regex: \"" << regex_temp_str << "\""
+            );
         }
         catch ( const std::exception& e )
         {
+            LOG( ERROR , fignore ,
+                "Push regex failed: what: " << e.what()
+            );
             CPERR << e.what() << std::endl;
             return -1;
         }
@@ -132,12 +141,16 @@ bool rena::cppfignore::check( std::filesystem::path path , rena::cppfignore::FIL
         path_search_temp /= it;
         if ( this -> _check_pp( path_search_temp , ft ) )
         {
+            LOG( INFO , fignore ,
+                "Ignore " << ( ( ft == FILETYPE::IS_DIR ) ? "directory" : "file" ) << ": \"" << CPWTOACONV( CPPATHTOSTR( path ) ) << "\""
+            );
             return true;
         }
     }
     return false;
 }
 
+// check path part
 bool rena::cppfignore::_check_pp( std::filesystem::path path , FILETYPE ft ){
     std::string path_str = CPWTOACONV( CPPATHTOSTR( path ) );
 
@@ -155,8 +168,11 @@ bool rena::cppfignore::_check_pp( std::filesystem::path path , FILETYPE ft ){
 
     for ( const auto& r : this -> _rlist )
     {
-        if ( std::regex_search( path_str , r ) )
+        if ( std::regex_search( path_str , r.first ) )
         {
+            LOG( DEBUG , fignore ,
+                "Match path part \"" << path_str << "\" with regex \"" << r.second << "\""
+            );
             return true;
         }
     }

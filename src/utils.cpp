@@ -128,6 +128,8 @@ CPSTR rena::get_hashup_exe_path(){
 
 std::string rena::CFG_MODE = "md5";
 unsigned short rena::CFG_THREAD = 8;
+std::string rena::CFG_MIN_LOG_SEVERITY = "INFO";
+unsigned short rena::CFG_MAX_OLD_LOG_FILES = 16;
 std::vector<std::string> rena::support_hash_modes = {
         "md5",
         "sha1",

@@ -26,6 +26,7 @@
 #define CPSTR  std::wstring
 #define CPCHAR wchar_t
 #define CPTEXT( str )       L##str
+#define CPTOSTR( tostr )    std::to_wstring( tostr )
 #define CPATOWCONV( str )   std::wstring_convert<std::codecvt_utf8<wchar_t>>{}.from_bytes( str )    // cp str to wstr convert
 #define CPWTOACONV( str )   std::wstring_convert<std::codecvt_utf8<wchar_t>>{}.to_bytes( str )      // cp wstr to str convert
 #define CPPATHTOSTR( path ) ( path ).wstring()                                                      // cp path to str
@@ -35,6 +36,7 @@
 #define CPSTR  std::string
 #define CPCHAR char
 #define CPTEXT( str )       ( str )
+#define CPTOSTR( tostr )    std::to_string( tostr )
 #define CPATOWCONV( str )   ( str )
 #define CPWTOACONV( str )   ( str )
 #define CPPATHTOSTR( path ) ( path ).string()
@@ -93,6 +95,8 @@ namespace rena {
 
     extern std::string    CFG_MODE;
     extern unsigned short CFG_THREAD;
+    extern std::string    CFG_MIN_LOG_SEVERITY;
+    extern unsigned short CFG_MAX_OLD_LOG_FILES;
     extern std::vector<std::string> support_hash_modes; // all supported hash modes
 
 }; // namespace rena

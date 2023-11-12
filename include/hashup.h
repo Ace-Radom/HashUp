@@ -44,6 +44,7 @@
 #include"ThreadPool.h"
 #include"cppfignore.h"
 #include"rich.h"
+#include"renalog.h"
 
 namespace rena {
 

@@ -1,6 +1,14 @@
 #include"hashup.h"
 
 int main(){
+
+    RENALOG_INIT(
+        std::filesystem::path( rena::get_hashup_exe_path() ).parent_path() ,
+        CPTEXT( "hash_calc_test" ) ,
+        4 ,
+        rena::renalog::RENALOGSEVERITY::DEBUG
+    );
+
     if (
         rena::calc_file_md5( TEST_SINGLE_FILE_PATH )      == CPATOWCONV( "1c9a06711a8076d5d47a3ecb6ceb2431" )                                                                                                 &&
         rena::calc_file_sha1( TEST_SINGLE_FILE_PATH )     == CPATOWCONV( "1a96f7a27006c30ebd764b5490b3d5d681d40008" )                                                                                         &&
@@ -18,8 +26,13 @@ int main(){
         rena::calc_file_shake256( TEST_SINGLE_FILE_PATH ) == CPATOWCONV( "29dfe7131294bd3806c98cd6478c3864d6f1f1b767f7fc4e51cf1a06516b8a52" )
 #endif
     )
+    {
+        RENALOG_FREE();
         return 0;
+    }
     else
+    {
+        RENALOG_FREE();
         return 1;
-    
+    }    
 }
