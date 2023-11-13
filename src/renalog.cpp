@@ -36,7 +36,7 @@ rena::renalog::RENALOGSTATUS rena::renalog::init(){
     this -> _rwF.open( logfile_path , std::ios::out | std::ios::trunc );
     if ( !( this -> _rwF.is_open() ) )
     {
-        CPERR << rich::FColor::RED << "Open target log file error." << rich::style_reset << std::endl;
+        CPERR << rich::FColor::RED << "Open target log file error: " << rich::style_reset << strerror( errno ) << std::endl;
         return RENALOGSTATUS::INITERR;
     }
 

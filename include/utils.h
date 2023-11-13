@@ -9,6 +9,7 @@
 #include<sstream>
 #ifdef _WIN32
 #include<Windows.h>
+#include<ShlObj_core.h>
 #elif defined( __linux__ )
 #include<unistd.h>
 #include<termios.h>
@@ -92,6 +93,7 @@ namespace rena {
 
     bool is_supported_hash_mode( std::string mode );
     CPSTR get_current_exe_path();
+    CPSTR get_home_path();
 
     extern std::string    CFG_MODE;
     extern unsigned short CFG_THREAD;
