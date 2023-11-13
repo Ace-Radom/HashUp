@@ -3,7 +3,7 @@
 int main(){
 
     RENALOG_INIT(
-        std::filesystem::path( rena::get_hashup_exe_path() ).parent_path() ,
+        std::filesystem::path( rena::get_current_exe_path() ).parent_path() ,
         CPTEXT( "hash_calc_test" ) ,
         4 ,
         rena::renalog::RENALOGSEVERITY::DEBUG

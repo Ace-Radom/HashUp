@@ -91,7 +91,7 @@ namespace rena {
     // utils for main function
 
     bool is_supported_hash_mode( std::string mode );
-    CPSTR get_hashup_exe_path();
+    CPSTR get_current_exe_path();
 
     extern std::string    CFG_MODE;
     extern unsigned short CFG_THREAD;

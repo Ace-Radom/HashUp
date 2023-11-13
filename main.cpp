@@ -39,7 +39,7 @@ int main( int argc , char** argv ){
 
     signal( SIGINT , rena::handle_syssig );
 
-    std::filesystem::path hashup_exe_path( rena::get_hashup_exe_path() );
+    std::filesystem::path hashup_exe_path( rena::get_current_exe_path() );
     std::filesystem::path cfg_path = hashup_exe_path.parent_path() / "hashup.ini";
     if ( std::filesystem::exists( cfg_path ) )
     {

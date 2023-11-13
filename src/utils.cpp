@@ -103,7 +103,7 @@ bool rena::is_supported_hash_mode( std::string mode ){
     return false;
 }
 
-CPSTR rena::get_hashup_exe_path(){
+CPSTR rena::get_current_exe_path(){
     CPSTR hashup_exe_path;
     CPCHAR buf[1024];
     memset( buf , 0 , sizeof( buf ) );
