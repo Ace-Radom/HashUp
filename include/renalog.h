@@ -31,32 +31,34 @@
 #undef UNKNOWN
 #endif
 
-#define RENALOG_INIT( logdir , nametag , olfmaxnum , min_severity )                                         \
-    rena::__global_logger__ = new rena::renalog( logdir ,                                                   \
-                                                 nametag ,                                                  \
-                                                 olfmaxnum ,                                                \
-                                                 min_severity                                               \
-                                                );                                                          \
-    if ( rena::__global_logger__ -> init() != rena::renalog::RENALOGSTATUS::OK )                            \
-    {                                                                                                       \
-        throw std::runtime_error( "Failed to init global logger" );                                         \
-    }                                                                                                       \
-    rena::__global_logger__ -> lock();                                                                      \
-    rena::__global_logger__ -> dump_logline_begin( rena::renalog::RENALOGSEVERITY::INFO , "loghost" );      \
-    *rena::__global_logger__ << "Logger inited and start." << "\n";                                         \
-    rena::__global_logger__ -> flush();                                                                     \
+#define RENALOG_INIT( logdir , nametag , olfmaxnum , min_severity )                                             \
+    rena::__global_logger__ = new rena::renalog( logdir ,                                                       \
+                                                 nametag ,                                                      \
+                                                 olfmaxnum ,                                                    \
+                                                 min_severity                                                   \
+                                                );                                                              \
+    if ( rena::__global_logger__ -> init() != rena::renalog::RENALOGSTATUS::OK )                                \
+    {                                                                                                           \
+        throw std::runtime_error( "Failed to init global logger" );                                             \
+    }                                                                                                           \
+    rena::__global_logger__ -> lock();                                                                          \
+    rena::__global_logger__ -> dump_logline_begin( rena::renalog::RENALOGSEVERITY::INFO , "loghost" );          \
+    *rena::__global_logger__ << "Logger inited and start." << "\n";                                             \
+    rena::__global_logger__ -> flush();                                                                         \
     rena::__global_logger__ -> release();
 
-#define RENALOG_FREE()                                                                                      \
+#define RENALOG_FREE()                                                                                          \
     delete rena::__global_logger__
-#define LOG( severity , host , data )                                                                       \
-    if ( rena::__global_logger__ -> is_severity_need_to_log( rena::renalog::RENALOGSEVERITY::severity ) )   \
-    {                                                                                                       \
-        rena::__global_logger__ -> lock();                                                                  \
-        rena::__global_logger__ -> dump_logline_begin( rena::renalog::RENALOGSEVERITY::severity , #host );  \
-        *rena::__global_logger__ << data << "\n";                                                           \
-        rena::__global_logger__ -> flush();                                                                 \
-        rena::__global_logger__ -> release();                                                               \
+#define LOG( severity , host , data )                                                                           \
+    if ( rena::__global_logger__ -> is_severity_need_to_log( rena::renalog::RENALOGSEVERITY::severity ) )       \
+    {                                                                                                           \
+        rena::__global_logger__ -> lock();                                                                      \
+        rena::__global_logger__ -> dump_logline_begin( rena::renalog::RENALOGSEVERITY::severity , #host );      \
+        *rena::__global_logger__ << data                                                                        \
+                                 << " [" << std::filesystem::relative( __FILE__ , SOURCE_ROOT_DIR ).string()    \
+                                 << ": " << __LINE__ << "]\n";                                                  \
+        rena::__global_logger__ -> flush();                                                                     \
+        rena::__global_logger__ -> release();                                                                   \
     }
 
 

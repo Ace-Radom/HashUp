@@ -61,6 +61,7 @@ if(${USE_OPENSSL_EVP_FUNCS})
     endif()
 endif()
 add_definitions(-DSHOW_PROGRESS_DETAIL)
+add_definitions(-DSOURCE_ROOT_DIR="${CMAKE_SOURCE_DIR}")
 
 # ============================================
 #                     main
