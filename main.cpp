@@ -39,7 +39,7 @@ int main( int argc , char** argv ){
 
     signal( SIGINT , rena::handle_syssig );
 
-    std::filesystem::path hashup_exe_path( rena::get_hashup_exe_path() );
+    std::filesystem::path hashup_exe_path( rena::get_current_exe_path() );
     std::filesystem::path cfg_path = hashup_exe_path.parent_path() / "hashup.ini";
     if ( std::filesystem::exists( cfg_path ) )
     {
@@ -76,8 +76,15 @@ int main( int argc , char** argv ){
         }
     } // config file exists, parse and get settings
 
+    std::filesystem::path log_dir_path( rena::get_home_path() );
+    log_dir_path /= ".hashup";
+    if ( !std::filesystem::exists( log_dir_path ) )
+    {
+        std::filesystem::create_directories( log_dir_path );
+    }
+
     RENALOG_INIT(
-        hashup_exe_path.parent_path() ,
+        log_dir_path ,
         CPTEXT( "hashup" ) ,
         rena::CFG_MAX_OLD_LOG_FILES ,
         rena::parse_str_to_severity( rena::CFG_MIN_LOG_SEVERITY )
