@@ -128,15 +128,16 @@ CPSTR rena::get_current_exe_path(){
 
 CPSTR rena::get_home_path(){
     CPSTR home_path;
-    CPCHAR buf[1024];
 
 #ifdef _WIN32
+    CPCHAR buf[1024];
     if ( SHGetFolderPath( NULL , CSIDL_PROFILE , NULL , 0 , buf ) == S_OK )
     {
         home_path = buf;
     }
-#else 
-    
+#else
+    const CPCHAR* buf = getenv( "HOME" );
+    home_path = buf;
 #endif
 
     return home_path;
