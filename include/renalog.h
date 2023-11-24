@@ -8,6 +8,9 @@
 #include<mutex>
 #include<chrono>
 #include<ctime>
+#ifdef WIN32
+#include<Windows.h>
+#endif
 
 #include"rich.h"
 #include"utils.h"
@@ -160,6 +163,25 @@ namespace rena {
     renalog::RENALOGSEVERITY parse_str_to_severity( const std::string& str );
 
     extern renalog* __global_logger__;
+
+#ifdef WIN32
+
+    class crash_dumper {
+        public:
+            crash_dumper();
+            ~crash_dumper();
+
+            static bool _placeholder();
+
+        private:
+            LPTOP_LEVEL_EXCEPTION_FILTER m_OriFilter;
+            HANDLE currenth;
+            static LONG WINAPI ExceptionFilter( LPEXCEPTION_POINTERS ExpInfo );
+    };
+
+    const bool __bplaceholder__ = crash_dumper::_placeholder();
+
+#endif
 
 }; // namespace rena
 
