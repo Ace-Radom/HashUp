@@ -175,7 +175,6 @@ namespace rena {
 
         private:
             LPTOP_LEVEL_EXCEPTION_FILTER m_OriFilter;
-            HANDLE currenth;
             static LONG WINAPI ExceptionFilter( LPEXCEPTION_POINTERS ExpInfo );
     };
 
