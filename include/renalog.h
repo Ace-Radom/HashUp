@@ -8,8 +8,20 @@
 #include<mutex>
 #include<chrono>
 #include<ctime>
-#ifdef WIN32
+#include<map>
+#include<sstream>
+#include<atomic>
+#include<thread>
+#if defined( WIN32 )
 #include<Windows.h>
+#include<DbgHelp.h>
+#include<tchar.h>
+#pragma comment( lib , "dbghelp.lib" )
+#else
+#include<execinfo.h>
+#include<cxxabi.h>
+#include<signal.h>
+#include<unistd.h>
 #endif
 
 #include"rich.h"
@@ -66,6 +78,10 @@
 
 
 namespace rena {
+
+////////////////////////////////////////////////////////////
+//                       renalog.cpp                      //
+////////////////////////////////////////////////////////////
 
     class renalog {
 
@@ -164,7 +180,17 @@ namespace rena {
 
     extern renalog* __global_logger__;
 
-#ifdef WIN32
+////////////////////////////////////////////////////////////
+//                     crashdumper.cpp                    //
+////////////////////////////////////////////////////////////
+
+/**
+ * The implementation of stacktrace in class crash_dumper references the one in project g3log <https://github.com/KjellKod/g3log>
+ * The files are:
+ * * /src/crashhandler_windows.cpp
+ * * /src/crashhandler_unix.cpp
+ * * /src/stacktrace_windows.cpp
+*/
 
     class crash_dumper {
         public:
@@ -174,13 +200,16 @@ namespace rena {
             static bool _placeholder();
 
         private:
+#ifdef WIN32
             LPTOP_LEVEL_EXCEPTION_FILTER m_OriFilter;
             static LONG WINAPI ExceptionFilter( LPEXCEPTION_POINTERS ExpInfo );
+#else
+            static void sigHandler( int signum , siginfo_t* info , void* ctx );
+#endif
     };
 
     const bool __bplaceholder__ = crash_dumper::_placeholder();
-
-#endif
+    // call crash_dumper::_placeholder by hand here, make sure it will still work full-background even with static-linking
 
 }; // namespace rena
 
