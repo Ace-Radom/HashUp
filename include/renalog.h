@@ -22,6 +22,11 @@
 #include<cxxabi.h>
 #include<signal.h>
 #include<unistd.h>
+#if defined( __APPLE__ ) || defined( __clang__ )
+#include<sys/ucontext.h>
+#else
+#include<ucontext.h>
+#endif
 #endif
 
 #include"rich.h"

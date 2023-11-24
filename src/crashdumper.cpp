@@ -230,11 +230,11 @@ std::string stack_trace_dump(){
             char* real_name = abi::__cxa_demangle( mangled_name.c_str() , 0 , 0 , &status );
             if ( status == 0 )
             {
-                oss << "real: stack dump [" << i << "] " << real_name << " + " << offset << std::endl;
+                oss << "stack dump [" << i << "] " << real_name << " + " << offset << std::endl;
             }
             else
             {
-                oss << "unreal: stack dump [" << i << "] " << mangled_name << " + " << offset << std::endl;
+                oss << "stack dump [" << i << "] " << mangled_name << " + " << offset << std::endl;
             }
             free( real_name );
         }
