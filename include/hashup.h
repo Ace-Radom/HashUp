@@ -153,7 +153,7 @@ namespace rena {
     char _getch();
 #endif
     void watch_kb_signal( const HUFO* hufoobj );
-    void handle_syssig( int signum );
+    void handle_syssigint( int signum );
 
 ////////////////////////////////////////////////////////////
 //                     speedwatch.cpp                     //

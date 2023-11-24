@@ -90,7 +90,7 @@ wait_for_resume:
     return;
 }
 
-void rena::handle_syssig( int signum ){
+void rena::handle_syssigint( int signum ){
     if ( signum == SIGINT )
     {
         LOG( INFO , syssig ,
