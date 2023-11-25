@@ -47,6 +47,7 @@ public:
         -> std::future<typename std::result_of<F(Args...)>::type>;
     ~ThreadPool();
     bool is_terminated();
+    size_t get_task_in_queue_num();
 
 private:
     // need to keep track of threads so we can join them
@@ -144,6 +145,11 @@ inline bool ThreadPool::is_terminated(){
         return false;
     }
     return true;
+}
+
+inline size_t ThreadPool::get_task_in_queue_num(){
+    std::unique_lock<std::mutex> lock( this -> queue_mutex );
+    return this -> tasks.size();
 }
 
 #endif
