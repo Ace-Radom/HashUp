@@ -2,6 +2,7 @@
 
 rena::renalog_capture::~renalog_capture(){
     this -> _oss << " [" << this -> _file
+                 << " F:" << this -> _function
                  << " L:" << this -> _line << "]";
     __global_logger__ -> push(
         this -> _severity ,

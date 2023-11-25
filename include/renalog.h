@@ -52,6 +52,14 @@
 #undef UNKNOWN
 #endif
 
+#if defined( _MSC_VER ) && ( defined( WINDOWS_FUNCSIG ) )
+#define RENALOG_PRETTY_FUNCTION __FUNCSIG__
+#elif defined( __GNUC__ ) && defined( PRETTY_FUNCTION )
+#define RENALOG_PRETTY_FUNCTION __PRETTY_FUNCTION__
+#else 
+#define RENALOG_PRETTY_FUNCTION __FUNCTION__
+#endif
+
 #define RENALOG_INIT( logdir , nametag , olfmaxnum , min_severity )                                                 \
     rena::__global_logger__ = new rena::renalog( logdir ,                                                           \
                                                  nametag ,                                                          \
@@ -73,7 +81,8 @@
         rena::renalog_capture( rena::renalog::RENALOGSEVERITY::severity ,                                           \
                                #host , std::chrono::system_clock::now() ,                                           \
                                __FILE__ ,                                                                           \
-                               __LINE__                                                                             \
+                               __LINE__ ,                                                                           \
+                               static_cast<const char*>( RENALOG_PRETTY_FUNCTION )\
                              ).stream() << data;                                                                    \
     }
 #define RENALOG_ISREADY() ( rena::__global_logger__ != nullptr )
@@ -187,13 +196,15 @@ namespace rena {
                              const char* host ,
                              std::chrono::system_clock::time_point log_tp ,
                              const char* file ,
-                             size_t line )
+                             size_t line ,
+                             const char* function )
                 : _oss() ,
                   _severity( severity ) ,
                   _host( host ) ,
                   _tp( log_tp ) ,
                   _file( file ) ,
-                  _line( line ){};
+                  _line( line ) ,
+                  _function( function ){};
             ~renalog_capture();
 
             inline std::ostringstream& stream(){ return this -> _oss; };
@@ -205,6 +216,7 @@ namespace rena {
             std::chrono::system_clock::time_point _tp;
             const char* _file;
             size_t _line;
+            const char* _function;
     }; // class renalog_capture
 
 ////////////////////////////////////////////////////////////
