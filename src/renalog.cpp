@@ -44,12 +44,16 @@ rena::renalog::RENALOGSTATUS rena::renalog::init(){
 }
 
 void rena::renalog::dump_logline_begin( rena::renalog::RENALOGSEVERITY severity , std::string host ){
-    auto time_now = std::chrono::system_clock::now();
-    time_t time_t_now = std::chrono::system_clock::to_time_t( time_now );
-    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>( time_now.time_since_epoch() ) % 1000; // current time ms part
+    this -> dump_logline_begin( severity , host , std::chrono::system_clock::now() );
+    return;
+}
+
+void rena::renalog::dump_logline_begin( RENALOGSEVERITY severity , std::string host , const std::chrono::system_clock::time_point& tp ){
+    time_t time_t_now = std::chrono::system_clock::to_time_t( tp );
+    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>( tp.time_since_epoch() ) % 1000; // current time ms part
     char timestr[128];
     strftime( timestr , sizeof( timestr ) , "%Y-%m-%d %H:%M:%S" , localtime( &time_t_now ) );
-    this -> _rwF << "[" << timestr << "." << std::setw( 3 ) << std::setfill( '0' ) << std::right << ms.count() << "] " << std::setw( 10 ) << std::setfill( ' ' ) << std::left << host + ":" << severity << "\t";
+    this -> _rwF << this -> _tp.get_task_in_queue_num() << "[" << timestr << "." << std::setw( 3 ) << std::setfill( '0' ) << std::right << ms.count() << "] " << std::setw( 10 ) << std::setfill( ' ' ) << std::left << host + ":" << severity << "\t";
     return;
 }
 
