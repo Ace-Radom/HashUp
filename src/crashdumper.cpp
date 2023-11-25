@@ -2,60 +2,6 @@
 
 #define BUILD_EXP_NAME_PAIR( x ) { x , #x }
 
-#if defined( __linux__ ) || defined( __APPLE__ )
-
-std::atomic<bool> block_for_sig_restore( true );
-std::map<int,struct sigaction> saved_sig_action;
-
-#endif // defined( __linux__ ) || defined( __APPLE__ )
-
-rena::crash_dumper::crash_dumper(){
-#ifdef WIN32
-    this -> m_OriFilter = SetUnhandledExceptionFilter( this -> ExceptionFilter );
-    auto res = SymInitialize( GetCurrentProcess() , NULL , TRUE );
-    if ( res != TRUE )
-        CPERR << "Initialize symbols failed" << std::endl;
-#else
-    const std::map<int,std::string> sigs = {
-        { SIGABRT , "SIGABRT" } ,
-        { SIGBUS  , "SIGBUS"  } ,
-        { SIGFPE  , "SIGFPE"  } ,
-        { SIGILL  , "SIGILL"  } ,
-        { SIGQUIT , "SIGQUIT" } ,
-        { SIGSEGV , "SIGSEGV" } ,
-        { SIGSYS  , "SIGSYS"  } ,
-        { SIGTRAP , "SIGTRAP" } ,
-        { SIGXCPU , "SIGXCPU" } ,
-        { SIGXFSZ , "SIGXFSZ" }
-    };
-    struct sigaction actions;
-    sigemptyset( &actions.sa_mask );
-    actions.sa_sigaction = &( this -> sigHandler );
-    actions.sa_flags = SA_SIGINFO;
-    for ( const auto& sigpair : sigs )
-    {
-        struct sigaction old_action;
-        memset( &old_action , 0 , sizeof( old_action ) );
-        if ( sigaction( sigpair.first , &actions , &old_action ) < 0 )
-        {
-            CPERR << "Sigaction failed by: " << sigpair.second << std::endl;
-        }
-        else
-        {
-            saved_sig_action[sigpair.first] = old_action;
-        } // save original signal action in order to restore them later
-    }
-#endif
-    return;
-}
-
-rena::crash_dumper::~crash_dumper(){
-#ifdef WIN32
-    SetUnhandledExceptionFilter( this -> m_OriFilter );
-#endif
-    return;
-}
-
 #ifdef WIN32
 
 const std::map<rena::EXPSIGID,std::string> exp_name_map = {
@@ -86,6 +32,63 @@ const std::map<rena::EXPSIGID,std::string> exp_name_map = {
     BUILD_EXP_NAME_PAIR( SIGILL )                             ,
     BUILD_EXP_NAME_PAIR( SIGTERM )    
 };
+
+#else
+
+const std::map<rena::EXPSIGID,std::string> exp_name_map = {
+    BUILD_EXP_NAME_PAIR( SIGABRT )                            ,
+    BUILD_EXP_NAME_PAIR( SIGBUS )                             ,
+    BUILD_EXP_NAME_PAIR( SIGFPE )                             ,
+    BUILD_EXP_NAME_PAIR( SIGILL )                             ,
+    BUILD_EXP_NAME_PAIR( SIGQUIT )                            ,
+    BUILD_EXP_NAME_PAIR( SIGSEGV )                            ,
+    BUILD_EXP_NAME_PAIR( SIGSYS )                             ,
+    BUILD_EXP_NAME_PAIR( SIGTRAP )                            ,
+    BUILD_EXP_NAME_PAIR( SIGXCPU )                            ,
+    BUILD_EXP_NAME_PAIR( SIGXFSZ )
+};
+
+std::atomic<bool> block_for_sig_restore( true );
+std::map<rena::EXPSIGID,struct sigaction> saved_sig_action;
+
+#endif // defined( __linux__ ) || defined( __APPLE__ )
+
+rena::crash_dumper::crash_dumper(){
+#ifdef WIN32
+    this -> m_OriFilter = SetUnhandledExceptionFilter( this -> ExceptionFilter );
+    auto res = SymInitialize( GetCurrentProcess() , NULL , TRUE );
+    if ( res != TRUE )
+        CPERR << "Initialize symbols failed" << std::endl;
+#else
+    struct sigaction actions;
+    sigemptyset( &actions.sa_mask );
+    actions.sa_sigaction = &( this -> sigHandler );
+    actions.sa_flags = SA_SIGINFO;
+    for ( const auto& sigpair : exp_name_map )
+    {
+        struct sigaction old_action;
+        memset( &old_action , 0 , sizeof( old_action ) );
+        if ( sigaction( sigpair.first , &actions , &old_action ) < 0 )
+        {
+            CPERR << "Sigaction failed by: " << sigpair.second << std::endl;
+        }
+        else
+        {
+            saved_sig_action[sigpair.first] = old_action;
+        } // save original signal action in order to restore them later
+    }
+#endif
+    return;
+}
+
+rena::crash_dumper::~crash_dumper(){
+#ifdef WIN32
+    SetUnhandledExceptionFilter( this -> m_OriFilter );
+#endif
+    return;
+}
+
+#ifdef WIN32
 
 std::string getSymbolInformation( const size_t index , const std::vector<uint64_t> &frame_pointers );
 
@@ -174,7 +177,7 @@ LONG WINAPI rena::crash_dumper::ExceptionFilter( LPEXCEPTION_POINTERS ExpInfo ){
     }
     else
     {
-        CPOUT << "Received FATAL exception: " << CPATOWCONV( get_exception_name( ExpID ) ) << " [PID: " << getpid() << "]\n"
+        CPERR << "Received FATAL exception: " << CPATOWCONV( get_exception_name( ExpID ) ) << " [PID: " << getpid() << "]\n"
               << "=========STACKDUMP=========\n"
               << CPATOWCONV( dumpmsg )
               << "===========================\n\n";
@@ -228,7 +231,30 @@ void rena::crash_dumper::sigHandler( int signum , siginfo_t* info , void* ctx ){
             std::this_thread::sleep_for( std::chrono::seconds( 1 ) );
         }
     }
-    CPOUT << stack_trace_dump();
+
+    CPOUT << rich::FColor::RED << "Unhandled exception occured, HashUp has crashed." << rich::style_reset << std::endl;
+    
+    if ( RENALOG_ISREADY() )
+    {
+        __global_logger__ -> flush();
+        __global_logger__ -> dump_logline_begin( renalog::RENALOGSEVERITY::FATAL , "rlcdmp" );  // renalog crash dump
+        *__global_logger__ << "===== Unhandled exception occured, PROGRAM CRASHED =====\n\n"
+                           << "Received FATAL exception: " << get_exception_name( signum ) << " [PID: " << getpid() << "]\n"
+                           << "=========STACKDUMP=========\n"
+                           << stack_trace_dump()
+                           << "===========================\n\n";
+        __global_logger__ -> copy_current_log_for_fatal();
+        RENALOG_FREE();
+    }
+    else
+    {
+        CPOUT << "===== Unhandled exception occured, PROGRAM CRASHED =====\n\n"
+              << "Received FATAL exception: " << get_exception_name( signum ) << " [PID: " << getpid() << "]\n"
+              << "=========STACKDUMP=========\n"
+              << stack_trace_dump()
+              << "===========================\n\n";
+    }
+
     for ( const auto& sigpair : saved_sig_action )
     {
         if ( sigaction( sigpair.first , &sigpair.second , NULL ) < 0 )
