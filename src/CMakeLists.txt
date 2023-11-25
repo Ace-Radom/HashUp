@@ -7,6 +7,8 @@ add_library(hashuplib STATIC
     ${CMAKE_CURRENT_SOURCE_DIR}/cppfignore.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/kbs.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/renalog.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/renalog_utils.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/renalog_cap.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/crashdumper.cpp
 )
 target_link_libraries(hashuplib

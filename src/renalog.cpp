@@ -44,26 +44,25 @@ rena::renalog::RENALOGSTATUS rena::renalog::init(){
 }
 
 void rena::renalog::dump_logline_begin( rena::renalog::RENALOGSEVERITY severity , std::string host ){
-    auto time_now = std::chrono::system_clock::now();
-    time_t time_t_now = std::chrono::system_clock::to_time_t( time_now );
-    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>( time_now.time_since_epoch() ) % 1000; // current time ms part
+    this -> dump_logline_begin( severity , host , std::chrono::system_clock::now() );
+    return;
+}
+
+void rena::renalog::dump_logline_begin( rena::renalog::RENALOGSEVERITY severity , std::string host , const std::chrono::system_clock::time_point& tp ){
+    time_t time_t_now = std::chrono::system_clock::to_time_t( tp );
+    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>( tp.time_since_epoch() ) % 1000; // current time ms part
     char timestr[128];
     strftime( timestr , sizeof( timestr ) , "%Y-%m-%d %H:%M:%S" , localtime( &time_t_now ) );
     this -> _rwF << "[" << timestr << "." << std::setw( 3 ) << std::setfill( '0' ) << std::right << ms.count() << "] " << std::setw( 10 ) << std::setfill( ' ' ) << std::left << host + ":" << severity << "\t";
     return;
 }
 
-std::ostream& rena::operator<<( std::ostream& os , rena::renalog::RENALOGSEVERITY severity ){
-    switch ( severity )
-    {
-        case renalog::RENALOGSEVERITY::DEBUG:   os << "DEBUG";   break;
-        case renalog::RENALOGSEVERITY::INFO:    os << "INFO";    break;
-        case renalog::RENALOGSEVERITY::WARNING: os << "WARNING"; break;
-        case renalog::RENALOGSEVERITY::ERROR:   os << "ERROR";   break;
-        case renalog::RENALOGSEVERITY::FATAL:   os << "FATAL";   break;
-        case renalog::RENALOGSEVERITY::UNKNOWN: os << "UNKNOWN"; break;
-    }
-    return os;
+void rena::renalog::push( rena::renalog::RENALOGSEVERITY severity , const char* host , std::chrono::system_clock::time_point log_tp , std::string msg ){
+    this -> _tp.enqueue( [this,severity,host,log_tp,msg](){
+        this -> dump_logline_begin( severity , host , log_tp );
+        this -> _rwF << msg << "\n";
+    } );
+    return;
 }
 
 rena::renalog::RENALOGSEVERITY rena::parse_str_to_severity( const std::string& str ){
