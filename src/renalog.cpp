@@ -33,7 +33,7 @@ rena::renalog::RENALOGSTATUS rena::renalog::init(){
 
     std::filesystem::path logfile_path = this -> _logdir / std::filesystem::path( this -> _nametag + CPTEXT( ".0.log" ) );
     // log file path in this run
-    this -> _rwF.open( logfile_path , std::ios::out | std::ios::trunc );
+    this -> _rwF.open( logfile_path , std::ios::in | std::ios::out | std::ios::trunc );
     if ( !( this -> _rwF.is_open() ) )
     {
         CPERR << rich::FColor::RED << "Open target log file error: " << rich::style_reset << strerror( errno ) << std::endl;
@@ -55,6 +55,43 @@ void rena::renalog::dump_logline_begin( rena::renalog::RENALOGSEVERITY severity 
     strftime( timestr , sizeof( timestr ) , "%Y-%m-%d %H:%M:%S" , localtime( &time_t_now ) );
     this -> _rwF << "[" << timestr << "." << std::setw( 3 ) << std::setfill( '0' ) << std::right << ms.count() << "] " << std::setw( 10 ) << std::setfill( ' ' ) << std::left << host + ":" << severity << "\t";
     return;
+}
+
+rena::renalog::RENALOGSTATUS rena::renalog::copy_current_log_for_fatal(){
+    this -> flush();
+    time_t time_t_now = std::chrono::system_clock::to_time_t( std::chrono::system_clock::now() );
+    char timestr[128];
+    strftime( timestr , sizeof( timestr ) , "%Y-%m-%d.%H.%M.%S" , localtime( &time_t_now ) );
+
+    std::filesystem::path logfile_copy_path = this -> _logdir / std::filesystem::path( this -> _nametag + CPTEXT( ".FATAL." ) + CPATOWCONV( timestr ) + CPTEXT( ".log" ) );
+    std::ofstream logfile_copy( logfile_copy_path );
+    if ( !logfile_copy.is_open() )
+    {
+        CPERR << rich::FColor::RED << "Open target log file copy error: " << rich::style_reset << strerror( errno ) << std::endl;
+        return RENALOGSTATUS::FCFIERR;
+    }
+
+    logfile_copy << "/**\n"
+                 << " * This is a copy of the original log file, because fatal error occured during the last run.\n"
+                 << " * In order to make sure the log datas will not be overwritten, renalog created this copy automatically.\n"
+                 << " * All log datas before ending-sign from loghost will be copied.\n"
+                 << "*/\n\n"
+                 << "// Begin of copy\n\n";
+
+    auto orippos = this -> _rwF.tellp(); // original put pos
+    this -> _rwF.seekg( 0 , std::ios::beg );
+    std::string buf;
+    while ( std::getline( this -> _rwF , buf ) )
+    {
+        logfile_copy << buf << "\n";
+    }
+    logfile_copy << "\n// End of copy\n";
+    logfile_copy.close();
+    CPERR << "Details have been wriiten into log file and a copy \"" << CPPATHTOSTR( logfile_copy_path ) << "\"" << std::endl;
+    this -> _rwF.clear();
+    this -> _rwF.seekp( orippos , std::ios::beg );
+    // reset _rwF write status
+    return RENALOGSTATUS::OK;
 }
 
 void rena::renalog::push( rena::renalog::RENALOGSEVERITY severity , const char* host , std::chrono::system_clock::time_point log_tp , std::string msg ){

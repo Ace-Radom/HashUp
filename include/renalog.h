@@ -101,6 +101,7 @@ namespace rena {
             typedef enum {
                 OK,
                 INITERR,
+                FCFIERR,  // fatal copy file init error
             } RENALOGSTATUS;
 
             typedef enum {
@@ -137,6 +138,7 @@ namespace rena {
                     this -> _rwF.close();
                 }
             }
+            RENALOGSTATUS copy_current_log_for_fatal();
             
             void push( rena::renalog::RENALOGSEVERITY severity , const char* host , std::chrono::system_clock::time_point log_tp , std::string msg );
 

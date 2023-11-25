@@ -169,8 +169,8 @@ LONG WINAPI rena::crash_dumper::ExceptionFilter( LPEXCEPTION_POINTERS ExpInfo ){
                            << "=========STACKDUMP=========\n"
                            << dumpmsg
                            << "===========================\n\n";
+        __global_logger__ -> copy_current_log_for_fatal();
         RENALOG_FREE();
-        CPOUT << "Details dumped into log file." << std::endl;
     }
     else
     {
