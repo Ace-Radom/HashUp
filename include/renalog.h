@@ -12,15 +12,17 @@
 #include<sstream>
 #include<atomic>
 #include<thread>
+#include<signal.h>
 #if defined( WIN32 )
 #include<Windows.h>
 #include<DbgHelp.h>
+#include<process.h>
 #include<tchar.h>
+#define getpid _getpid
 #pragma comment( lib , "dbghelp.lib" )
 #else
 #include<execinfo.h>
 #include<cxxabi.h>
-#include<signal.h>
 #include<unistd.h>
 #if defined( __APPLE__ ) || defined( __clang__ )
 #include<sys/ucontext.h>
@@ -85,7 +87,7 @@
                                static_cast<const char*>( RENALOG_PRETTY_FUNCTION )\
                              ).stream() << data;                                                                    \
     }
-#define RENALOG_ISREADY() ( rena::__global_logger__ != nullptr )
+#define RENALOG_ISREADY() ( ( rena::__global_logger__ != nullptr ) ? true : false )
 
 namespace rena {
 
@@ -231,6 +233,12 @@ namespace rena {
  * * /src/stacktrace_windows.cpp
 */
 
+#ifdef WIN32
+    typedef DWORD EXPSIGID;
+#else
+    typedef int EXPSIGID;
+#endif
+
     class crash_dumper {
         public:
             crash_dumper();
@@ -245,6 +253,7 @@ namespace rena {
 #else
             static void sigHandler( int signum , siginfo_t* info , void* ctx );
 #endif
+            static std::string get_exception_name( EXPSIGID ExpID );
     };
 
     const bool __bplaceholder__ = crash_dumper::_placeholder();

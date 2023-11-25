@@ -1,5 +1,7 @@
 #include"renalog.h"
 
+#define BUILD_EXP_NAME_PAIR( x ) { x , #x }
+
 #if defined( __linux__ ) || defined( __APPLE__ )
 
 std::atomic<bool> block_for_sig_restore( true );
@@ -56,10 +58,40 @@ rena::crash_dumper::~crash_dumper(){
 
 #ifdef WIN32
 
+const std::map<rena::EXPSIGID,std::string> exp_name_map = {
+    BUILD_EXP_NAME_PAIR( EXCEPTION_ACCESS_VIOLATION )         ,
+    BUILD_EXP_NAME_PAIR( EXCEPTION_ARRAY_BOUNDS_EXCEEDED )    ,
+    BUILD_EXP_NAME_PAIR( EXCEPTION_DATATYPE_MISALIGNMENT )    ,
+    BUILD_EXP_NAME_PAIR( EXCEPTION_FLT_DENORMAL_OPERAND )     ,
+    BUILD_EXP_NAME_PAIR( EXCEPTION_FLT_DIVIDE_BY_ZERO )       ,
+    BUILD_EXP_NAME_PAIR( EXCEPTION_FLT_INEXACT_RESULT )       ,
+    BUILD_EXP_NAME_PAIR( EXCEPTION_FLT_INEXACT_RESULT )       ,
+    BUILD_EXP_NAME_PAIR( EXCEPTION_FLT_INVALID_OPERATION )    ,
+    BUILD_EXP_NAME_PAIR( EXCEPTION_FLT_OVERFLOW )             ,
+    BUILD_EXP_NAME_PAIR( EXCEPTION_FLT_STACK_CHECK )          ,
+    BUILD_EXP_NAME_PAIR( EXCEPTION_FLT_UNDERFLOW )            ,
+    BUILD_EXP_NAME_PAIR( EXCEPTION_ILLEGAL_INSTRUCTION )      ,
+    BUILD_EXP_NAME_PAIR( EXCEPTION_IN_PAGE_ERROR )            ,
+    BUILD_EXP_NAME_PAIR( EXCEPTION_INT_DIVIDE_BY_ZERO )       ,
+    BUILD_EXP_NAME_PAIR( EXCEPTION_INT_OVERFLOW )             ,
+    BUILD_EXP_NAME_PAIR( EXCEPTION_INVALID_DISPOSITION )      ,
+    BUILD_EXP_NAME_PAIR( EXCEPTION_NONCONTINUABLE_EXCEPTION ) ,
+    BUILD_EXP_NAME_PAIR( EXCEPTION_PRIV_INSTRUCTION )         ,
+    BUILD_EXP_NAME_PAIR( EXCEPTION_STACK_OVERFLOW )           ,
+    BUILD_EXP_NAME_PAIR( EXCEPTION_BREAKPOINT )               ,
+    BUILD_EXP_NAME_PAIR( EXCEPTION_SINGLE_STEP )              ,
+    BUILD_EXP_NAME_PAIR( SIGABRT )                            ,
+    BUILD_EXP_NAME_PAIR( SIGFPE )                             ,
+    BUILD_EXP_NAME_PAIR( SIGSEGV )                            ,
+    BUILD_EXP_NAME_PAIR( SIGILL )                             ,
+    BUILD_EXP_NAME_PAIR( SIGTERM )    
+};
+
 std::string getSymbolInformation( const size_t index , const std::vector<uint64_t> &frame_pointers );
 
 LONG WINAPI rena::crash_dumper::ExceptionFilter( LPEXCEPTION_POINTERS ExpInfo ){
     CONTEXT *context = ExpInfo -> ContextRecord;
+    DWORD ExpID = ExpInfo -> ExceptionRecord -> ExceptionCode;
     std::shared_ptr<void> RaiiSysCleaner( nullptr , [&]( void * ){
         SymCleanup( GetCurrentProcess() );
     });
@@ -99,16 +131,16 @@ LONG WINAPI rena::crash_dumper::ExceptionFilter( LPEXCEPTION_POINTERS ExpInfo ){
 
     for ( size_t index = 0 ; index < frameVector.size() ; index++ )
     {
-        if ( StackWalk64( machine_type ,
-                          GetCurrentProcess() ,
-                          GetCurrentThread() ,
-                          &frame ,
-                          context ,
-                          NULL ,
-                          SymFunctionTableAccess ,
-                          SymGetModuleBase ,
-                          NULL
-                        ) )
+        if ( StackWalk( machine_type ,
+                        GetCurrentProcess() ,
+                        GetCurrentThread() ,
+                        &frame ,
+                        context ,
+                        NULL ,
+                        SymFunctionTableAccess ,
+                        SymGetModuleBase ,
+                        NULL
+                      ) )
         {
             frameVector[index] = frame.AddrPC.Offset;
         }
@@ -126,7 +158,27 @@ LONG WINAPI rena::crash_dumper::ExceptionFilter( LPEXCEPTION_POINTERS ExpInfo ){
         dumpmsg += "\n";
     }
 
-    CPOUT << CPATOWCONV( dumpmsg ) << std::endl;
+    CPOUT << rich::FColor::RED << "Unhandled exception occured, HashUp has crashed." << rich::style_reset << std::endl;
+
+    if ( RENALOG_ISREADY() )
+    {
+        __global_logger__ -> flush();
+        __global_logger__ -> dump_logline_begin( renalog::RENALOGSEVERITY::FATAL , "rlcdmp" );  // renalog crash dump
+        *__global_logger__ << "===== Unhandled exception occured, PROGRAM CRASHED =====\n\n"
+                           << "Received FATAL exception: " << get_exception_name( ExpID ) << " [PID: " << getpid() << "]\n"
+                           << "=========STACKDUMP=========\n"
+                           << dumpmsg
+                           << "===========================\n\n";
+        RENALOG_FREE();
+        CPOUT << "Details dumped into log file." << std::endl;
+    }
+    else
+    {
+        CPOUT << "Received FATAL exception: " << CPATOWCONV( get_exception_name( ExpID ) ) << " [PID: " << getpid() << "]\n"
+              << "=========STACKDUMP=========\n"
+              << CPATOWCONV( dumpmsg )
+              << "===========================\n\n";
+    } // renalog isn't ready
 
     return EXCEPTION_EXECUTE_HANDLER;
 }
@@ -249,8 +301,21 @@ std::string stack_trace_dump(){
 
 #endif
 
+std::string rena::crash_dumper::get_exception_name( rena::EXPSIGID ExpID ){
+    const auto it = exp_name_map.find( ExpID );
+    if ( it == exp_name_map.end() )
+    {
+        std::string unknown_exp;
+        unknown_exp.assign( "Unknown Exception: " ).append( std::to_string( ExpID ) );
+        return unknown_exp;
+    }
+    return it -> second;
+}
+
 bool rena::crash_dumper::_placeholder(){
     return true;
 }
 
 rena::crash_dumper __global_crashdumper__;
+
+#undef BUILD_EXP_NAME_PAIR
