@@ -70,13 +70,11 @@
 #define LOG( severity , host , data )                                                                               \
     if ( rena::__global_logger__ -> is_severity_need_to_log( rena::renalog::RENALOGSEVERITY::severity ) )           \
     {                                                                                                               \
-        auto tp = std::chrono::system_clock::now();                                                                 \
-        rena::__global_logger__ -> push( [&,tp](){                                                                  \
-            rena::__global_logger__ -> dump_logline_begin( rena::renalog::RENALOGSEVERITY::severity , #host , tp ); \
-            *rena::__global_logger__ << data                                                                        \
-                                     << " [" << std::filesystem::relative( __FILE__ , SOURCE_ROOT_DIR ).string()    \
-                                     << ": " << __LINE__ << "]\n";                                                  \
-        } );                                                                                                        \
+        rena::renalog_capture( rena::renalog::RENALOGSEVERITY::severity ,                                           \
+                               #host , std::chrono::system_clock::now() ,                                           \
+                               __FILE__ ,                                                                           \
+                               __LINE__                                                                             \
+                             ).stream() << data;                                                                    \
     }
 #define RENALOG_ISREADY() ( rena::__global_logger__ != nullptr )
 
@@ -110,16 +108,7 @@ namespace rena {
                   _old_log_file_max_num( old_log_file_max_num ) ,
                   _min_severity( severity ) ,
                   _tp( 1 ){};
-            inline ~renalog(){
-                this -> flush();
-                // wait all log to be finished
-                if ( this -> _rwF.is_open() )
-                {
-                    this -> dump_logline_begin( RENALOGSEVERITY::INFO , "loghost" );
-                    this -> _rwF << "Logger stoped." << "\n";
-                    this -> _rwF.close();
-                }
-            };
+            inline ~renalog(){ this -> stop(); return; }
             RENALOGSTATUS init();
             void dump_logline_begin( RENALOGSEVERITY severity , std::string host );
             void dump_logline_begin( RENALOGSEVERITY severity , std::string host , const std::chrono::system_clock::time_point& tp );
@@ -128,12 +117,17 @@ namespace rena {
                 this -> _rwF.flush();
                 return;
             };
-            
-            template <class F , class... Args>
-            void push( F&& f , Args&&... args ){
-                this -> _tp.enqueue( f , args... );
-                return;
+            inline void stop(){
+                this -> flush();
+                if ( this -> _rwF.is_open() )
+                {
+                    this -> dump_logline_begin( RENALOGSEVERITY::INFO , "loghost" );
+                    this -> _rwF << "Logger stoped." << "\n";
+                    this -> _rwF.close();
+                }
             }
+            
+            void push( rena::renalog::RENALOGSEVERITY severity , const char* host , std::chrono::system_clock::time_point log_tp , std::string msg );
 
             template <typename T>
             friend inline renalog& operator<<( renalog& rg , const T& data );
@@ -159,7 +153,19 @@ namespace rena {
 
     }; // class renalog
 
-    std::ostream& operator<<( std::ostream& os , renalog::RENALOGSEVERITY severity );
+    template <class _Elem , class _Traits>
+    std::basic_ostream<_Elem,_Traits>& operator<<( std::basic_ostream<_Elem,_Traits>& os , renalog::RENALOGSEVERITY severity ){
+        switch ( severity )
+        {
+            case renalog::RENALOGSEVERITY::DEBUG:   os << "DEBUG";   break;
+            case renalog::RENALOGSEVERITY::INFO:    os << "INFO";    break;
+            case renalog::RENALOGSEVERITY::WARNING: os << "WARNING"; break;
+            case renalog::RENALOGSEVERITY::ERROR:   os << "ERROR";   break;
+            case renalog::RENALOGSEVERITY::FATAL:   os << "FATAL";   break;
+            case renalog::RENALOGSEVERITY::UNKNOWN: os << "UNKNOWN"; break;
+        }
+        return os;
+    }
 
     template <typename T>
     inline renalog& operator<<( renalog& rg , const T& data ){
@@ -170,6 +176,36 @@ namespace rena {
     renalog::RENALOGSEVERITY parse_str_to_severity( const std::string& str );
 
     extern renalog* __global_logger__;
+
+////////////////////////////////////////////////////////////
+//                     renalog_cap.cpp                    //
+////////////////////////////////////////////////////////////
+
+    class renalog_capture {
+        public:
+            renalog_capture( renalog::RENALOGSEVERITY severity ,
+                             const char* host ,
+                             std::chrono::system_clock::time_point log_tp ,
+                             const char* file ,
+                             size_t line )
+                : _oss() ,
+                  _severity( severity ) ,
+                  _host( host ) ,
+                  _tp( log_tp ) ,
+                  _file( file ) ,
+                  _line( line ){};
+            ~renalog_capture();
+
+            inline std::ostringstream& stream(){ return this -> _oss; };
+
+        private:
+            std::ostringstream _oss;
+            renalog::RENALOGSEVERITY _severity;
+            const char* _host;
+            std::chrono::system_clock::time_point _tp;
+            const char* _file;
+            size_t _line;
+    }; // class renalog_capture
 
 ////////////////////////////////////////////////////////////
 //                     crashdumper.cpp                    //
