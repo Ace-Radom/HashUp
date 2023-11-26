@@ -37,7 +37,7 @@ int main( int argc , char** argv ){
 
     rena::rich::rich_global_init();
 
-    signal( SIGINT , rena::handle_syssig );
+    signal( SIGINT , rena::handle_syssigint );
 
     std::filesystem::path hashup_exe_path( rena::get_current_exe_path() );
     std::filesystem::path cfg_path = hashup_exe_path.parent_path() / "hashup.ini";
