@@ -12,14 +12,16 @@
 #include<sstream>
 #include<atomic>
 #include<thread>
-#include<signal.h>
-#if defined( WIN32 )
+#include<csignal>
+#ifdef WIN32
 #include<Windows.h>
 #include<DbgHelp.h>
 #include<process.h>
 #include<tchar.h>
 #define getpid _getpid
 #pragma comment( lib , "dbghelp.lib" )
+#pragma warning( push )
+#pragma warning( disable: 4251 )
 #else
 #include<execinfo.h>
 #include<cxxabi.h>
@@ -32,7 +34,7 @@
 #endif
 
 #include"ThreadPool.h"
-#include"rich.h"
+// #include"rich.h"
 #include"utils.h"
 
 #ifdef DEBUG
@@ -54,9 +56,19 @@
 #undef UNKNOWN
 #endif
 
-#if defined( _MSC_VER ) && ( defined( WINDOWS_FUNCSIG ) )
+#ifdef WIN32
+#   ifdef RENALOGAPI_EXPORT
+#       define RENALOGAPI __declspec( dllexport )
+#   else
+#       define RENALOGAPI __declspec( dllimport )
+#   endif
+#else
+#   define RENALOGAPI
+#endif
+
+#if defined( _MSC_VER ) && defined( RENALOG_USING_WINDOWS_FUNCSIG )
 #define RENALOG_PRETTY_FUNCTION __FUNCSIG__
-#elif defined( __GNUC__ ) && defined( PRETTY_FUNCTION )
+#elif defined( __GNUC__ ) && defined( RENALOG_USING_PRETTY_FUNCTION )
 #define RENALOG_PRETTY_FUNCTION __PRETTY_FUNCTION__
 #else 
 #define RENALOG_PRETTY_FUNCTION __FUNCTION__
@@ -95,7 +107,7 @@ namespace rena {
 //                       renalog.cpp                      //
 ////////////////////////////////////////////////////////////
 
-    class renalog {
+    class RENALOGAPI renalog {
 
         public:
             typedef enum {
@@ -186,15 +198,17 @@ namespace rena {
         return rg;
     }
 
+    RENALOGAPI
     renalog::RENALOGSEVERITY parse_str_to_severity( const std::string& str );
 
+    RENALOGAPI
     extern renalog* __global_logger__;
 
 ////////////////////////////////////////////////////////////
 //                     renalog_cap.cpp                    //
 ////////////////////////////////////////////////////////////
 
-    class renalog_capture {
+    class RENALOGAPI renalog_capture {
         public:
             renalog_capture( renalog::RENALOGSEVERITY severity ,
                              const char* host ,
@@ -241,7 +255,7 @@ namespace rena {
     typedef int EXPSIGID;
 #endif
 
-    class crash_dumper {
+    class RENALOGAPI crash_dumper {
         public:
             crash_dumper();
             ~crash_dumper();
@@ -262,5 +276,7 @@ namespace rena {
     // call crash_dumper::_placeholder by hand here, make sure it will still work full-background even with static-linking
 
 }; // namespace rena
+
+#pragma warning( pop )
 
 #endif

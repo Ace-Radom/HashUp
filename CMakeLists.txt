@@ -73,12 +73,17 @@ add_definitions(-DSOURCE_ROOT_DIR="${CMAKE_SOURCE_DIR}")
 #                     main
 # ============================================
 
+set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin)
+set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin)
+
 include_directories(${OPENSSL_INCLUDE_DIR})
 include_directories(include)
 add_subdirectory(src)
 
 add_executable(hashup main.cpp)
 target_link_libraries(hashup
+    rich
+    renalog
     hashuplib
 )
 
@@ -93,12 +98,12 @@ endif()
 # ============================================
 
 install(
-    TARGETS hashup
+    TARGETS hashup renalog
     RUNTIME DESTINATION bin
 )
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
     install(
-        FILES $<TARGET_PDB_FILE:hashup>
+        FILES $<TARGET_PDB_FILE:hashup> $<TARGET_PDB_FILE:renalog>
         DESTINATION bin
         OPTIONAL
     )
