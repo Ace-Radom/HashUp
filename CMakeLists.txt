@@ -96,6 +96,13 @@ install(
     TARGETS hashup
     RUNTIME DESTINATION bin
 )
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+    install(
+        FILES $<TARGET_PDB_FILE:hashup>
+        DESTINATION bin
+        OPTIONAL
+    )
+endif()
 install(
     FILES ${CMAKE_SOURCE_DIR}/hashup.ini
     DESTINATION bin
