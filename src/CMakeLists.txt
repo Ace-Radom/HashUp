@@ -1,7 +1,6 @@
 add_library(rich STATIC
     ${CMAKE_CURRENT_SOURCE_DIR}/rich.cpp
 )
-# set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 add_library(renalog SHARED
     ${CMAKE_CURRENT_SOURCE_DIR}/renalog.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/renalog_utils.cpp
@@ -15,7 +14,11 @@ target_compile_definitions(renalog
     PRIVATE
         RENALOGAPI_EXPORT
 )
-# set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS OFF)
+set_target_properties(renalog
+    PROPERTIES
+        VERSION   1.0.0
+        SOVERSION 1
+)
 add_library(hashuplib STATIC
     ${CMAKE_CURRENT_SOURCE_DIR}/calchash.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/hufo.cpp
