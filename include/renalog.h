@@ -252,19 +252,17 @@ namespace rena {
 #ifdef WIN32
     typedef DWORD EXPSIGID;
 #else
-    typedef int EXPSIGID;
+    typedef int   EXPSIGID;
 #endif
 
     class RENALOGAPI crash_dumper {
         public:
-            crash_dumper();
-            ~crash_dumper();
-
-            static bool _placeholder();
+            crash_dumper(){};
+            ~crash_dumper(){};
+            void start();
 
         private:
 #ifdef WIN32
-            LPTOP_LEVEL_EXCEPTION_FILTER m_OriFilter;
             static LONG WINAPI ExceptionFilter( LPEXCEPTION_POINTERS ExpInfo );
 #else
             static void sigHandler( int signum , siginfo_t* info , void* ctx );
@@ -272,8 +270,8 @@ namespace rena {
             static std::string get_exception_name( EXPSIGID ExpID );
     };
 
-    const bool __bplaceholder__ = crash_dumper::_placeholder();
-    // call crash_dumper::_placeholder by hand here, make sure it will still work full-background even with static-linking
+    RENALOGAPI
+    void start_global_crash_dumper();
 
 }; // namespace rena
 

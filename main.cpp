@@ -36,6 +36,7 @@ int main( int argc , char** argv ){
 #endif
 
     rena::rich::rich_global_init();
+    rena::start_global_crash_dumper();
 
     signal( SIGINT , rena::handle_syssigint );
 

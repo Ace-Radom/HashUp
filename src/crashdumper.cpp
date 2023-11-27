@@ -2,6 +2,13 @@
 
 #define BUILD_EXP_NAME_PAIR( x ) { x , #x }
 
+rena::crash_dumper __global_crashdumper__;
+
+void rena::start_global_crash_dumper(){
+    __global_crashdumper__.start();
+    return;
+}
+
 #ifdef WIN32
 
 const std::map<rena::EXPSIGID,std::string> exp_name_map = {
@@ -33,6 +40,8 @@ const std::map<rena::EXPSIGID,std::string> exp_name_map = {
     BUILD_EXP_NAME_PAIR( SIGTERM )    
 };
 
+LPTOP_LEVEL_EXCEPTION_FILTER m_OriFilter;
+
 #else
 
 const std::map<rena::EXPSIGID,std::string> exp_name_map = {
@@ -53,12 +62,12 @@ std::map<rena::EXPSIGID,struct sigaction> saved_sig_action;
 
 #endif // defined( __linux__ ) || defined( __APPLE__ )
 
-rena::crash_dumper::crash_dumper(){
+void rena::crash_dumper::start(){
 #ifdef WIN32
-    this -> m_OriFilter = SetUnhandledExceptionFilter( this -> ExceptionFilter );
+    m_OriFilter = SetUnhandledExceptionFilter( this -> ExceptionFilter );
     auto res = SymInitialize( GetCurrentProcess() , NULL , TRUE );
     if ( res != TRUE )
-        CPERR << "Initialize symbols failed" << std::endl;
+        CPERR << "Crash Dumper Initialize symbols failed" << std::endl;
 #else
     struct sigaction actions;
     sigemptyset( &actions.sa_mask );
@@ -77,13 +86,6 @@ rena::crash_dumper::crash_dumper(){
             saved_sig_action[sigpair.first] = old_action;
         } // save original signal action in order to restore them later
     }
-#endif
-    return;
-}
-
-rena::crash_dumper::~crash_dumper(){
-#ifdef WIN32
-    SetUnhandledExceptionFilter( this -> m_OriFilter );
 #endif
     return;
 }
@@ -161,7 +163,7 @@ LONG WINAPI rena::crash_dumper::ExceptionFilter( LPEXCEPTION_POINTERS ExpInfo ){
         dumpmsg += "\n";
     }
 
-    CPOUT << rich::FColor::RED << "Unhandled exception occured, HashUp has crashed." << rich::style_reset << std::endl;
+    CPOUT << rich::FColor::RED << "\n\nUnhandled exception occured, HashUp has crashed." << rich::style_reset << std::endl;
 
     if ( RENALOG_ISREADY() )
     {
@@ -182,6 +184,8 @@ LONG WINAPI rena::crash_dumper::ExceptionFilter( LPEXCEPTION_POINTERS ExpInfo ){
               << CPATOWCONV( dumpmsg )
               << "===========================\n\n";
     } // renalog isn't ready
+
+    SetUnhandledExceptionFilter( m_OriFilter );
 
     return EXCEPTION_EXECUTE_HANDLER;
 }
@@ -232,7 +236,7 @@ void rena::crash_dumper::sigHandler( int signum , siginfo_t* info , void* ctx ){
         }
     }
 
-    CPOUT << rich::FColor::RED << "Unhandled exception occured, HashUp has crashed." << rich::style_reset << std::endl;
+    CPOUT << rich::FColor::RED << "\n\nUnhandled exception occured, HashUp has crashed." << rich::style_reset << std::endl;
     
     if ( RENALOG_ISREADY() )
     {
@@ -337,11 +341,5 @@ std::string rena::crash_dumper::get_exception_name( rena::EXPSIGID ExpID ){
     }
     return it -> second;
 }
-
-bool rena::crash_dumper::_placeholder(){
-    return true;
-}
-
-rena::crash_dumper __global_crashdumper__;
 
 #undef BUILD_EXP_NAME_PAIR
