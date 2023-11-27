@@ -92,6 +92,7 @@ function(add_pandoc_man SRC)
 
   # Set target name
   get_filename_component(TARGET_NAME ${SRC} NAME_WE)
+  string(PREPEND TARGET_NAME "${MAN_NUM}_")
   string(PREPEND TARGET_NAME "man_")
 
   # Build output path if not specified.
