@@ -112,10 +112,16 @@ install(
     FILES ${CMAKE_SOURCE_DIR}/hashup.ini
     DESTINATION bin
 )
-install(
-    FILES ${CMAKE_SOURCE_DIR}/LICENSE.txt ${CMAKE_SOURCE_DIR}/README.md
-    DESTINATION .
-)
+if("$CMAKE_SYSTEM_NAME" STREQUAL "Windows")
+    install(
+        FILES ${CMAKE_SOURCE_DIR}/LICENSE.txt ${CMAKE_SOURCE_DIR}/README.md
+        DESTINATION .
+    )
+else()
+    set(CMAKE_INSTALL_FULL_MANDIR /usr/local/man)
+    include(PandocMan.cmake)
+    add_pandoc_man(${CMAKE_SOURCE_DIR}/doc/hashup.1.md)
+endif()
 set(CPACK_PACKAGE_NAME ${PROJECT_NAME})
 set(CPACK_PACKAGE_VERSION ${PROJECT_VERSION})
 set(CPACK_PACKAGE_VENDOR "Ace-Radom")
