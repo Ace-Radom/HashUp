@@ -5,8 +5,9 @@ bool rena::confirm_interrupt( const CPSTR& msg , char y , char n ){
 start_confirm:
 
     CPOUT << msg << " (" << y << "/" << n << "): ";
-    char c;
-    std::cin >> c;
+    std::string s;
+    std::getline( std::cin , s );
+    char c = s[0];
     if ( tolower( c ) == tolower( y ) )
     {
         return true;
