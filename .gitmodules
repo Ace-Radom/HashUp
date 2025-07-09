@@ -1,0 +1,3 @@
+[submodule "third_party/g3log"]
+	path = third_party/g3log
+	url = https://github.com/atina-project/g3log.git
