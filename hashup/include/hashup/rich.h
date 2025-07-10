@@ -1,20 +1,18 @@
+/**
+ * This header is based on renarich.h <https://github.com/renalibs/renarich/blob/main/include/rena/renarich.h>
+ * All WINAPI specific codes have been removed, since HashUp uses a global print worker and msgs must be written
+ * into a sstream before being written to stdout / stderr. Implementation through WINAPI doesn't work, therefore
+ * it has been deleted & rich output can only be shown with a terminal supports ANSI escape codes.
+ */
+
 #ifndef __HASHUP_RICH_H__
 #define __HASHUP_RICH_H__
 
 #include<memory>
 #include<ostream>
 #include<stack>
-#ifdef _WIN32
-#include<windows.h>
-#endif // _WIN32
 
-#define RENARICH_DECLARE_STATIC_CLASS(class)    \
-    class() = delete;                           \
-    class(const class&) = delete;               \
-    class(class&&) = delete;                    \
-    class& operator=(const class&) = delete;    \
-    class& operator=(class&&) = delete;         \
-    ~class() = delete
+#include"macros.h"
 
 namespace rena {
 
@@ -88,18 +86,18 @@ namespace rena {
                 }
 
                 static inline std::shared_ptr<ccstack> global(){
-                    if (!_p_ccs_gstack)
+                    if (!_p__gccstack)
                     {
-                        _p_ccs_gstack = std::make_shared<ccstack>();
+                        _p__gccstack = std::make_shared<ccstack>();
                     }
-                    return _p_ccs_gstack;
+                    return _p__gccstack;
                 }
 
             private:
                 std::stack<color_code> _cs; // code stack
                 bool _b_enable = true;
 
-                static inline std::shared_ptr<ccstack> _p_ccs_gstack = nullptr; // global color code stack
+                static inline std::shared_ptr<ccstack> _p__gccstack = nullptr; // global color code stack
 
         }; // class ccstack
 
@@ -108,7 +106,7 @@ namespace rena {
     class fcolor {
 
         public:
-            RENARICH_DECLARE_STATIC_CLASS(fcolor);
+            DECLARE_STATIC_CLASS(fcolor);
 
             static constexpr color_code BLACK = {30, builtin::ColorCodeTypeForegroundColor, "black"};
             static constexpr color_code RED = {31, builtin::ColorCodeTypeForegroundColor, "red"};
@@ -132,7 +130,7 @@ namespace rena {
     class bcolor {
 
         public:
-            RENARICH_DECLARE_STATIC_CLASS(bcolor);
+            DECLARE_STATIC_CLASS(bcolor);
 
             static constexpr color_code BLACK = {40, builtin::ColorCodeTypeBackgroundColor, "black"};
             static constexpr color_code RED = {41, builtin::ColorCodeTypeBackgroundColor, "red"};
@@ -156,7 +154,7 @@ namespace rena {
     class fstyle {
 
         public:
-            RENARICH_DECLARE_STATIC_CLASS(fstyle);
+            DECLARE_STATIC_CLASS(fstyle);
 
             static constexpr color_code BOLD = {1, builtin::ColorCodeTypeStyle, "bold"};
             static constexpr color_code DIM = {2, builtin::ColorCodeTypeStyle, "dim"};
@@ -168,18 +166,10 @@ namespace rena {
 
     }; // class fstyle
 
-    template<class _Elem , class _Traits>
-    std::basic_ostream<_Elem,_Traits>& operator<<( std::basic_ostream<_Elem,_Traits>& __os , const color_code& __c_cc_code ){
-#ifdef RENARICH_USE_ANSI
-        __os << "\033[" << static_cast<int>( __c_cc_code._u8i_ansi ) << "m";
-#else // RENARICH_USE_ANSI
-        switch ( __c_cc_code._u8i_type ) {
-            case builtin::ColorCodeTypeForegroundColor: builtin::win32_cs_helper::set_color( __c_cc_code._u8i_win32 , builtin::win32_cs_helper::KeepColor ); break;
-            case builtin::ColorCodeTypeBackgroundColor: builtin::win32_cs_helper::set_color( builtin::win32_cs_helper::KeepColor , __c_cc_code._u8i_win32 ); break;
-            default: break;
-        }
-#endif // RENARICH_USE_ANSI
-        builtin::ccstack::global() -> push( __c_cc_code );
+    template<class _Elem, class _Traits>
+    std::basic_ostream<_Elem, _Traits>& operator<<(std::basic_ostream<_Elem, _Traits>& __os, const color_code& __c__code){
+        __os << "\033[" << static_cast<int>(__c__code._u8i_ansi) << "m";
+        builtin::ccstack::global()->push(__c__code);
         return __os;
     }
 
@@ -187,52 +177,40 @@ namespace rena {
         unsigned int _ui_num;
     } _s_rich_pop;
     
-    inline _s_rich_pop rich_pop( unsigned int __ui_num = 1 ){
+    inline _s_rich_pop rich_pop(unsigned int __ui_num = 1){
         return { __ui_num };
     }
 
-    template<class _Elem , class _Traits>
-    std::basic_ostream<_Elem,_Traits>& operator<<( std::basic_ostream<_Elem,_Traits>& __os , _s_rich_pop __elem ){
-#ifdef RENARICH_USE_ANSI
+    template<class _Elem, class _Traits>
+    std::basic_ostream<_Elem, _Traits>& operator<<(std::basic_ostream<_Elem, _Traits>& __os, _s_rich_pop __elem){
         __os << "\033[0m" << std::flush;
-#else // RENARICH_USE_ANSI
-        builtin::win32_cs_helper::reset_color();
-#endif // RENARICH_USE_ANSI
-        for ( unsigned int i = 0 ; i < __elem._ui_num ; i++ )
+        for (unsigned int i = 0 ; i < __elem._ui_num ; i++)
         {
-            builtin::ccstack::global() -> pop();
+            builtin::ccstack::global()->pop();
         }
-        auto code_stack = builtin::ccstack::global() -> copy();
-        builtin::ccstack::global() -> enable( false );
+        auto code_stack = builtin::ccstack::global()->copy();
+        builtin::ccstack::global()->enable(false);
         // disable global ccstack before reverting older color codes
         // otherwise older color codes will be pushed into stack again
-        while ( !code_stack.empty() )
+        while (!code_stack.empty())
         {
             __os << code_stack.top();
             code_stack.pop();
         }
-        builtin::ccstack::global() -> enable( true );
+        builtin::ccstack::global()->enable(true);
         return __os;
     }
 
-    template<class _Elem , class _Traits>
-    std::basic_ostream<_Elem,_Traits>& rich_reset( std::basic_ostream<_Elem,_Traits>& __os ){
-#ifdef RENARICH_USE_ANSI
+    template<class _Elem, class _Traits>
+    std::basic_ostream<_Elem, _Traits>& rich_reset(std::basic_ostream<_Elem, _Traits>& __os){
         __os << "\033[0m" << std::flush;
-#else // RENARICH_USE_ANSI
-        builtin::win32_cs_helper::reset_color();
-#endif // RENARICH_USE_ANSI
-        builtin::ccstack::global() -> clear();
+        builtin::ccstack::global()->clear();
         return __os;
     }
 
-    template<class _Elem , class _Traits>
-    std::basic_ostream<_Elem,_Traits>& clear_line( std::basic_ostream<_Elem,_Traits>& __os ){
-#ifdef RENARICH_USE_ANSI
+    template<class _Elem, class _Traits>
+    std::basic_ostream<_Elem, _Traits>& clear_line(std::basic_ostream<_Elem, _Traits>& __os){
         __os << "\033[2K\r" << std::flush;
-#else // RENARICH_USE_ANSI
-        builtin::win32_cs_helper::clear_line();
-#endif // RENARICH_USE_ANSI
         return __os;
     }
 
